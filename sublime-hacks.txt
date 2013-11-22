@@ -1,0 +1,57 @@
+Left off at End of "Instant File Changing"
+
+# ##################
+# Cool hotkeys
+# ##################
+
+# Multiple Cursors
+	Select string OR cursor in word, then
+		CMD-d
+			Next occurence
+		CTRL-CMD-g
+			Every occurence
+	Column select
+		OPT-"select with mouse"
+	Change a bunch of same lines
+		"select", then
+		CMD-SHIFT-l
+
+# Incremental find
+	CMD-i
+	(then enter)
+	(arrows for previous finds)
+
+# Comman pallette
+	SHIFT-CMD-P
+		Very awesome fuzzy search for all menu items!
+
+# Go to anything
+	CMD-P
+		Awesome fuzzy search for files in current project
+		You can use file names, parts of the path, whatever
+
+# Toggle sidebar
+	CMD-K-B
+
+
+
+
+# ##################
+# Standar hotkeys
+# ##################
+
+# Undo
+	CMD-u
+
+# Save
+	CMD-s
+
+# Save all
+	CMD-OPT-s
+
+# Find
+	CMD-f
+
+# Find and replace
+	CMD-OPT-f
+
