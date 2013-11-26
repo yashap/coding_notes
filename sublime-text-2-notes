@@ -1,0 +1,129 @@
+Left off:
+Start of snippets section
+https://tutsplus.com/course/improve-workflow-in-sublime-text-2/
+
+# ##################
+# Unique hotkeys
+# ##################
+
+# Open the console
+	CTRL-`
+
+# Toggle comments
+	CMD-/
+	Will comment based on whatever syntax you have set
+
+# Multiple Cursors
+	Select string OR cursor in word, then
+		CMD-d
+			Next occurence
+		CTRL-CMD-g
+			Every occurence
+	Column select
+		OPT-"select with mouse"
+	Change a bunch of same lines
+		"select", then
+		CMD-SHIFT-l
+
+# Incremental find
+	CMD-i
+	(then enter)
+	(arrows for previous finds)
+
+# Command pallette
+	CMD-SHIFT-P
+		Very awesome fuzzy search for all menu items!
+
+# Go to anything (files, paths, etc.)
+	CMD-P
+		Awesome fuzzy search for files in current project
+		You can use file names, parts of the path, whatever
+
+# Toggle sidebar
+	CMD-K-B
+
+# Symbol search
+	CMD-R
+		OR
+	CMD-P, then @
+	Fuzzy search through methods, classes, etc.
+		Can also combine sneakily with CMD-P
+			i.e. CMD-P, type "styles"
+			Get a bunch of hits for styles, but the top is styles.css
+			Then type @body, so in total CMD-P, styles@body
+			This will take you right to the CSS for the body in styles.css!
+
+# Package Control
+	Command pallete (CMD-SHIFT-P)
+	Then type "package control" for a full set of options, or "install" to just search through package you can install
+	Then search for what you're looking for
+
+# Snippets
+	Command pallete (CMD-SHIFT-P)
+	Then type "snippet"
+	Set syntax (with command pallette) to diff. syntax to access diff snippets
+	Also, snippets will be available for auto-complete based on your snytax
+		i.e. in JavaScript, if for if statement, ife for if/else, for for for, etc.
+		Enter to accept, tab to next section
+
+# New snippets
+	Tools -> New snippet
+		Brings up some XML where you can code your own snippet
+
+
+# SublimeREPL
+	Starting the REPL
+		CMD-SHIFT-P   # Then choose REPL appropriate to file type
+		CMD-OPT-SHIFT-2  # 2 row layout (Menu -> View -> Rows: 2)   # CMD-OPT-1
+		CTRL-SHIFT-2		# move file to group 2 (Menu -> View -> Move File to Group -> Group 2)
+	Evaluate in REPL:
+		CTRL-, (relase) s   Selection
+		CTRL-, (relase) f   File
+		CTRL-, (relase) l   Lines
+		CTRL-, (relase) b   Block
+	Transfer in REPL (just copy, don't eval)
+		CTRL-shift-, (relase)   s   Selection
+		CTRL-shift-, (relase)   f   File
+		CTRL-shift-, (relase)   l   Lines
+		CTRL-shift-, (relase)   b   Block
+
+
+# ##################
+# Standard hotkeys
+# ##################
+
+# Undo
+	CMD-u
+
+# Save
+	CMD-s
+
+# Save all
+	CMD-OPT-s
+
+# Find
+	CMD-f
+
+# Find and replace
+	CMD-OPT-f
+
+# New file
+	CMD-N
+
+# ##################
+# Other notes
+# ##################
+
+Packages are stored in:
+	~/Library/Application\ Support/Sublime\ Text\ 2/Packages
+	To install unofficial packages from GitHub, just git clone them here, for Example:
+		cd ~/Library/Application\ Support/Sublime\ Text\ 2/Packages
+		git clone https://github.com/lunixbochs/SublimeXiki.git SublimeXiki
+	Note that I also named this 
+
+Packages to learn how to use:
+	SublimeXiki
+	SublimeREPL
+		How to extend Python?
+			Modules I want are here:
+				/usr/local/lib/python2.7/site-packages
