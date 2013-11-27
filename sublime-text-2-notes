@@ -1,7 +1,6 @@
 Left off:
-Start of snippets section
+Start of Essential Plugins
 https://tutsplus.com/course/improve-workflow-in-sublime-text-2/
-	Got 5 mins through first video, but maybe start again from scratch
 
 # ##################
 # Unique hotkeys
@@ -71,9 +70,26 @@ https://tutsplus.com/course/improve-workflow-in-sublime-text-2/
 	Tools -> New snippet
 		Brings up some XML where you can code your own snippet
 		Save with the extension .sublime-snippet in the user folder
+			The file name is also important
 			Good to organize them by syntax too, i.e. put them in a JavaScript folder for JavaScript snippets, then they'll only show up with JavaScript syntax
-		See here for more info:
-			https://tutsplus.com/lesson/your-first-snippet/
+		The commented out bits can be uncommented for useful stuff
+			For example, if you put hello in tabTrigger, and put that in a JavaScript folder, when your syntax is set to JavaScript and you type hello, this snippet will pop up
+			The text in the content tag will be displayed
+				The ${1:default_text} bits are the tab stop points (where does hitting tab take you to)
+			Real world example: self invoking anonymous JS function
+<snippet>
+	<content><![CDATA[
+		(function() {
+			${1}
+		})();
+		]]>
+	</content>
+	<tabTrigger>siaf</tabTrigger>
+</snippet>
+
+# Snippet packets
+	CMD-SHIFT-P, then Install Package
+
 
 # SublimeREPL
 	Starting the REPL
