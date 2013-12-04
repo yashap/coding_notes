@@ -2,6 +2,11 @@
 // Eloquent JavaScript
 // #####################################
 
+
+// #####################################
+// Chapter 1
+// #####################################
+
 // You should generally use === and !== (no type conversion) over == and != (type conversion)
 
 // Basic while loop (prints a triangle in # form)
@@ -134,9 +139,11 @@ true || alert("Not me.");
 
 
 
-/*
-Chapter 3: Functions
+// #####################################
+// Chapter 3
+// #####################################
 
+/*
 Pure function = always return the same value when given the same argument, and have no side effects.
 
 When control hits “return”, it immediately jumps out of the function and returns that value.
@@ -226,9 +233,8 @@ function parentFunction() {
 var child = parentFunction();
 child();
 /* The above call of child will return “local”.  Basically, child calls parentFunction(), and parentFunction() returns the result of calling childFunction, which prints variable, with the local definition of variable = “local”.
-None of this seems weird/novel to me, but apparently it is. */
+None of this seems weird/novel to me, but apparently it is.
 
-/*
 Basically, think of functions as not just a way to package up a computation; think of them as an environment.  Top level functions exist in the top level environment, but functions defined inside functions retain access to the environment that existed at the point it was defined.  For example, if you want to create a bunch of functions that will each add a different amount to a number:
 */
 function makeMultiplicationFunction(amount) {
@@ -244,11 +250,11 @@ console.log(multiplyFifty(50) + multiplyThree(3));
 How to think of this:
 The multiply function is created when makeMultiplyFunction is called.  It captures an environment in which amount has a specific value, then packages this environment, together with the computation return number + amount, into a value, which is then returned by makeMultiplyFunction.
 When the two returned functions are called (multiplyFifty and multiplyThree), a new environment, in which the variable number has a value (either 50 or 3), is created, as a sub-environment of the captured environment (in which amount has a value).
-A key thing to note: when I define multiplyFifty, note that it is not returning a value, it is itself returning a function.  makeMultiplicationFunction(50) doesn’t return a value, it returns a function!
+A key thing to note: when I define multiplyFifty, note that it is not returning a value, it is itself returning a function (the multiply function, with amount = 50, and number yet to be set).  makeMultiplicationFunction(50) doesn’t return a value, it returns a function!  Then calling multiplyFifty with an argument returns a number, but it saves the bit about amount being 50.
 
 *****
 
-These same scoping rules allow functions to call themselves!  Functions that call themselves re called recursive functions.  Example:
+These same scoping rules allow functions to call themselves!  Functions that call themselves are called recursive functions.  Example:
 */
 function power(base, exponent) {
 	if (exponent === 0)
@@ -277,11 +283,12 @@ function egg() {
 }
 console.log(chicken() + " came first.");
 
-****
+/*
 Recursion CAN be a much better way to solve problems than loops, depending on the problem.  Problems that are easier to solve with recursion often require exploring or processing several possible “branches,” each of which might branch out into more branches.
 
 Example of using recursion to solve a branching problem:
 Start with the number 1, and try to find how you can get to number X by any sequence of adding 5 or multiplying by 3.  Return this sequence, or if you can’t get there, return null.
+*/
 
 // Recursive solution:
 function findSequence(goal) {
@@ -291,31 +298,38 @@ function findSequence(goal) {
 		else if (start > goal)
 			return null;
 		else
-			return find(start + 5, “(“ + history + “ + 5)”) || 
- 				find (start * 3, “(“ + history + “ * 3)”);
+			return find(start + 5, "(" + history + " + 5)") ||
+				find(start * 3, "(" + history + " * 3)");
 	}
-	return find(1, “1”);
+	return find(1, "1");
 }
-
 console.log(findSequence(24));
 // Returns the following string: (((1 * 3) + 5) *3)
 
+/*
 How would findSequence(3) work?
+
 Step 1: BIG ASSUMPTION - I assume find() can’t be called since we don’t have “start” and “history”, so control moves on?  If so, we move on to:
 return find(1, “1”);
+
 But what is find(1, “1”)?
+
 if section:	1 != 3, move on
 else if:		1 !> 3, move on
 else:		Start with the first branch, if that fails try the second.
 		First branch calls find(6, “(1 + 5)”)
+
 This branch will ultimately return null, which means “try the other branch”
+
 This branch works right away!
 It calls find(3, “(1 * 3)”)
+
 Start == goal, so we return history, therefore find(1, “1”) returns “(1 * 3)”
+
 BIG ASSUMPTIONS here are that control just moves on if we try to call a function without defining the parameters, and that returning null means the branch fails.
+*/
 
-
-Could have also written this function as:
+// Could have also written this function as:
 function findSequence(goal) {
 	function find(start, history) {
 		if (start == goal)
@@ -323,62 +337,72 @@ function findSequence(goal) {
 		else if (start > goal)
 			return null;
 		else {
-			var found = find(start + 5, “(“ + history + “ + 5)”);
-			if (found == null)
-				found = find(start * 3, “(“ + history + “ * 3)”);
+			var found = find(start + 5, "(" + history + " + 5)");
+			if (found === null)
+				found = find(start * 3, "(" + history + " * 3)");
 			return found;
 		}
 	}
-	return find(1, “1”);
+	return find(1, "1");
 }
 
+/*
 The red part is just a more wordy way of saying the same thing.
 
 Program execution order:
 Computer looks up and stores all functions BEFORE it starts running the rest of the program.  Same thing happens with functions defined inside other functions - when the outer function is called, the first thing that happens is that all the inner functions are added to the new environment.
+*/
 
-Another way to define functions:
+// Another way to define functions:
 var add = function(a, b) {
 	return a+b;
 };
 console.log(add(5, 5));
 
+/*
 Note the semi-colon after the definition of add!  That’s because the statement has the same structure as something like var add = 22;
 
 You generally make “anonymous” functions like this when you need to refer to them only once, and make named functions otherwise.
+*/
 
 // Another example of anonymous functions:
 function greaterThan(x) {
-  return function(y) {
-    return y > x;
-  };
+	return function(y) {
+		return y > x;
+	};
 }
-
 var greaterThanFour = greaterThan(4);
 console.log(greaterThanFour(6));
 
-What happens here?  If we were to simply:
+
+// What happens here?  If we were to simply:
 console.log(greaterThan(4));
-It would return:
+// It would return:
 function(y) {
 	return y > x;
 }
+/*
 But we’ve set x to 4.  However, by assigning it to a variable (greaterThanFour), this variable becomes what’s returned by greaterThan(4), including the environment (with x = 4).  So it becomes a function to test if the single input is greater than 4, and since we’re returning y > x, that will be a boolean, either true or false.
 
 Note that you can pass a function the wrong number of arguments in JS, and it doesn’t complain.  This is both good and bad.
+*/
 
 
+// #####################################
+// Chapter 4
+// Data structures: Objects and Arrays
+// #####################################
 
-Chapter 4:
-Data structures: Objects and Arrays
-
+/*
 Properties:
 There are two ways to access properties:
+*/
 
 var text = "purple haze";
 console.log(text["length"]);
 console.log(text.length);
 
+/*
 Both work, the second is shorthand for the first, and only works when the property would be a valid variable name (no spaces, no symbols, doesn’t start with a digit character).
 
 null and undefined do not have any properties.
@@ -386,17 +410,18 @@ null and undefined do not have any properties.
 Properties are simply values associated with other values.  The properties of a string value cannot be changed, but the properties of objects can.  With objects you’re free to modify, remove and add properties.
 
 An object can be written and manipulated like this:
+*/
 
 var cat = {colour: “grey”, name: “Spot”, size: 46};
 cat.size = 47;
 console.log(cat.size);	// 47
 delete cat.size;
 console.log(cat.size);	// undefined
-console.log(cat);		// {colour: “grey”, name: “Spot”};
+console.log(cat);		// {colour: "grey", name: "Spot"};
 cat.eyeColour = "green";
-console.log(cat);		// {colour: “grey”, name: “Spot”, eyeColour: “green”};
-cat[“eye colour”] = “blue”;
-console.log(cat);		// {colour: “grey”, name: “Spot”, eyeColour: “green”, “eye colour”: “blue”};
+console.log(cat);		// {colour: "grey", name: "Spot", eyeColour: "green"};
+cat["eye colour"] = "blue";
+console.log(cat);		// {colour: "grey", name: "Spot", eyeColour: "green", "eye colour": "blue"};
 
 You can also use variables to name properties:
 
