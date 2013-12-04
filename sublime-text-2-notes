@@ -1,12 +1,12 @@
 Left off:
-Start of Essential Plugins
+Start of "Joining Lines"
 https://tutsplus.com/course/improve-workflow-in-sublime-text-2/
 
 # ##################
 # Unique hotkeys
 # ##################
 
-# Open the console
+# Toggle console
 	CTRL-`
 
 # Toggle comments
@@ -26,7 +26,7 @@ https://tutsplus.com/course/improve-workflow-in-sublime-text-2/
 		CMD-SHIFT-l
 
 # Incremental find
-	CMD-i
+	CMD-I
 	(then enter)
 	(arrows for previous finds)
 
@@ -90,23 +90,130 @@ https://tutsplus.com/course/improve-workflow-in-sublime-text-2/
 # Snippet packets
 	CMD-SHIFT-P, then Install Package
 
-
 # SublimeREPL
 	Starting the REPL
-		CMD-SHIFT-P   # Then choose REPL appropriate to file type
-		CMD-OPT-SHIFT-2  # 2 row layout (Menu -> View -> Rows: 2)   # CMD-OPT-1
-		CTRL-SHIFT-2		# move file to group 2 (Menu -> View -> Move File to Group -> Group 2)
+		CMD-SHIFT-P				# Then choose REPL appropriate to file type
+		Then change the layout
+			CMD-OPT-[number]					# That many columns
+			CMD-OPT-SHIFT-[number]		# That many rows
+		CTRL-SHIFT-2			# move file to group 2 (Menu -> View -> Move File to Group -> Group 2)
 	Evaluate in REPL:
-		CTRL-, (relase) s   Selection
-		CTRL-, (relase) f   File
-		CTRL-, (relase) l   Lines
-		CTRL-, (relase) b   Block
+		CTRL-, (relase) s		Selection
+		CTRL-, (relase) f		File
+		CTRL-, (relase) l		Lines
+		CTRL-, (relase) b		Block
 	Transfer in REPL (just copy, don't eval)
-		CTRL-shift-, (relase)   s   Selection
-		CTRL-shift-, (relase)   f   File
-		CTRL-shift-, (relase)   l   Lines
-		CTRL-shift-, (relase)   b   Block
+		As above, plus shift
+			i.e. CTRL-shift-, (relase) s		Selection
 
+# Prefixr
+	CTRL-CMD-X
+	Makes your standard CSS cross-browser
+	Either have your cursor in the line, select the entire {}, or select the entire CSS doc
+
+# Fetch
+	CMD-SHIFT-P
+	"Fetch: Manage Remote files"
+	You'll see it's separated into two JS objects
+		This is how you can set up what to fetch
+		In here you can add whatever files you want to fetch regularly
+	Then in the future you make a jquery.js empty file, CMD-SHIFT-P, fetch single file, then save and you've got your file!
+	Used to pull in single files or zip files into your project
+		i.e. pull in the latest version of jQuery
+
+# Fast file creation (AdvancedNewFile)
+	CMD-OPT-N
+		Creates new file
+	Note, you can create directories too , not just files!
+	To check out the README
+		Sublime Text 2 > Preferences > Browse Packages ...
+		Then open the README (drag into Sublime)
+
+# Sidebar Enhancements plugin
+	Sublime Text 2 > Preferences > Browse Packages
+		Check out README, OSX Default Keymappings
+	Useful:
+		CMD-SHIFT-P (command pallette)
+			Open in browser
+			OR the server option
+# Sublime projects
+	CMD-SHIFT-P > Project > Save As
+	Then
+	CMD-SHIFT-P > Project > Edit Project
+	Then
+	Can edit the project, i.e. adding a localhost:
+		Add this text:
+			"url": "http://localhost:8888/"
+	Really useful in conjunction with Sidebar Enhancements
+
+# SublimeLinter
+	When you save a file, it will show you all the syntax errors
+
+# Gist
+	Basically GitHub for small bits of code, like snippets
+	Sublime Text 2 > Preferences > Browse Packages
+		Open Gist.sublime-settings
+		Add login info
+	Create new Gist:
+		CMD-SHIFT-P > Gist > Create Public Gist
+			In the description, you should add the language it refers to
+				For exmaple:
+					HTML: Starting Template
+					JavaScript: on click
+			Don't really need a filename
+	Then you can easily open and edit files using the command pallette, and the naming convention allows you to easily filter by language
+	Forking Gists:
+		Just use the Gist website, fork, and rename the Description to fit with your naming convention
+		Then you can easily use the Gist!
+
+# DocBlockr
+	/** > Enter
+	Will automatically generate really appropriate blocks of code
+	Tab through for options
+
+# Task Management
+	See here if I want to use:
+		https://tutsplus.com/lesson/pretty-task-management/
+
+# LiveReload
+	See here if I want to use:
+		https://tutsplus.com/lesson/livereload/
+
+# HTTP Requester
+	For testing
+	Use within Sublime by typing the URL, selecting it, then hitting CDM-CTRL-R
+
+# Changing cases
+	CMD-SHIFT-P > Case
+
+# Regular Expressions
+	CMD-I > Search term (should be a reg ex)
+	CMD-OPT-R (turns on regular expression)
+	OPT-ENTER (selects all of the occurences)
+		For example:
+			<h2>.+</h2>
+				Will select everything enclosed in h2 tags, encluding the h2, and will give you multiple cursors
+			(?<=<h2>).+(?=</h2>)
+				As above, but will not select the <h2>s, only the text between
+			. represents any character
+			+ represents one or more of the next characters
+		Really, anywhere you can do search and replace you can use regular expressions
+
+# Vintage Mode
+	To enable:
+		Just remove "Vintage" from ignored packages in Preferences
+			So we want:
+				"ignored_packages":[]
+	See here for more:
+		https://tutsplus.com/lesson/vintage-mode/
+
+# Quick references
+	Navigate to file in ST2
+	CMD-SHIFT-P > Copy
+	Then chose from:
+		"Copy Path from Project"
+		"Copy as a/style/script/etc."
+	Then insert wherever necessary in HTML
 
 # ##################
 # Standard hotkeys
