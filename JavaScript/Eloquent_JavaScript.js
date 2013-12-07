@@ -29,7 +29,7 @@ for (var n = 0; n < 10; n++) {
 Standard way to name functions:
 capitalizeFirstLettersExceptFirstWord
 
-JavaScript keywords (reserved, can't be var names):
+JavaScript keywords (reserved, can't be variable names):
 abstract boolean break byte case catch char class const continue
 debugger default delete do double else enum export extends false
 final finally float for function goto if implements import in
@@ -577,6 +577,38 @@ function catNames(paragraph) {
 var myString = "born 05/04/2006 (mother Lady Penelope): Red Lion, Doctor Hobbles the 3rd, Little Iroquois";
 console.log(catNames(myString));
 // ["Red Lion", "Doctor Hobbles the 3rd", "Little Iroquois"]
+
+
+// Putting everything together
+var mailArchive = retrieveMails();
+// Just imagine this works
+// It would bring in output like ["Contents of email 1", "email 2 stuff", "email 3 stuff"]
+var livingCats = {"Spot": true};
+// This is the single cat she had at the start
+function startsWith(a,b) {
+	return a.slice(0, b.length) == b;
+}
+// Returns true if a starts with b, else false
+function catNames(paragraph) {
+	var names = paragraph.slice(paragraph.indexOf(":") + 2);	// I guess slice automatically goes to end if you only specify a starting point?
+	return names.split(", ");	// Split string into an array by ", "
+}
+// Makes an array of cat names, which come after ":", and are separated by ", "
+
+for (var mail = 0; mail < mailArchive.length; mail++) {
+	// We're looping though the mails
+	var paragraphs = mailArchive[mail].split("\n");
+	// Splits mail into an array of paragraphs
+	for (var paragraph = 0; paragraph < paragraphs.length; paragraph++) {
+		if(startsWith(paragraphs[paragraph], "born")) {
+			var names = catNames(paragraphs[paragraph]);
+			for (var name = 0; name < names.length; name++)
+				livingCats[names[name]] = true;
+		}
+	}
+}
+
+
 
 
 // Left off at:
