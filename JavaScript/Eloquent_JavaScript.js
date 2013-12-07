@@ -579,41 +579,120 @@ console.log(catNames(myString));
 // ["Red Lion", "Doctor Hobbles the 3rd", "Little Iroquois"]
 
 
-// Putting everything together
-var mailArchive = retrieveMails();
-// Just imagine this works
-// It would bring in output like ["Contents of email 1", "email 2 stuff", "email 3 stuff"]
-var livingCats = {"Spot": true};
-// This is the single cat she had at the start
-function startsWith(a,b) {
-	return a.slice(0, b.length) == b;
-}
-// Returns true if a starts with b, else false
-function catNames(paragraph) {
-	var names = paragraph.slice(paragraph.indexOf(":") + 2);	// I guess slice automatically goes to end if you only specify a starting point?
-	return names.split(", ");	// Split string into an array by ", "
-}
-// Makes an array of cat names, which come after ":", and are separated by ", "
 
-for (var mail = 0; mail < mailArchive.length; mail++) {
-	// We're looping though the mails
-	var paragraphs = mailArchive[mail].split("\n");
-	// Splits mail into an array of paragraphs
-	for (var paragraph = 0; paragraph < paragraphs.length; paragraph++) {
-		if(startsWith(paragraphs[paragraph], "born")) {
+// ############################
+// Putting everything together, the "bad" way
+// ############################
+// Ideally we'd have a function like this to retreive mail:
+// var mailArchive = retrieveMails();
+// But for now we have:
+var mail1 = "Dear nephew,\nContents of mail1\nMuch love, Aunt Emily\ndied 27/04/2006: Spot\nborn 05/04/2006 (mother Spot): Red Lion, Doctor Hobbles the 3rd, Little Iroquois";
+var mail2 = "Dear nephew,\nContents of mail2\nMuch love, Aunt Emily\ndied 27/04/2006: Doctor Hobbles the 3rd\nborn 05/04/2006 (mother Red Lion): Whiskers, Whiskers the 2nd";
+var mail3 = "Dear nephew,\nContents of mail3\nMuch love, Aunt Emily\ndied 27/04/2006: Little Iroquois\nborn 05/04/2006 (mother Red Lion): Whiskers the 3rd, Whiskers the 4th";
+var mail4 = "Dear nephew,\nContents of mail4\nMuch love, Aunt Emily\ndied 27/04/2006: Whiskers, Whiskers the 2nd\nborn 05/04/2006 (mother Red Lion): Whiskers the 5th, Whiskers the 6th";
+var mail5 = "Dear nephew,\nContents of mail5\nMuch love, Aunt Emily\ndied 27/04/2006: Whiskers the 5th\nborn 05/04/2006 (mother Red Lion): Whiskers the 7th, Whiskers the 8th";
+var mailArchive = [mail1, mail2, mail3, mail4, mail5];
+// Before the mail there was only Spot
+var livingCats = {"Spot": true};
+// Functions we need:
+function startsWith(a,b) {
+	return a.slice(0, b.length) == b;																				// Returns true if a starts with b
+}
+function catNames(paragraph) {
+	var names = paragraph.slice(paragraph.indexOf(":") + 2);								// Takes in a paragraph, slices from two chars after ":" to the end
+	return names.split(", ");																								// Splits paragraph by ", ", returning an array
+}
+
+// Now the heavy lifting
+for (var mail = 0; mail < mailArchive.length; mail++) {										// We're looping though the mails
+	var paragraphs = mailArchive[mail].split("\n");													// Splits mail into an array of paragraphs
+	for (var paragraph = 0; paragraph < paragraphs.length; paragraph++) {		// Loop through each paragraph in the paragraphs array
+		if(startsWith(paragraphs[paragraph], "born")) {												// if paragraph stars with "born"
+			var names = catNames(paragraphs[paragraph]);												// Pull out array of cat names
+			for (var this_name = 0; this_name < names.length; this_name++)						// Loop through array of cat names
+				livingCats[names[this_name]] = true;															// Add each name to the livingCats dictionary
+		}
+		if(startsWith(paragraphs[paragraph], "died")) {												// As above, but for cats that died
 			var names = catNames(paragraphs[paragraph]);
-			for (var name = 0; name < names.length; name++)
-				livingCats[names[name]] = true;
+			for (var this_name = 0; this_name < names.length; this_name++)
+				delete livingCats[names[this_name]];															// Only difference - delete instead of add
 		}
 	}
 }
+
+// Print all living Cats
+for (var cat in livingCats)
+	console.log(cat);
+
+// Is a specific cat alive?
+function isAlive(cat) {
+	if (cat in livingCats)
+		console.log(cat+" lives!");
+	else
+		console.log("Good old "+cat+", may he/she rest in peace.");
+}
+isAlive("Spot");
+isAlive("Red Lion");
+
+
+
+// ############################
+// Putting everything together, the "good" way
+// ############################
+function startsWith(a,b) {
+	return a.slice(0, b.length) == b;
+}
+function addToSet(set, values) {
+	for (var i = 0; i < values.length; i++)
+		set[values[i]] = true;
+}
+function removeFromSet(set, values) {
+	for (var i = 0; i < values.length; i++)
+		delete set[values[i]];
+}
+
+function findLivingCats() {
+	// Ideally this:
+	// var mailArchive = retreiveMails();
+	// Instead this:
+	var mailArchive = ["Dear nephew,\nContents of mail1\nMuch love, Aunt Emily\ndied 27/04/2006: Spot\nborn 05/04/2006 (mother Spot): Red Lion, Doctor Hobbles the 3rd, Little Iroquois", "Dear nephew,\nContents of mail2\nMuch love, Aunt Emily\ndied 27/04/2006: Doctor Hobbles the 3rd\nborn 05/04/2006 (mother Red Lion): Whiskers, Whiskers the 2nd", "Dear nephew,\nContents of mail3\nMuch love, Aunt Emily\ndied 27/04/2006: Little Iroquois\nborn 05/04/2006 (mother Red Lion): Whiskers the 3rd, Whiskers the 4th", "Dear nephew,\nContents of mail4\nMuch love, Aunt Emily\ndied 27/04/2006: Whiskers, Whiskers the 2nd\nborn 05/04/2006 (mother Red Lion): Whiskers the 5th, Whiskers the 6th", "Dear nephew,\nContents of mail5\nMuch love, Aunt Emily\ndied 27/04/2006: Whiskers the 5th\nborn 05/04/2006 (mother Red Lion): Whiskers the 7th, Whiskers the 8th"];
+	var livingCats = {"Spot": true};
+
+	function catNames(paragraph) {
+		var names = paragraph.slice(paragraph.indexOf(":") + 2);
+		return names.split(", ");
+	}
+
+	function handleParagraph(paragraph) {
+		if (startsWith(paragraph, "born"))
+			addToSet(livingCats, catNames(paragraph));
+		else if (startsWith(paragraph, "died"))
+			removeFromSet(livingCats, catNames(paragraph));
+	}
+
+	for (var mail = 0; mail < mailArchive.length; mail++) {
+		var paragraphs = mailArchive[mail].split("\n");
+		for (var i = 0; i < paragraphs.length; i++)
+			handleParagraph(paragraphs[i]);
+	}
+	return livingCats;
+}
+
+function setLength(object) {
+	var how_many = 0;
+	for (var i in object)
+		how_many++;
+	return how_many;
+}
+console.log("There are " + setLength(findLivingCats()) + " cats.");
+
 
 
 
 
 // Left off at:
 
-// All that remains now is putting the pieces together. One way to do that looks like this:
+// The program still ignores a lot of the information that is contained in the e-mails.
 
 // http://eloquentjavascript.net/chapter4.html
 
