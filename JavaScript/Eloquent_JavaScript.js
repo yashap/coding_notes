@@ -25,19 +25,17 @@ for (var n = 0; n < 10; n++) {
 	console.log(line);
 }
 
-/*
-Standard way to name functions:
-capitalizeFirstLettersExceptFirstWord
+// Standard way to name functions:
+// capitalizeFirstLettersExceptFirstWord
 
-JavaScript keywords (reserved, can't be variable names):
-abstract boolean break byte case catch char class const continue
-debugger default delete do double else enum export extends false
-final finally float for function goto if implements import in
-instanceof int interface long native new null package private
-protected public return short static super switch synchronized
-this throw throws transient true try typeof var void volatile
-while with
-*/
+// JavaScript keywords (reserved, can't be variable names):
+// abstract boolean break byte case catch char class const continue
+// debugger default delete do double else enum export extends false
+// final finally float for function goto if implements import in
+// instanceof int interface long native new null package private
+// protected public return short static super switch synchronized
+// this throw throws transient true try typeof var void volatile
+// while with
 
 // Note that if your code block is just one line, you don't need {}
 for (var n = 0; n < 20; n++) {
@@ -93,13 +91,11 @@ while(true) {
 }
 // Note that while(true) will just keep on looping until you hit a break
 
-/*
-Undefined vs. null
-undefined is the value of an "empty place."  For example, if you define an empty variable (like var myVar;), it will be undefined.  Same with functions that just return side effects, like alert("Some stuff!");
-null means the variable is defined, but doesn’t have a value, i.e.:
-var myString = null;
-Often there is no practical difference, and if you use == instead of ===, null == undefined
-*/
+// Undefined vs. null
+// undefined is the value of an "empty place."  For example, if you define an empty variable (like var myVar;), it will be undefined.  Same with functions that just return side effects, like alert("Some stuff!");
+// null means the variable is defined, but doesn’t have a value, i.e.:
+// var myString = null;
+// Often there is no practical difference, and if you use == instead of ===, null == undefined
 
 // Auto type conversion:
 // Adding something to a string makes a string
@@ -109,27 +105,25 @@ console.log(null + "ify");			// "nullify"
 console.log("5" * 5);						// 25
 console.log("strawberry" * 5);	// NaN
 
-/* Notes on NaN
-NaN is false when converted to boolean
-If you want to check if something is NaN, use the isNaN function
-NaN == NaN returns false! */
+// Notes on NaN
+// NaN is false when converted to boolean
+// If you want to check if something is NaN, use the isNaN function
+// NaN == NaN returns false!
 
-/* Also note that it’s generally best to avoid auto type conversions
-If you want to convert a string to a number, better to do:
-Number("5")*5;
-than
-5*5;
-*/
+// Also note that it’s generally best to avoid auto type conversions
+// If you want to convert a string to a number, better to do:
+console.log(Number("5")*5);
+//than
+console.log(5*5);
 
-/*
-Other uses of && and ||
-|| works like this: it checks if the value to its left would produce true if converted to boolean.  If that’s the case it returns this value.  If not (i.e. if the value on the left is false, null, "", NaN, 0, etc.), then it returns the value on the right.
-&& works like this: if the value on the left produces false when converted to boolean, and if it does it returns that value.  Otherwise it returns the value on the right. */
+// Other uses of && and ||
+// || works like this: it checks if the value to its left would produce true if converted to boolean.  If that’s the case it returns this value.  If not (i.e. if the value on the left is false, null, "", NaN, 0, etc.), then it returns the value on the right.
+// && works like this: if the value on the left produces false when converted to boolean, and if it does it returns that value.  Otherwise it returns the value on the right.
 
 // Example:
 var input = prompt("What is your name?", "Kilgore Trout");
 console.log("Well hello " + (input || "dear"));
-/* If you give an input, it will return that input, else input will be false when converted to boolean, so it will instead return "dear" */
+// If you give an input, it will return that input, else input will be false when converted to boolean, so it will instead return "dear"
 
 // Other examples:
 false || alert("I'm happening!");
@@ -143,11 +137,9 @@ true || alert("Not me.");
 // Chapter 3
 // #####################################
 
-/*
-Pure function = always return the same value when given the same argument, and have no side effects.
+// Pure function = always return the same value when given the same argument, and have no side effects.
 
-When control hits "return", it immediately jumps out of the function and returns that value.
-*/
+// When control hits "return", it immediately jumps out of the function and returns that value.
 
 // Example function that raises a base to a power
 function power(base, exponent) {
@@ -168,18 +160,16 @@ function absolute(x) {
 		return -x;
 }
 
-/*
-If you can write something as a pure function, do so, but if you have to use functions with side effects, that’s fine too.
+// If you can write something as a pure function, do so, but if you have to use functions with side effects, that’s fine too.
 
-Functions with side effects don’t have to contain a return statement, for example:
-*/
+// Functions with side effects don’t have to contain a return statement, for example:
 function yell(message) {
 	alert(message + "!!");
 }
 // Note that these functions will automatically return undefined.
 
 
-/* Variables inside functions */
+// Variables inside functions 
 
 var variable = "top-level";
 
@@ -195,14 +185,14 @@ function test() {
 
 test();
 
-/* From the above code, when test() is called, it returns:
-inside test, the variable holds 'local'.
-inside printVariable, the variable holds 'top-level'.
-Because when test() is called, it first looks to see if variable is defined within test, which it is, so variable = "local".  But when printVariable() is called, it doesn’t "see" the variables inside test(), so for printVariable() variable = "top-level"
+// From the above code, when test() is called, it returns:
+// inside test, the variable holds 'local'.
+// inside printVariable, the variable holds 'top-level'.
+// Because when test() is called, it first looks to see if variable is defined within test, which it is, so variable = "local".  But when printVariable() is called, it doesn’t "see" the variables inside test(), so for printVariable() variable = "top-level"
 
-KEY POINT: when a function is CALLED inside another function, it’s local environment is based on the top level environment, not the function it’s called in.
+// KEY POINT: when a function is CALLED inside another function, it’s local environment is based on the top level environment, not the function it’s called in.
 
-BUT if the function is DEFINED inside another function (instead of just CALLED in another function), it’s local environment is based on the environment of the function it’s defined inside! */
+// BUT if the function is DEFINED inside another function (instead of just CALLED in another function), it’s local environment is based on the environment of the function it’s defined inside! 
 var variable = "top-level";
 function parentFunction() {
 	var variable = "local";
@@ -212,15 +202,12 @@ function parentFunction() {
 	childFunction();
 }
 parentFunction();
-/* Calling parentFunction() returns "local", not "top-level" */
+// Calling parentFunction() returns "local", not "top-level" 
 
-/*
-All variables defined "above" a function’s definition (within the program) are visible.  This includes both those at the top-level of the program, and those in function bodies that enclose it.  This approach to variable visibility is called "lexical scoping."  Note that only functions create new scope (special places where variables are defined outside of the top-level environment?), simply surrounding code in curly brackets does not.
-*/
+// All variables defined "above" a function’s definition (within the program) are visible.  This includes both those at the top-level of the program, and those in function bodies that enclose it.  This approach to variable visibility is called "lexical scoping."  Note that only functions create new scope (special places where variables are defined outside of the top-level environment?), simply surrounding code in curly brackets does not.
 
-/*
-Closure:
-A closure is a function AND it’s referencing environment.  Closures (unlike plain function pointers) allow a function to access those non-local variables even when invoked outside its immediate lexical scope.  For example: */
+// Closure:
+// A closure is a function AND it’s referencing environment.  Closures (unlike plain function pointers) allow a function to access those non-local variables even when invoked outside its immediate lexical scope.  For example:
 var variable = "top-level";
 function parentFunction() {
 	var variable = "local";
@@ -232,11 +219,10 @@ function parentFunction() {
 
 var child = parentFunction();
 child();
-/* The above call of child will return "local".  Basically, child calls parentFunction(), and parentFunction() returns the result of calling childFunction, which prints variable, with the local definition of variable = "local".
-None of this seems weird/novel to me, but apparently it is.
+// The above call of child will return "local".  Basically, child calls parentFunction(), and parentFunction() returns the result of calling childFunction, which prints variable, with the local definition of variable = "local".
+// None of this seems weird/novel to me, but apparently it is.
 
-Basically, think of functions as not just a way to package up a computation; think of them as an environment.  Top level functions exist in the top level environment, but functions defined inside functions retain access to the environment that existed at the point it was defined.  For example, if you want to create a bunch of functions that will each add a different amount to a number:
-*/
+// Basically, think of functions as not just a way to package up a computation; think of them as an environment.  Top level functions exist in the top level environment, but functions defined inside functions retain access to the environment that existed at the point it was defined.  For example, if you want to create a bunch of functions that will each add a different amount to a number:
 function makeMultiplicationFunction(amount) {
 	function multiply(number) {
 		return number * amount;
@@ -246,16 +232,13 @@ function makeMultiplicationFunction(amount) {
 var multiplyFifty = makeMultiplicationFunction(50);
 var multiplyThree = makeMultiplicationFunction(3);
 console.log(multiplyFifty(50) + multiplyThree(3));
-/*
-How to think of this:
-The multiply function is created when makeMultiplyFunction is called.  It captures an environment in which amount has a specific value, then packages this environment, together with the computation return number + amount, into a value, which is then returned by makeMultiplyFunction.
-When the two returned functions are called (multiplyFifty and multiplyThree), a new environment, in which the variable number has a value (either 50 or 3), is created, as a sub-environment of the captured environment (in which amount has a value).
-A key thing to note: when I define multiplyFifty, note that it is not returning a value, it is itself returning a function (the multiply function, with amount = 50, and number yet to be set).  makeMultiplicationFunction(50) doesn’t return a value, it returns a function!  Then calling multiplyFifty with an argument returns a number, but it saves the bit about amount being 50.
 
-*****
+// How to think of this:
+// The multiply function is created when makeMultiplyFunction is called.  It captures an environment in which amount has a specific value, then packages this environment, together with the computation return number + amount, into a value, which is then returned by makeMultiplyFunction.
+// When the two returned functions are called (multiplyFifty and multiplyThree), a new environment, in which the variable number has a value (either 50 or 3), is created, as a sub-environment of the captured environment (in which amount has a value).
+// A key thing to note: when I define multiplyFifty, note that it is not returning a value, it is itself returning a function (the multiply function, with amount = 50, and number yet to be set).  makeMultiplicationFunction(50) doesn’t return a value, it returns a function!  Then calling multiplyFifty with an argument returns a number, but it saves the bit about amount being 50.
 
-These same scoping rules allow functions to call themselves!  Functions that call themselves are called recursive functions.  Example:
-*/
+// These same scoping rules allow functions to call themselves!  Functions that call themselves are called recursive functions.  Example:
 function power(base, exponent) {
 	if (exponent === 0)
 		return 1;
@@ -264,17 +247,18 @@ function power(base, exponent) {
 }
 console.log(power(10,3));
 
-/*
-What happens here?  Exponent != 1, so we go to else.  So we return 10 * power(10,2).  But what is power(10,2)?  It’s 10 * power(10,1), so overall we now have 10 * 10 * power(10,1).  Repeat twice more, and you get 10 * 10 * 10 * 1, at which point we’re no longer returning a function, we’ve just returned numbers and we’re done.
 
-HOWEVER, in JavaScript loops are much cheaper than recursion, which is slow.
+// What happens here?  Exponent != 1, so we go to else.  So we return 10 * power(10,2).  But what is power(10,2)?  It’s 10 * power(10,1), so overall we now have 10 * 10 * power(10,1).  Repeat twice more, and you get 10 * 10 * 10 * 1, at which point we’re no longer returning a function, we’ve just returned numbers and we’re done.
 
-****
-The stack:
-When a function is called, control is given to the body of the function.  When that body returns, control shifts back to the code that called the function.  While the body is running, the computer must remember the context from which the function was called, so that it knows where to continue after.  The place where this context is stored is called the stack.  It’s called the stack because functions can call functions, and if this happens over and over you get a "stack" of contexts.  When a function returns, you remove that level of the stack.  The stack takes up space in memory, and if you have a program that lets it grow too big, you’ll get an error like "out of stack space" or "too much recursion."
+// HOWEVER, in JavaScript loops are much cheaper than recursion, which is slow.
 
-Note that functions can be recursive even if they don’t call themselves.  An example would be this broken program (which will return an "out of stack space" error):
-*/
+// #################
+// The stack:
+// #################
+// When a function is called, control is given to the body of the function.  When that body returns, control shifts back to the code that called the function.  While the body is running, the computer must remember the context from which the function was called, so that it knows where to continue after.  The place where this context is stored is called the stack.  It’s called the stack because functions can call functions, and if this happens over and over you get a "stack" of contexts.  When a function returns, you remove that level of the stack.  The stack takes up space in memory, and if you have a program that lets it grow too big, you’ll get an error like "out of stack space" or "too much recursion."
+
+// Note that functions can be recursive even if they don’t call themselves.  An example would be this broken program (which will return an "out of stack space" error):
+
 function chicken() {
 	return egg();
 }
@@ -283,12 +267,10 @@ function egg() {
 }
 console.log(chicken() + " came first.");
 
-/*
-Recursion CAN be a much better way to solve problems than loops, depending on the problem.  Problems that are easier to solve with recursion often require exploring or processing several possible "branches," each of which might branch out into more branches.
+// Recursion CAN be a much better way to solve problems than loops, depending on the problem.  Problems that are easier to solve with recursion often require exploring or processing several possible "branches," each of which might branch out into more branches.
 
-Example of using recursion to solve a branching problem:
-Start with the number 1, and try to find how you can get to number X by any sequence of adding 5 or multiplying by 3.  Return this sequence, or if you can’t get there, return null.
-*/
+// Example of using recursion to solve a branching problem:
+// Start with the number 1, and try to find how you can get to number X by any sequence of adding 5 or multiplying by 3.  Return this sequence, or if you can’t get there, return null.
 
 // Recursive solution:
 function findSequence(goal) {
@@ -306,28 +288,26 @@ function findSequence(goal) {
 console.log(findSequence(24));
 // Returns the following string: (((1 * 3) + 5) *3)
 
-/*
-How would findSequence(3) work?
+// How would findSequence(3) work?
 
-Step 1: BIG ASSUMPTION - I assume find() can’t be called since we don’t have "start" and "history", so control moves on?  If so, we move on to:
-return find(1, "1");
+// Step 1: BIG ASSUMPTION - I assume find() can’t be called since we don’t have "start" and "history", so control moves on?  If so, we move on to:
+// return find(1, "1");
 
-But what is find(1, "1")?
+// But what is find(1, "1")?
 
-if section:	1 != 3, move on
-else if:		1 !> 3, move on
-else:		Start with the first branch, if that fails try the second.
-		First branch calls find(6, "(1 + 5)")
+// if section:	1 != 3, move on
+// else if:		1 !> 3, move on
+// else:		Start with the first branch, if that fails try the second.
+//   First branch calls find(6, "(1 + 5)")
 
-This branch will ultimately return null, which means "try the other branch"
+// This branch will ultimately return null, which means "try the other branch"
 
-This branch works right away!
-It calls find(3, "(1 * 3)")
+// This branch works right away!
+// It calls find(3, "(1 * 3)")
 
-Start == goal, so we return history, therefore find(1, "1") returns "(1 * 3)"
+// Start == goal, so we return history, therefore find(1, "1") returns "(1 * 3)"
 
-BIG ASSUMPTIONS here are that control just moves on if we try to call a function without defining the parameters, and that returning null means the branch fails.
-*/
+// BIG ASSUMPTIONS here are that control just moves on if we try to call a function without defining the parameters, and that returning null means the branch fails.
 
 // Could have also written this function as:
 function findSequence(goal) {
@@ -346,12 +326,10 @@ function findSequence(goal) {
 	return find(1, "1");
 }
 
-/*
-The red part is just a more wordy way of saying the same thing.
+// The red part is just a more wordy way of saying the same thing.
 
-Program execution order:
-Computer looks up and stores all functions BEFORE it starts running the rest of the program.  Same thing happens with functions defined inside other functions - when the outer function is called, the first thing that happens is that all the inner functions are added to the new environment.
-*/
+// Program execution order:
+// Computer looks up and stores all functions BEFORE it starts running the rest of the program.  Same thing happens with functions defined inside other functions - when the outer function is called, the first thing that happens is that all the inner functions are added to the new environment.
 
 // Another way to define functions:
 var add = function(a, b) {
@@ -359,11 +337,9 @@ var add = function(a, b) {
 };
 console.log(add(5, 5));
 
-/*
-Note the semi-colon after the definition of add!  That’s because the statement has the same structure as something like var add = 22;
+// Note the semi-colon after the definition of add!  That’s because the statement has the same structure as something like var add = 22;
 
-You generally make "anonymous" functions like this when you need to refer to them only once, and make named functions otherwise.
-*/
+// You generally make "anonymous" functions like this when you need to refer to them only once, and make named functions otherwise.
 
 // Another example of anonymous functions:
 function greaterThan(x) {
@@ -381,11 +357,11 @@ console.log(greaterThan(4));
 function(y) {
 	return y > x;
 }
-/*
-But we’ve set x to 4.  However, by assigning it to a variable (greaterThanFour), this variable becomes what’s returned by greaterThan(4), including the environment (with x = 4).  So it becomes a function to test if the single input is greater than 4, and since we’re returning y > x, that will be a boolean, either true or false.
 
-Note that you can pass a function the wrong number of arguments in JS, and it doesn’t complain.  This is both good and bad.
-*/
+// But we’ve set x to 4.  However, by assigning it to a variable (greaterThanFour), this variable becomes what’s returned by greaterThan(4), including the environment (with x = 4).  So it becomes a function to test if the single input is greater than 4, and since we’re returning y > x, that will be a boolean, either true or false.
+
+// Note that you can pass a function the wrong number of arguments in JS, and it doesn’t complain.  This is both good and bad.
+
 
 
 // #####################################
@@ -393,24 +369,20 @@ Note that you can pass a function the wrong number of arguments in JS, and it do
 // Data structures: Objects and Arrays
 // #####################################
 
-/*
-Properties:
-There are two ways to access properties:
-*/
+// Properties of objects:
+// There are two ways to access properties of objects:
 
 var text = "purple haze";
 console.log(text["length"]);
 console.log(text.length);
 
-/*
-Both work, the second is shorthand for the first, and only works when the property would be a valid variable name (no spaces, no symbols, doesn’t start with a digit character).
+// Both work, the second is shorthand for the first, and only works when the property would be a valid variable name (no spaces, no symbols, doesn’t start with a digit character).
 
-null and undefined do not have any properties.
+// null and undefined do not have any properties.
 
-Properties are simply values associated with other values.  The properties of a string value cannot be changed, but the properties of objects can.  With objects you’re free to modify, remove and add properties.
+// Properties are simply values associated with other values.  The properties of a string value cannot be changed, but the properties of objects can.  With objects you’re free to modify, remove and add properties.
 
-An object can be written and manipulated like this:
-*/
+// An object can be written and manipulated like this:
 
 var cat = {colour: "grey", name: "Spot", size: 46};
 cat.size = 47;
@@ -587,10 +559,10 @@ console.log(catNames(myString));
 // var mailArchive = retrieveMails();
 // But for now we have:
 var mail1 = "Dear nephew,\nContents of mail1\nMuch love, Aunt Emily\ndied 27/04/2006: Spot\nborn 05/04/2006 (mother Spot): Red Lion, Doctor Hobbles the 3rd, Little Iroquois";
-var mail2 = "Dear nephew,\nContents of mail2\nMuch love, Aunt Emily\ndied 27/04/2006: Doctor Hobbles the 3rd\nborn 05/04/2006 (mother Red Lion): Whiskers, Whiskers the 2nd";
-var mail3 = "Dear nephew,\nContents of mail3\nMuch love, Aunt Emily\ndied 27/04/2006: Little Iroquois\nborn 05/04/2006 (mother Red Lion): Whiskers the 3rd, Whiskers the 4th";
-var mail4 = "Dear nephew,\nContents of mail4\nMuch love, Aunt Emily\ndied 27/04/2006: Whiskers, Whiskers the 2nd\nborn 05/04/2006 (mother Red Lion): Whiskers the 5th, Whiskers the 6th";
-var mail5 = "Dear nephew,\nContents of mail5\nMuch love, Aunt Emily\ndied 27/04/2006: Whiskers the 5th\nborn 05/04/2006 (mother Red Lion): Whiskers the 7th, Whiskers the 8th";
+var mail2 = "Dear nephew,\nContents of mail2\nMuch love, Aunt Emily\ndied 27/05/2007: Doctor Hobbles the 3rd\nborn 05/05/2007 (mother Red Lion): Whiskers, Whiskers the 2nd";
+var mail3 = "Dear nephew,\nContents of mail3\nMuch love, Aunt Emily\ndied 27/06/2008: Little Iroquois\nborn 05/06/2008 (mother Red Lion): Whiskers the 3rd, Whiskers the 4th";
+var mail4 = "Dear nephew,\nContents of mail4\nMuch love, Aunt Emily\ndied 27/07/2009: Whiskers, Whiskers the 2nd\nborn 05/07/2009 (mother Red Lion): Whiskers the 5th, Whiskers the 6th";
+var mail5 = "Dear nephew,\nContents of mail5\nMuch love, Aunt Emily\ndied 27/08/2010: Whiskers the 5th\nborn 05/08/2010 (mother Red Lion): Whiskers the 7th, Whiskers the 8th";
 var mailArchive = [mail1, mail2, mail3, mail4, mail5];
 // Before the mail there was only Spot
 var livingCats = {"Spot": true};
@@ -687,12 +659,55 @@ function setLength(object) {
 console.log("There are " + setLength(findLivingCats()) + " cats.");
 
 
+// "new" is a way to build up object values with a function, instead of setting all the names and values manually
+// For example:
+var when = new Date(2011, 0, 18);
+console.log(when);
+// Returns Tue Jan 18 2011 00:00:00 GMT-0800 (PST)
+// Note that month starts at 0, but everything else is normal?
+// new Date() is called a "date constructor"
+// More uses:
+console.log(new Date());		// Current date/time
+console.log(new Date(2007, 2, 30, 8, 20, 30));		// Date/time
 
+// get... methods can be used to get contents of a date object
+// For example:
+var today = new Date();
+console.log(today);
+console.log("Year: " + today.getFullYear() + ", month: " + today.getMonth() + ", day: " + today.getDate());
+console.log("Hour: " + today.getHours() + ", minutes: " + today.getMinutes() + ", seconds: " + today.getSeconds());
+console.log("Day of the week: " + today.getDay());
+console.log(today.getTimezoneOffset());	// Returns different from GMT
+
+// Dates are internally represent as milliseconds since Jan 1st, 1970
+console.log(today.getTime());
+
+// Comparing dates
+var dateA = new Date(2011, 1, 2);
+var dateA2 = new Date(2011, 1, 2);
+var dateB = new Date(2013, 0, 1);
+console.log(dateA < dateB);		// true
+console.log(dateA > dateB);		// false
+console.log(dateA == dateB);	// false
+console.log(dateA == dateA2);	// false!!! Same date, BUT not the same object
+console.log(dateA.getTime() == dateA2.getTime());		// true.  This is how to compare if two dates are equal
+console.log(dateA.getTime() >= dateA2.getTime());		// also true
+
+// Write a function extractDate
+// Takes such a paragraph like this as its argument:
+// "died 27/04/2006: Spot"
+// Then extracts the date, and returns it as a date object
+function extractDate(paragraph) {
+	function numberAt(start, length) {
+		return Number(paragraph.slice(start, start + length));
+	}
+	return new Date(numberAt(11, 4), numberAt(8, 2) - 1, numberAt(5, 2));
+}
+console.log(extractDate("died 27/04/2006: Spot"));
 
 
 // Left off at:
 
-// The program still ignores a lot of the information that is contained in the e-mails.
+// Storing cats will work differently from now on.
 
 // http://eloquentjavascript.net/chapter4.html
-
