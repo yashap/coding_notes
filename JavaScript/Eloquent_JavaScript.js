@@ -806,7 +806,7 @@ function findCats() {
 		if (startsWith(paragraph, "born"))
 			addCats(cats, catNames(paragraph), extractDate(paragraph), extractMother(paragraph));
 		else if (startsWith(paragraph, "died"))
-			addCats(cats, catNames(paragraph), extractDate(paragraph));
+			deadCats(cats, catNames(paragraph), extractDate(paragraph));
 	}
 
 	for (var mail = 0; mail < mailArchive.length; mail++) {
@@ -821,9 +821,27 @@ function findCats() {
 var catData = findCats();
 console.log(catData);
 
+// Dealing with catData
+function formatDate(date) {
+	return date.getDate() + "/" + (date.getMonth() +1) + "/" + date.getFullYear();
+}
+
+function catInfo(data, name) {
+	if (!(name in data))
+		return "No cat by the name of " + name + "is known.";
+	var cat = data[name];
+	var message = name + ", born " + formatDate(cat.birth) + " from mother " + cat.mother;
+	if ("death" in cat)
+		message += ", died " + formatDate(cat.death);
+	return message + ".";
+}
+
+console.log(catInfo(catData, "Spot"));
+
 
 // Left off at:
 
-// Having that extra data allows us to finally have a clue about the cats aunt Emily talks about. A function like this could be useful:
+// Ex. 4.8
+// The formatDate function used by catInfo does not add a zero before the month and the day part when these are only one digit long. Write a new version that does this.
 
 // http://eloquentjavascript.net/chapter4.html
