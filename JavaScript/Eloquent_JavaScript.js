@@ -823,7 +823,13 @@ console.log(catData);
 
 // Dealing with catData
 function formatDate(date) {
-	return date.getDate() + "/" + (date.getMonth() +1) + "/" + date.getFullYear();
+	function pad(number) {
+		if (number < 10)
+			return "0" + number;
+		else
+			return number;
+	}
+	return pad(date.getDate()) + "/" + pad(date.getMonth() + 1) + "/" + date.getFullYear();
 }
 
 function catInfo(data, name) {
@@ -841,7 +847,7 @@ console.log(catInfo(catData, "Spot"));
 
 // Left off at:
 
-// Ex. 4.8
-// The formatDate function used by catInfo does not add a zero before the month and the day part when these are only one digit long. Write a new version that does this.
+// Ex. 4.9
+// Write a function oldestCat which, given an object containing cats as its argument, returns the name of the oldest living cat.
 
 // http://eloquentjavascript.net/chapter4.html
