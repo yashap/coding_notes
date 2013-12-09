@@ -610,6 +610,7 @@ isAlive("Red Lion");
 
 // ############################
 // Putting everything together, the "good" way
+// BUT this is a limited version, only listing alive cats, not extra data
 // ############################
 function startsWith(a,b) {
 	return a.slice(0, b.length) == b;
@@ -705,9 +706,124 @@ function extractDate(paragraph) {
 }
 console.log(extractDate("died 27/04/2006: Spot"));
 
+// How to store dates?
+// Instead of just storing a list of ***LIVING*** cats, like:
+// {"Spot": true, "Bob": true}
+// Let's store info about each cat, like:
+// {"Spot": {name: *name*, birth: *birthdate*, death: *deathdate*, mother: *name*}, "Bob": {name: *name*, birth: *birthdate*, death: *deathdate*, mother: *name*}}
+// First let's make a function to produce cat records:
+function catRecord(name, birthdate, mother) {
+	return {name: name, birth: birthdate, mother: mother};
+}
+// Note that there's no deat property, because cat's don't get them when "created"
+// Now we need a function to add cats
+// Remember the data: it will be taking in an array of cats born by a given mother on a given day, and add them to a set
+// So there will be one set (that we add stuff to), an array of names, but just one mother and birthdate associated with that array of names
+function addCats(set, names, birthdate, mother) {
+	for (var i = 0; i < names.length; i++)
+		set[names[i]] = catRecord(names[i], birthdate, mother);
+}
+// Note that this function doesn't return anything, it just adds cats to a set
+// Now we need a function similar to the above, but for dead cats
+// It will get an array of names associated with a single death date, and add them to a set
+function deadCats(set, names, deathdate) {
+	for (var i = 0; i < names.length; i++)
+		set[names[i]].death = deathdate;
+}
+// Note that we're adding a new property to a a specific name, names[i], within this set
+// Also note that all these names have the same death date, that's why this works
+
+// How to get the names of the mother cats?
+// Remember the string will be in this format:
+// "born 15/11/2003 (mother Spot): White Fang"
+// First let's make a function to extract text between strings:
+function between(paragraph, start_string, end_string) {
+	var start = paragraph.indexOf(start_string) + start_string.length;
+	var end = paragraph.indexOf(end_string, start);
+	return paragraph.slice(start, end);
+}
+// Test it
+console.log(between("bu ] boo [ bah ] gzz", "[ ", " ]"));
+// Now right a specialized wrapper around this function:
+function extractMother(paragraph) {
+	return between(paragraph, "(mother ", ")");
+}
+console.log(extractMother("born 15/11/2003 (mother Spot): White Fang"));
+
+
+// ############################
+// Final verison, looking at all data
+// ############################
+
+// The data
+function retrieveMails() {
+	var mail1 = "Dear nephew,\nContents of mail1\nMuch love, Aunt Emily\ndied 27/04/2006: Spot\nborn 05/04/2006 (mother Spot): Red Lion, Doctor Hobbles the 3rd, Little Iroquois";
+	var mail2 = "Dear nephew,\nContents of mail2\nMuch love, Aunt Emily\ndied 27/05/2007: Doctor Hobbles the 3rd\nborn 05/05/2007 (mother Red Lion): Whiskers, Whiskers the 2nd";
+	var mail3 = "Dear nephew,\nContents of mail3\nMuch love, Aunt Emily\ndied 27/06/2008: Little Iroquois\nborn 05/06/2008 (mother Red Lion): Whiskers the 3rd, Whiskers the 4th";
+	return [mail1, mail2, mail3];
+}
+
+// The general functions
+function startsWith(a,b) {
+	return a.slice(0, b.length) == b;
+}
+function catNames(paragraph) {
+	var names = paragraph.slice(paragraph.indexOf(":") + 2);
+	return names.split(", ");
+}
+function catRecord(name, birthdate, mother) {
+	return {name: name, birth: birthdate, mother: mother};
+}
+function addCats(set, names, birthdate, mother) {
+	for (var i = 0; i < names.length; i++)
+		set[names[i]] = catRecord(names[i], birthdate, mother);
+}
+function deadCats(set, names, deathdate) {
+	for (var i = 0; i < names.length; i++)
+		set[names[i]].death = deathdate;
+}
+function between(paragraph, start_string, end_string) {
+	var start = paragraph.indexOf(start_string) + start_string.length;
+	var end = paragraph.indexOf(end_string, start);
+	return paragraph.slice(start, end);
+}
+function extractMother(paragraph) {
+	return between(paragraph, "(mother ", ")");
+}
+function extractDate(paragraph) {
+	function numberAt(start, length) {
+		return Number(paragraph.slice(start, start + length));
+	}
+	return new Date(numberAt(11, 4), numberAt(8, 2) - 1, numberAt(5, 2));
+}
+
+// The final function:
+function findCats() {
+	var mailArchive = retrieveMails();
+	var cats = {"Spot": catRecord("Spot", new Date(1997, 2, 5), "unknown")};
+
+	function handleParagraph(paragraph) {
+		if (startsWith(paragraph, "born"))
+			addCats(cats, catNames(paragraph), extractDate(paragraph), extractMother(paragraph));
+		else if (startsWith(paragraph, "died"))
+			addCats(cats, catNames(paragraph), extractDate(paragraph));
+	}
+
+	for (var mail = 0; mail < mailArchive.length; mail++) {
+		var paragraphs = mailArchive[mail].split("\n");
+		for (var i = 0; i < paragraphs.length; i++)
+			handleParagraph(paragraphs[i]);
+	}
+
+	return cats;
+}
+
+var catData = findCats();
+console.log(catData);
+
 
 // Left off at:
 
-// Storing cats will work differently from now on.
+// Having that extra data allows us to finally have a clue about the cats aunt Emily talks about. A function like this could be useful:
 
 // http://eloquentjavascript.net/chapter4.html
