@@ -845,9 +845,36 @@ function catInfo(data, name) {
 console.log(catInfo(catData, "Spot"));
 
 
+// Write a function oldestCat which, given an object containing cats as its argument, returns the name of the oldest living cat.
+function oldestCat(cats) {
+	var oldest = null;
+	for (cat in cats) {
+		if (!("death" in cat) && (oldest == null || oldest.birth > cat.birth))
+			oldest = cat;
+	}
+	if (oldest == null)
+		return null;
+	else
+		return oldest.name;
+}
+
+console.log(oldestCat(catData));
+
+
+// Whenever a function is called, a special variable called arguments is created
+// It's more or less an array of the arguments
+function argumentCounter() {
+  console.log("You gave me ", arguments.length, " arguments.");
+  console.log(arguments[1]);
+}
+argumentCounter("Death", "Famine", "Pestilence");
+// Returns:
+// You gave me 3 arguments.
+// Famine
+
+
 // Left off at:
 
-// Ex. 4.9
-// Write a function oldestCat which, given an object containing cats as its argument, returns the name of the oldest living cat.
+// Some functions can take any number of arguments, like print does.
 
 // http://eloquentjavascript.net/chapter4.html
