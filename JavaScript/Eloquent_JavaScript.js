@@ -958,15 +958,49 @@ console.log(power("rabbit", 2));
 console.log(power(3, 2.5));
 console.log(power(3, 3));
 // Oops!  Our program is treating the first case as the second case, not good!
-// This is a genuine error, the function doesn't do what it should when given decimals as the exponent
+// This is a genuine error, the function doesn't do what it should when given decimals as the exponent, which is a reasonable input that it should be able to handle
 // It should give:
 console.log(Math.pow(3, 2.5));
+// I believe the actual algorithm is quite complex, won't get into it
 
+
+// Another example, recall this example from earlier:
+function between(string, start, end) {
+	var startAt = string.indexOf(start) + start.length;		// Start at end of start string
+	var endAt = string.indexOf(end, startAt);							// End at first end after startAt
+	return string.slice(startAt, endAt);
+}
+console.log(between("Your {mother}!", "{", "}"));
+// That works, but what about:
+console.log(between("Your mother!", "{", "}"));
+// That just returned "Your mother"
+// Why?
+// If something isn't found, it's given an index of -1
+// var startAt = -1+1
+// var endAt = -1
+// return string.slice(0,-1)
+// And apparently this starts at the start, and ends 1 from the end
+
+// The above function fails 'silently'
+// How can we make it fail noisily?
+// Make it have specialized behaviour when the string isn't found!
+function between(string, start, end) {
+	var startAt = string.indexOf(start);
+	if (startAt === -1)
+		return undefined;
+	startAt += start.length;
+	var endAt = string.indexOf(end, startAt);
+	if (endAt === -1)
+		return undefined;
+	return string.slice(startAt, endAt);
+}
+console.log(between("Your {mother}!", "{", "}"));
+console.log(between("Your mother!", "{", "}"));
 
 
 
 // Left off at:
 
-// If a function encounters a problem that it can not solve itself, what should it do?
+// You can see that error checking does not generally make functions prettier.
 
 // http://eloquentjavascript.net/chapter5.html
