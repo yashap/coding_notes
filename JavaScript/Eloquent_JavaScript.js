@@ -4,7 +4,15 @@
 
 
 // #####################################
-// Chapter 1
+// Chapter 1: Introduction
+// #####################################
+
+// Nothing too useful here
+
+
+
+// #####################################
+// Chapter 2: Basic JavaScript: values, variables, and control flow
 // #####################################
 
 // You should generally use === and !== (no type conversion) over == and != (type conversion)
@@ -134,7 +142,7 @@ true || alert("Not me.");
 
 
 // #####################################
-// Chapter 3
+// Chapter 3: Functions
 // #####################################
 
 // Pure function = always return the same value when given the same argument, and have no side effects.
@@ -365,8 +373,7 @@ function(y) {
 
 
 // #####################################
-// Chapter 4
-// Data structures: Objects and Arrays
+// Chapter 4: Data structures: Objects and Arrays
 // #####################################
 
 // Properties of objects:
@@ -928,11 +935,38 @@ console.log(array);
 // Chapter 5: Error Handling
 // #####################################
 
+// Two basic types of errors:
+//		1) Programmer errors
+//			i.e. you forget to pass a required argument to the function
+//				The function is fine, you just need to make the program pass it the right arguments
+//			Solution: fix the code
+//		2) Genuine errors
+//			i.e. the code you write doesn't deal with reasonable inputs
+//			Solution: tell your program what to do in these situations
+
+// Example of errors:
+function power(base, exponent) {
+	var result = 1;
+	for (var count = 0; count < exponent; count++)
+		result *= base;
+	return result;
+}
+console.log(power(3, 2));
+// Works as expected
+console.log(power("rabbit", 2));
+// Clearly not meant to be passed strings, that's a clear programmer error
+console.log(power(3, 2.5));
+console.log(power(3, 3));
+// Oops!  Our program is treating the first case as the second case, not good!
+// This is a genuine error, the function doesn't do what it should when given decimals as the exponent
+// It should give:
+console.log(Math.pow(3, 2.5));
+
 
 
 
 // Left off at:
 
-// Some functions can take any number of arguments, like print does.
+// If a function encounters a problem that it can not solve itself, what should it do?
 
-// http://eloquentjavascript.net/chapter4.html
+// http://eloquentjavascript.net/chapter5.html
