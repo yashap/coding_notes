@@ -469,13 +469,13 @@ for (var current = 0; current < mailArchive.length; current++)
 	console.log("Processing email #", current, ": ", mailArchive[current]);
 
 
-// Example 2.4:
+// Example 4.2:
 // Write a function range that takes one argument, a positive number, and returns an array containing all numbers from 0 up to and including the given number.
 function range(x) {
-  var myArray = [];
-  for (var i = 0; i <= x; i++)
-    myArray[i] = i;
-  return myArray;
+	var myArray = [];
+	for (var i = 0; i <= x; i++)
+		myArray[i] = i;
+	return myArray;
 }
 console.log(range(5));
 console.log(range(5).length);
@@ -848,11 +848,12 @@ console.log(catInfo(catData, "Spot"));
 // Write a function oldestCat which, given an object containing cats as its argument, returns the name of the oldest living cat.
 function oldestCat(cats) {
 	var oldest = null;
-	for (cat in cats) {
-		if (!("death" in cat) && (oldest == null || oldest.birth > cat.birth))
+	for (var this_cat in cats) {
+		var cat = cats[this_cat];
+		if (!("death" in cat) && (oldest === null || oldest.birth > cat.birth))
 			oldest = cat;
 	}
-	if (oldest == null)
+	if (oldest === null)
 		return null;
 	else
 		return oldest.name;
@@ -864,13 +865,70 @@ console.log(oldestCat(catData));
 // Whenever a function is called, a special variable called arguments is created
 // It's more or less an array of the arguments
 function argumentCounter() {
-  console.log("You gave me ", arguments.length, " arguments.");
-  console.log(arguments[1]);
+	console.log("You gave me ", arguments.length, " arguments.");
+	console.log(arguments[1]);
 }
 argumentCounter("Death", "Famine", "Pestilence");
 // Returns:
 // You gave me 3 arguments.
 // Famine
+
+
+// Before we wrote a function range that takes one argument, and returns an array from 0 to that number
+// Now let it take two arguments, with the second argument being optional
+function range(start, end) {
+	if (arguments.length < 2) {
+		end = start;
+		start = 0;
+	}
+	var myArray = [];
+	for (var i = start; i <= end; i++)
+		myArray.push(i);
+	return myArray;
+}
+console.log(range(5));
+console.log(range(2,5));
+// Note that when the optional argument is not given, the first argument takes the role of end
+
+// Write a sum function, that sums an array of numbers
+function sum(myArray) {
+	var total = 0;
+	for (var i = 0; i < myArray.length; i++)
+		total += myArray[i];
+	return total;
+}
+console.log(sum(range(2,6)));
+
+
+// Remember when we talked about Math.max and Math.min?
+// max and min are properties of the object Math
+// We don't want to put these directly in the global environment, they'd take up too many variable names
+// Properties in the Math object:
+// max, min, cos, sin, tan, acos, asin, atan, PI, E, pow, sqrt, round, floor, ceil
+// Note that these properties are HIDDEN, when you do something like:
+for (var this_name in Math)
+	print(name);
+// You get nothing
+// Note that most (all?) JS objects come with hidden properties, but you can't add hidden properties, you can only add visible properties
+
+
+// Some properties are "read only", you can get their value but not change it
+// Others are "active" properties, that can be changed.
+// For example:
+var array = ["Yasha", "kicks", "ass"];
+console.log(array);
+// ["Yasha", "kicks", "ass"]
+array.length = 2;
+console.log(array);
+// ["Yasha", "kicks"]
+
+
+
+// #####################################
+// Chapter 5: Error Handling
+// #####################################
+
+
 
 
 // Left off at:
