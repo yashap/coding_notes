@@ -10,7 +10,6 @@
 // Nothing too useful here
 
 
-
 // #####################################
 // Chapter 2: Basic JavaScript: values, variables, and control flow
 // #####################################
@@ -138,7 +137,6 @@ false || alert("I'm happening!");
 // The above produces an alert
 true || alert("Not me.");
 // The above does not produce an alert
-
 
 
 // #####################################
@@ -369,7 +367,6 @@ function(y) {
 // But we’ve set x to 4.  However, by assigning it to a variable (greaterThanFour), this variable becomes what’s returned by greaterThan(4), including the environment (with x = 4).  So it becomes a function to test if the single input is greater than 4, and since we’re returning y > x, that will be a boolean, either true or false.
 
 // Note that you can pass a function the wrong number of arguments in JS, and it doesn’t complain.  This is both good and bad.
-
 
 
 // #####################################
@@ -930,7 +927,6 @@ console.log(array);
 // ["Yasha", "kicks"]
 
 
-
 // #####################################
 // Chapter 5: Error Handling
 // #####################################
@@ -997,10 +993,43 @@ function between(string, start, end) {
 console.log(between("Your {mother}!", "{", "}"));
 console.log(between("Your mother!", "{", "}"));
 
+// Then we can do something like
+var input = prompt("Tell me something", "");
+var parenthesized = between(input, "(", ")");
+if (parenthesized !== undefined)
+	console.log("You parenthesized '" + parenthesized + "'.");
+else
+	console.log(input + " has no parenteses.");
+
+
+// However, is returning a special value actually a good solution?
+// What about functions that can return any kind of value, for example:
+function lastElement(array) {
+	if (array.length > 0)
+		return array[array.length - 1];
+	else
+		return undefined;
+}
+console.log(lastElement([1, 2, undefined]));
+console.log(lastElement([]));
+// How do we know if the array had a last element?  Both of the above return undefined
+
+
+// This is where exception handling comes in:
+// It is possible for code to raise (or throw) an exception, which is a value.
+// Raising an exception somewhat resembles a super-charged return from a function ― it does not just jump out of the current function, but also out of its callers, all the way up to the top-level call that started the current execution.
+// This is called unwinding the stack.
+// You may remember the stack of function calls that was mentioned in chapter 3.
+// An exception zooms down this stack, throwing away all the call contexts it encounters.
+// If they always zoomed right down to the base of the stack, exceptions would not be of much use, they would just provide a novel way to blow up your program.
+// Fortunately, it is possible to set obstacles for exceptions along the stack.
+// These 'catch' the exception as it is zooming down, and can do something with it, after which the program continues running at the point where the exception was caught.
+// An example:
+
 
 
 // Left off at:
 
-// You can see that error checking does not generally make functions prettier.
+// "Can not take the last element of an empty array."
 
 // http://eloquentjavascript.net/chapter5.html
