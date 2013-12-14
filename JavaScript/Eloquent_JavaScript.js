@@ -1026,10 +1026,141 @@ console.log(lastElement([]));
 // These 'catch' the exception as it is zooming down, and can do something with it, after which the program continues running at the point where the exception was caught.
 // An example:
 
+function lastElement(array) {
+	if (array.length > 0)
+		return array[array.length - 1];
+	else
+		throw "Can not take the last element of an empty array";
+}
+
+function lastElementPlusTen(array) {
+	return lastElement(array) + 10;
+}
+
+try {
+	console.log(lastElementPlusTen([]));
+}
+catch(error) {
+	console.log("Something went wrong: " + error);
+}
+
+// throw is the keyword used to raise an exception
+// try/catch is kind of like if/else:
+//   If the code in the try block raises an exception, the catch block is executed
+//   The variable named in the catch argument is the name given to this exception within the catch block
+
+// Note how lastElementPlusTen doesn't have to worry about exceptions
+// Error-handling code is only necessary at the point where the error occurs, and the point where it is handled.
+// The functions in between can MOSTLY forget all about it.
+
+// Example of an exception to that rule:
+
+var currentThing = null;
+
+function processThing(thing) {
+	if (currentThing !== null)
+		throw "Oh no! We are already processing a thing!";
+	currentThing = thing;
+	// Do complicated processing here
+	currentThing = null;
+}
+
+// The idea of this function is to set the top level variable currentThing to point to a specific thing while its body executes
+// This way other functions can have access to that thing too
+// When the function finishes, currentThing is set back to null
+// BUT what if the processing raises an exception?
+//   currentThing would never get reset back to null!
+// In this case we should use 'finally'
+//   finally is like catch, but it executes no matter what
+//   If a function has to clean something up once it's done, that should probably go in the finally block
+
+var currentThing = null;
+
+function processThing(thing) {
+	if (currentThing !== null)
+		throw "Oh no! We are already processing a thing!";
+	currentThing = thing;
+	try {
+		// Do complicated processing here
+	}
+	finally {
+		currentThing = null;
+	}
+}
+
+
+// Lets of errors cause the JS environment to raise exceptions
+// These exceptions are generally special error objects that raise themselves, you don't need to write the throw code
+// For example, if you try to use an undefined variable:
+try {
+	console.log(dfgdfhdfhgh);
+}
+catch (error) {
+	console.log("Caught: " + error.messaage);
+}
+// Error objects will always have a message property with a description of the problem
+
+// You can raise similar exceptions with the Error constructor
+throw new Error("Message here");
+
+// When an error makes it all the way to the bottom of the stack without being caught in your code, it gets handled by the environment
+// Different browsers do different things, like popups describing the error
+
+// You can also use exceptions as a kind of break statement in a recursive function
+// i.e. NOT for error-handling
+// Example: this checks whether an object, and the objects stored inside it, contains at least seven true values:
+
+var FoundSeven = {};
+
+function hasSevenThruths(object) {
+	var counted = 0;
+	function count(object) {
+		for (var obj_name in object) {
+			if (object[obj_name] === true) {		// 
+				counted++;
+				if (counted === 7)
+					throw FoundSeven;
+			}
+			else if (typeof object[obj_name] == "object") {
+				count(object[obj_name]);
+			}
+		}
+	}
+	try {
+		count(object);
+		return false;
+	}
+	catch (exception) {
+		if (exception !== FoundSeven)
+			throw exception;
+		return true;
+	}
+}
+
+var testObject = {
+	1: true,
+	2: true,
+	3: 2000,
+	4: "hello",
+	5: true,
+	6: true,
+	7: {
+		12: true,
+		13: true
+	},
+	8: "bob",
+	9: true,
+	10: true,
+	11: true
+};
+console.log("It is " + hasSevenThruths(testObject) + " that this object has 7 truths.");
+
+// What does thi code do?
+// The inner function count is recursively called for every object that is part of the argument
 
 
 // Left off at:
 
-// "Can not take the last element of an empty array."
+// Most programmers consider exceptions purely an error-handling mechanism.
 
 // http://eloquentjavascript.net/chapter5.html
