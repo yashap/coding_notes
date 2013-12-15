@@ -1110,30 +1110,30 @@ throw new Error("Message here");
 // i.e. NOT for error-handling
 // Example: this checks whether an object, and the objects stored inside it, contains at least seven true values:
 
-var FoundSeven = {};
+var FoundSeven = {};											// A unique value that we will use to know we've hit a sepcific exception
 
 function hasSevenThruths(object) {
 	var counted = 0;
 	function count(object) {
 		for (var obj_name in object) {
-			if (object[obj_name] === true) {		// 
-				counted++;
-				if (counted === 7)
-					throw FoundSeven;
+			if (object[obj_name] === true) {		// Loop through the properties in the object
+				counted++;												// If the property has value true, up counter
+				if (counted == 7)
+					throw FoundSeven;								// If counted hits 7, throw FoundSeven as the exception.  This will fly up the stack until it gets caught
 			}
 			else if (typeof object[obj_name] == "object") {
-				count(object[obj_name]);
+				count(object[obj_name]);					// If the property is itself an object, recursively call count on that object
 			}
 		}
 	}
-	try {
-		count(object);
-		return false;
+	try {																		// Execute block until we hit an exception, then execute catch block with the exception
+		count(object);												// This executes count()
+		return false;													// If there's no exception, we return false
 	}
-	catch (exception) {
-		if (exception !== FoundSeven)
-			throw exception;
-		return true;
+	catch (exception) {											// If there IS an exception ...
+		if (exception != FoundSeven)					// And it's not FoundSeven ...
+			throw exception;										// Throw the exception
+		return true;													// BUT if it is FoundSeven, return true
 	}
 }
 
@@ -1145,22 +1145,34 @@ var testObject = {
 	5: true,
 	6: true,
 	7: {
-		12: true,
-		13: true
+		12: false,
+		13: false
 	},
 	8: "bob",
 	9: true,
 	10: true,
-	11: true
+	11: false
 };
 console.log("It is " + hasSevenThruths(testObject) + " that this object has 7 truths.");
 
-// What does thi code do?
-// The inner function count is recursively called for every object that is part of the argument
+// Why didn't we just return 7, instead of all this throw/try/catch stuff?
+// Returning won't necessarily stop counting, because we're dealing with a recrusive function
+// It will stop THAT chain of counting, but this block will still execute on other calls to count
+// Using error exceptions just completely knocks us to the catch block the moment an exception is thrown
+
+
+// #####################################
+// Chapter 8: Functional Programming
+// #####################################
+
+// The basic idea of functional programming is to make the code more abstract, and thus easier to understand
+// The standard JS environment comes with few functions, so we either have to write them ourselves or use functions written by others (i.e. libraries)
+
+
 
 
 // Left off at:
 
-// Most programmers consider exceptions purely an error-handling mechanism.
+// One ugly detail that, if you have any good taste at all
 
-// http://eloquentjavascript.net/chapter5.html
+// http://eloquentjavascript.net/chapter6.html
