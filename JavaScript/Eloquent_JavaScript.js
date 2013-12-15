@@ -1162,7 +1162,7 @@ console.log("It is " + hasSevenThruths(testObject) + " that this object has 7 tr
 
 
 // #####################################
-// Chapter 8: Functional Programming
+// Chapter 6: Functional Programming
 // #####################################
 
 // The basic idea of functional programming is to make the code more abstract, and thus easier to understand
