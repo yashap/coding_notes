@@ -1165,10 +1165,47 @@ console.log("It is " + hasSevenThruths(testObject) + " that this object has 7 tr
 // Chapter 6: Functional Programming
 // #####################################
 
-// The basic idea of functional programming is to make the code more abstract, and thus easier to understand
+// The basic idea of functional programming is to make the code more abstract, and thus easier to understand, by cleverly using functions
 // The standard JS environment comes with few functions, so we either have to write them ourselves or use functions written by others (i.e. libraries)
 
+// Example:
+// The for loop for going over an array is pretty ugly
+// for (var i = 0; i < something.length; i++)
+// Can we abstract this?
+// If we just wanted to print the array, this would be easy:
+function printArray(array) {
+	for (var i = 0; i < array.length; i++)
+		console.log(array[i]);
+}
+// But what if we want a more complex code block than logging each row?
+// We put "what we want to do" as an argument for the function!
+function forEach(array, action) {
+	for (var i = 0; i < array.length; i++)
+		action(array[i]);
+}
+forEach(["Hello", "Goodbye", "Bob"], console.log);
+// Or more complex:
+function sum(numbers) {
+	var total = 0;
+	forEach(numbers, function (number) {
+		total += number;
+	});
+	return total;
+}
+console.log(sum([1,10,100]));
+// We've used an annonymous function as the function argument
+// function (number) {total += number;}
+// Remember that forEach is already set up to automatically pass array[i] as the argument to the function
+// So number just becomes array[i]
 
+// Or remember this code from the cat chapter?
+var paragraphs = mailArchive[mail].split("\n");		// return an array
+for (var i = 0; i < paragraphs.length; i++)				// loops through array
+	handleParagraph(paragraphs[i]);
+// Could re-write as:
+forEach(mailArchive[mail].split("\n")), handleParagraph);
+
+// Basically, more abstract = more information and less noise
 
 
 // Left off at:
