@@ -1265,6 +1265,8 @@ console.log(myNegMin(6, 20, -1, 0, -100));		// 100
 
 // Let us look at another way to write a sum function
 // A sum function is really a variant of a general algorithm usually refered to as reduce or fold
+// Reduce is a generally useful, 'fundamental algorithm'
+//   It takes in an array, and returns a single value
 function forEach(array, action) {
 	for (var i = 0; i < array.length; i++)
 		action(array[i]);
@@ -1345,6 +1347,96 @@ function countZeroes(array) {
 	return count(equals(0), array);
 }
 console.log(countZeroes([10, 0, 100, 0, 4566, 0, 235346]));
+
+// Another useful 'fundamental algorithm' is called map
+// map is kind of like forEach, in that it goes over an array, and applies a function to every element
+//   HOWEVER, instead of discarding the values returned by the function, it builds a new array from these values
+// The map function:
+function map(func, array) {
+	var result = [];
+	forEach(array, function(element) {
+		result.push(func(element));
+	});
+	return result;
+}
+console.log(map(Math.round, [0.01, 2, 9.89, Math.PI]));			// [0, 2, 10, 3]
+console.log(map(Math.round, [0.01, 2, 9.89, Math.PI])[1]);	// 2
+// So we've fed forEach an annonymous function, that simply appends the result of func() ran on each elemement of the original array to the new empty array we create (result)
+// Then we return result
+
+// ##### Total shift into new topic #####
+// Let's write a program that will convert plain text into HTML!
+//   The text will be formated following these rules:
+//     1) Paragraphs are separated by blank lines
+//     2) A paragraph that starts with '%' is a header.  The more '%', the less important the header
+//     3) Inside paragraphs, pieces of text can be emphasized by putting them between asterisks
+//     4) Footnotes are written between braces
+
+// Let's process the following text:
+var theBook = "% The Book of Programming\n\n%% The Two Aspects\n\nBelow the surface of the machine, the program moves. Without effort, it expands and contracts. In great harmony, electrons scatter and regroup. The forms on the monitor are but ripples on the water. The essence stays invisibly below.\n\nWhen the creators built the machine, they put in the processor and the memory. From these arise the two aspects of the program.\n\nThe aspect of the processor is the active substance. It is called Control. The aspect of the memory is the passive substance. It is called Data.\n\nData is made of merely bits, yet it takes complex forms. Control consists only of simple instructions, yet it performs difficult tasks. From the small and trivial, the large and complex arise.\n\nThe program source is Data. Control arises from it. The Control proceeds to create new Data. The one is born from the other, the other is useless without the one. This is the harmonious cycle of Data and Control.\n\nOf themselves, Data and Control are without structure. The programmers of old moulded their programs out of this raw substance. Over time, the amorphous Data has crystallised into data types, and the chaotic Control was restricted into control structures and functions.\n\n%% Short Sayings\n\nWhen a student asked Fu-Tzu about the nature of the cycle of Data and Control, Fu-Tzu replied 'Think of a compiler, compiling itself.'\n\nA student asked 'The programmers of old used only simple machines and no programming languages, yet they made beautiful programs. Why do we use complicated machines and programming languages?'. Fu-Tzu replied 'The builders of old used only sticks and clay, yet they made beautiful huts.'\n\nA hermit spent ten years writing a program. 'My program can compute the motion of the stars on a 286-computer running MS DOS', he proudly announced. 'Nobody owns a 286-computer or uses MS DOS anymore.', Fu-Tzu responded.\n\nFu-Tzu had written a small program that was full of global state and dubious shortcuts. Reading it, a student asked 'You warned us against these techniques, yet I find them in your program. How can this be?' Fu-Tzu said 'There is no need to fetch a water hose when the house is not on fire.'{This is not to be read as an encouragement of sloppy programming, but rather as a warning against neurotic adherence to rules of thumb.}\n\n%% Wisdom\n\nA student was complaining about digital numbers. 'When I take the root of two and then square it again, the result is already inaccurate!'. Overhearing him, Fu-Tzu laughed. 'Here is a sheet of paper. Write down the precise value of the square root of two for me.'\n\nFu-Tzu said 'When you cut against the grain of the wood, much strength is needed. When you program against the grain of a problem, much code is needed.'\n\nTzu-li and Tzu-ssu were boasting about the size of their latest programs. 'Two-hundred thousand lines', said Tzu-li, 'not counting comments!'. 'Psah', said Tzu-ssu, 'mine is almost a *million* lines already.' Fu-Tzu said 'My best program has five hundred lines.'Hearing this, Tzu-li and Tzu-ssu were enlightened.\n\nA student had been sitting motionless behind his computer for hours, frowning darkly. He was trying to write a beautiful solution to a difficult problem, but could not find the right approach. Fu-Tzu hit him on the back of his head and shouted '*Type something!*' The student started writing an ugly solution. After he had finished, he suddenly understood the beautiful solution.\n\n%% Progression\n\nA beginning programmer writes his programs like an ant builds her hill, one piece at a time, without thought for the bigger structure. His programs will be like loose sand. They may stand for a while, but growing too big they fall apart{Referring to the danger of internal inconsistency and duplicated structure in unorganised code.}.\n\nRealising this problem, the programmer will start to spend a lot of time thinking about structure. His programs will be rigidly structured, like rock sculptures. They are solid, but when they must change, violence must be done to them{Referring to the fact that structure tends to put restrictions on the evolution of a program.}.\n\nThe master programmer knows when to apply structure and when to leave things in their simple form. His programs are like clay, solid yet malleable.\n\n%% Language\n\nWhen a programming language is created, it is given syntax and semantics. The syntax describes the form of the program, the semantics describe the function. When the syntax is beautiful and the semantics are clear, the program will be like a stately tree. When the syntax is clumsy and the semantics confusing, the program will be like a bramble bush.\n\nTzu-ssu was asked to write a program in the language called Java, which takes a very primitive approach to functions. Every morning, as he sat down in front of his computer, he started complaining. All day he cursed, blaming the language for all that went wrong. Fu-Tzu listened for a while, and then reproached him, saying 'Every language has its own way. Follow its form, do not try to program as if you were using another language.'";
+// First split it into an array by "\n\n"
+var paragraphs = theBook.split("\n\n");
+// Explore the data a bit
+console.log("Found ", + paragraphs.length + " paragraphs.");
+forEach(paragraphs, console.log);
+// Now let's write a function to process indvidual paragraphs
+// It should check it the paragraph is a header, and if it is it should count the number of %s
+// It should return an object with two properties, content and type
+// First, let's remember our map and reduce algorithms
+function forEach(array, action) {
+	for (var i = 0; i < array.length; i++)
+		action(array[i]);
+}
+function reduce(combine, base, array) {
+	forEach(array, function(element) {
+		base = combine(base, element);
+	});
+	return base;
+}
+function map(func, array) {
+	var result = [];
+	forEach(array, function(element) {
+		result.push(func(element));
+	});
+	return result;
+}
+// And some implementations:
+function count(testFunction, array) {
+	return reduce(function(total, element) {
+		return total + (testFunction(element) ? 1 : 0);
+	}, 0, array);
+}
+function equals(x) {
+	return function(element) {return x === element;};
+}
+// Now let's write processParagraph
+function processParagraph(paragraph) {
+	var 
+	return count(equals("%"), paragraph)
+}
+
+}
+console.log("Hello".split(""));
+
+
+
+// So the above function takes in a test function and an array
+// It runs reduce on a function that simply adds up the number of times the test function is true
+//   This is the annonymous function:
+//     function(total, element) {
+//       return total + (testFunction(element) ? 1 : 0);
+//       }
+// So reduce is run with this, and with 0 as the base and an array that you give it as the 2nd argument to count
+
+// This is our test function.  It takes an argument, and returns whether or not (i.e. true or false) the argument is element.  So now we can do:
+console.log(count(equals(0), [10, 0, 100, 0, 4566, 0, 235346]));
+// Or we can actually re-define countZeroes
+function countZeroes(array) {
+	return count(equals(0), array);
+}
+console.log(countZeroes([10, 0, 100, 0, 4566, 0, 235346]));
+
+
 
 
 // Left off at:
