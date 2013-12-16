@@ -1207,9 +1207,148 @@ forEach(mailArchive[mail].split("\n")), handleParagraph);
 
 // Basically, more abstract = more information and less noise
 
+// Higher Order Functions:
+// Higher order functions are simply functions that operate on other functions
+// For example, makeAddFunction (which we wrote in Chapter 3) is a higher order function
+//   Instead of taking functions as an argument, it produces a new function
+// Higher order functions can be used to generalize many algorithms that regular functions can't describe
+//   Helps you think about code in a clearer way
+//   Instead of a mess of variables and loops, you can decompse algorithms into a combo of a few fundamental algorithms
+//   Basically, write WHAT you want instead of HOW you want to do it
+
+// Higher order funactions can also MODIFY the function value they're given
+function negate(func) {
+	return function(x) {
+		return !func(x);
+	};
+}
+var isNotNan = negate(isNaN);
+console.log(isNotNan(NaN));		// false
+console.log(isNaN(NaN));			// true
+console.log(typeof(isNotNan));	// function, which is key, it's a function not a value
+
+
+// What's happening here?
+// We define a function negate
+//   This function negates the result of whatever function is passed
+//   isNaN(Nan) returns true, so the inverse of this is false
+
+// But what if we don't know how many arguemnts the function within our higher order function will have?
+//   We can use the apply method, which is something all functions have
+//   apply takes two arguments
+//     We'll discuss the role of the first argument later, for now just set it to null
+//     The second argument is an array containing the arguments that the function must be applied to
+console.log(Math.min.apply(null, [6, 20, -1, 0, -100]));		// -100
+console.log(Math.min(6, 20, -1, 0, -100));									// -100, same as the above statement
+
+// So let's use apply!
+// Here's a function meant to take multiple arguments, without using apply
+function negMin(func) {
+	return function(x) {
+		return -1 * func(x);
+	};
+}
+var myNegMin = negMin(Math.min);
+console.log(myNegMin(6, 20, -1, 0, -100));		// -6
+// It just uses the first argument, and ignores the rest
+// Not what we want!  Should return 100
+
+// The right way to do it:
+function negMin(func) {
+	return function() {
+		return -1 * func.apply(null, arguments);
+	};
+}
+var myNegMin = negMin(Math.min);
+console.log(myNegMin(6, 20, -1, 0, -100));		// 100
+
+
+// Let us look at another way to write a sum function
+// A sum function is really a variant of a general algorithm usually refered to as reduce or fold
+function forEach(array, action) {
+	for (var i = 0; i < array.length; i++)
+		action(array[i]);
+}
+function reduce(combine, base, array) {
+	forEach(array, function(element) {
+		base = combine(base, element);
+	});
+	return base;
+}
+function add(a, b) {
+	return a + b;
+}
+function sum(numbers) {
+	return reduce(add, 0, numbers);
+}
+console.log(sum([1, 10, 100]));
+
+// What's happening here?
+// We've got our forEach loop that we defined before, which is simply an abstraction of a for loop over an array
+//   forEach takes two arguments, an array and an action (i.e. a function)
+//   the action is carried out over every element of the array
+// We define a function add, which simply adds two numbers
+// We define a function sum, which takes an array
+//   It calls reduce with:
+//   combine	= add				(a function we defined)
+//   base			= 0					(we'll start from 0)
+//   array		= numbers		(an array, which is the argument we passed to sum)
+// So now we have reduce(add, 0, numbers)
+//   Reduce runs an annonymous function on the array numbers
+//   This annonymous function says:
+//   base = add(base, this_element_of_the_array)
+// Finally, we return base, which is now the sum of the numbers in the array
+
+// Example problem
+// Write a funciton, countZeroes, which takes an array of numbers as its argument and returns the amount of zeroes that occur in it
+// First I will re-use forEach and reduce from above
+function forEach(array, action) {
+	for (var i = 0; i < array.length; i++)
+		action(array[i]);
+}
+function reduce(combine, base, array) {
+	forEach(array, function(element) {
+		base = combine(base, element);
+	});
+	return base;
+}
+// Then I write the function to use reduce
+function countZeroes(numbers) {
+	function counter(base, element) {					// define the function to be used as the first argument of reduce
+		return base + (element === 0 ? 1 : 0);		// Shorthand for if element is 0, then it's 1, else it's 0
+	}
+	return reduce(counter, 0, numbers);
+}
+console.log(countZeroes([10, 0, 100, 0, 4566, 0, 235346]));		// 3
+
+// Then, write the higher-order function count, which takes an array and a test function as arguments, and returns the amount of elements in the array for which the test function returned true
+// Reimplement countZeroes using this function
+function count(testFunction, array) {
+	return reduce(function(total, element) {
+		return total + (testFunction(element) ? 1 : 0);
+	}, 0, array);
+}
+// So the above function takes in a test function and an array
+// It runs reduce on a function that simply adds up the number of times the test function is true
+//   This is the annonymous function:
+//     function(total, element) {
+//       return total + (testFunction(element) ? 1 : 0);
+//       }
+// So reduce is run with this, and with 0 as the base and an array that you give it as the 2nd argument to count
+function equals(x) {
+	return function(element) {return x === element;};
+}
+// This is our test function.  It takes an argument, and returns whether or not (i.e. true or false) the argument is element.  So now we can do:
+console.log(count(equals(0), [10, 0, 100, 0, 4566, 0, 235346]));
+// Or we can actually re-define countZeroes
+function countZeroes(array) {
+	return count(equals(0), array);
+}
+console.log(countZeroes([10, 0, 100, 0, 4566, 0, 235346]));
+
 
 // Left off at:
 
-// One ugly detail that, if you have any good taste at all
+// One other generally useful 'fundamental algorithm' related to arrays is called map.
 
 // http://eloquentjavascript.net/chapter6.html
