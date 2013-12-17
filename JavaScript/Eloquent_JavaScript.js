@@ -1379,10 +1379,7 @@ var paragraphs = theBook.split("\n\n");
 // Explore the data a bit
 console.log("Found ", + paragraphs.length + " paragraphs.");
 forEach(paragraphs, console.log);
-// Now let's write a function to process indvidual paragraphs
-// It should check it the paragraph is a header, and if it is it should count the number of %s
-// It should return an object with two properties, content and type
-// First, let's remember our map and reduce algorithms
+// And let's remember some useful functions/algorithms
 function forEach(array, action) {
 	for (var i = 0; i < array.length; i++)
 		action(array[i]);
@@ -1400,7 +1397,6 @@ function map(func, array) {
 	});
 	return result;
 }
-// And some implementations:
 function count(testFunction, array) {
 	return reduce(function(total, element) {
 		return total + (testFunction(element) ? 1 : 0);
@@ -1409,38 +1405,40 @@ function count(testFunction, array) {
 function equals(x) {
 	return function(element) {return x === element;};
 }
-// Now let's write processParagraph
+
+// Now let's write a function to process indvidual paragraphs
+// It should check it the paragraph is a header, and if it is it should count the number of %s
+// It should return an object with two properties, content and type
+
+// I can do this with functions already used
 function processParagraph(paragraph) {
-	var 
-	return count(equals("%"), paragraph)
+	if (paragraph.charAt(0) === "%") {
+		var characters = paragraph.split("");
+		var myCount = count(equals("%"), characters);
+		var myContent = paragraph.slice(myCount + 1);
+		return {"content": myContent, "type": "h" + myCount};
+	}
+	else
+		return {"content": paragraph, "type": "p"};
 }
 
+// Or I can do it like this:
+function processParagraph(paragraph) {
+	var header = 0;
+	while (paragraph.charAt(0) === "%") {
+		paragraph = paragraph.slice(1);		// If the first char is %, slice it off
+		header++;	// Remember we want to record h1, h2, etc.
+	}
+	return {type: (header === 0 ? "p" : "h" + header),
+		content: (header === 0 ? paragraph : paragraph.slice(1))};
 }
-console.log("Hello".split(""));
+console.log(processParagraph("Hello"));
+console.log(processParagraph("%%%% Hello"));
 
-
-
-// So the above function takes in a test function and an array
-// It runs reduce on a function that simply adds up the number of times the test function is true
-//   This is the annonymous function:
-//     function(total, element) {
-//       return total + (testFunction(element) ? 1 : 0);
-//       }
-// So reduce is run with this, and with 0 as the base and an array that you give it as the 2nd argument to count
-
-// This is our test function.  It takes an argument, and returns whether or not (i.e. true or false) the argument is element.  So now we can do:
-console.log(count(equals(0), [10, 0, 100, 0, 4566, 0, 235346]));
-// Or we can actually re-define countZeroes
-function countZeroes(array) {
-	return count(equals(0), array);
-}
-console.log(countZeroes([10, 0, 100, 0, 4566, 0, 235346]));
-
-
-
+// Both work equally well
 
 // Left off at:
 
-// One other generally useful 'fundamental algorithm' related to arrays is called map.
+// This is where we can try out the map function we saw earlier.
 
 // http://eloquentjavascript.net/chapter6.html
