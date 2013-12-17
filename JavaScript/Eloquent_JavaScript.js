@@ -1411,16 +1411,16 @@ function equals(x) {
 // It should return an object with two properties, content and type
 
 // I can do this with functions already used
-function processParagraph(paragraph) {
-	if (paragraph.charAt(0) === "%") {
-		var characters = paragraph.split("");
-		var myCount = count(equals("%"), characters);
-		var myContent = paragraph.slice(myCount + 1);
-		return {"content": myContent, "type": "h" + myCount};
-	}
-	else
-		return {"content": paragraph, "type": "p"};
-}
+// function processParagraph(paragraph) {
+//   if (paragraph.charAt(0) === "%") {
+//     var characters = paragraph.split("");
+//     var myCount = count(equals("%"), characters);
+//     var myContent = paragraph.slice(myCount + 1);
+//     return {"content": myContent, "type": "h" + myCount};
+//   }
+//   else
+//     return {"content": paragraph, "type": "p"};
+// }
 
 // Or I can do it like this:
 function processParagraph(paragraph) {
@@ -1434,11 +1434,39 @@ function processParagraph(paragraph) {
 }
 console.log(processParagraph("Hello"));
 console.log(processParagraph("%%%% Hello"));
-
 // Both work equally well
+
+// Now let's run processParagraph on all paragraphs with the map function!
+var paragraphs = map(processParagraph, theBook.split("\n\n"));
+console.log(paragraphs);
+// This returns an array of objects, each with type and content properties
+
+// Now we must deal with empahsized parts, marked with **, and footnotes, marked with {}
+// Write a function that returns an array of paragraph fragments
+function splitParagraph(paragraph) {
+	position = 0;
+	fragments = [];		// fill this with type/content objects
+	var openingAsterix, closingAsterix, openingBrace, closingBrace;		// All undefined for now
+	while (position < paragraph.length) {
+		if (paragraph.charAt(0) === "*") {
+			openingAsterix = 0;
+			closingAsterix = paragraph.indexOf("*", 1);
+		}
+		else if (paragraph.charAt(0) === "{") {
+			openingBrace = 0;
+			closingBrace = paragraph.indexOf("}");
+		}
+		else {
+			openingAsterix = paragraph.indexOf("*");
+			openingBrace = paragraph.indexOf("{");
+		}
+	}
+}
+
+
 
 // Left off at:
 
-// This is where we can try out the map function we saw earlier.
+// Build a function splitParagraph which, given a paragraph string
 
 // http://eloquentjavascript.net/chapter6.html
