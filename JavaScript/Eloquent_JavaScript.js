@@ -1443,27 +1443,55 @@ console.log(paragraphs);
 
 // Now we must deal with empahsized parts, marked with **, and footnotes, marked with {}
 // Write a function that returns an array of paragraph fragments
+var paragraph = "'Two-hundred thousand lines', said Tzu-li, 'not counting comments!'. 'Psah', said Tzu-ssu, 'mine is almost a *million* lines already.' Fu-Tzu said 'My best program has five hundred lines.'{Hearing this, Tzu-li and Tzu-ssu were enlightened.}";
+
 function splitParagraph(paragraph) {
-	position = 0;
 	fragments = [];		// fill this with type/content objects
-	var openingAsterix, closingAsterix, openingBrace, closingBrace;		// All undefined for now
-	while (position < paragraph.length) {
-		if (paragraph.charAt(0) === "*") {
-			openingAsterix = 0;
-			closingAsterix = paragraph.indexOf("*", 1);
+	var myStart, myEnd, firstStar, firstBrace;
+	while (paragraph.length > 0) {
+		myStart = 0;
+		myEnd = 0;
+		firstStar = paragraph.indexOf("*");
+		firstBrace = paragraph.indexOf("{");
+		if (firstStar === -1 && firstBrace === -1) {
+			fragments.push({type: "p", content: paragraph});
+			break;
+		}
+		else if (paragraph.charAt(0) === "*") {
+			myStart = 1;
+			myEnd = paragraph.indexOf("*", 1);
+			fragments.push({type: "empahsized", content: paragraph.slice(myStart, myEnd)});
+			paragraph = paragraph.slice(myEnd + 1);
 		}
 		else if (paragraph.charAt(0) === "{") {
-			openingBrace = 0;
-			closingBrace = paragraph.indexOf("}");
+			myStart = 1;
+			myEnd = paragraph.indexOf("}");
+			fragments.push({type: "footnote", content: paragraph.slice(myStart, myEnd)});
+			paragraph = paragraph.slice(myEnd + 1);
 		}
-		else {
-			openingAsterix = paragraph.indexOf("*");
-			openingBrace = paragraph.indexOf("{");
+		else if (firstStar === -1) {
+			myEnd = firstBrace - 1;
+			fragments.push({type: "p", content: paragraph.slice(myStart, myEnd)});
+			paragraph = paragraph.slice(myEnd + 1);
 		}
+		else if (firstBrace === -1) {
+			myEnd = firstStar - 1;
+			fragments.push({type: "p", content: paragraph.slice(myStart, myEnd)});
+			paragraph = paragraph.slice(myEnd + 1);
+		}
+		else
+			myEnd = Math.min(firstStar, firstBrace) - 1;
+			fragments.push({type: "p", content: paragraph.slice(myStart, myEnd)});
+			paragraph = paragraph.slice(myEnd + 1);
 	}
+	return fragments;
 }
+console.log(splitParagraph(paragraph));
 
-
+var blah = "abcdefghifk";
+console.log(blah.slice(4));			// from 4 to end (inclusive)
+console.log(blah.slice(0, 4));	// from 0 to 3 (inclusive)
+console.log(blah.slice(2, 4));	// from 2 to 3 (inclusive)
 
 // Left off at:
 
