@@ -1479,6 +1479,14 @@ function splitParagraph(text) {
 
 console.log(splitParagraph(paragraph));
 
+var testing123 = splitParagraph(paragraph);
+console.log(testing123);
+console.log(testing123.length);
+testing123.content = "I'm testing stuff";
+console.log(testing123);
+console.log(testing123.length);
+console.log(testing123.content);
+
 // Note that we're using map and reduce even on tiny arrays
 // Most of the time, when a decision has to be made on a series of things, even just 2, writiing it as array operations is nicer than handling every value in a separate if statement
 
@@ -1493,9 +1501,102 @@ function processParagraph(paragraph) {
 		content: splitParagraph(paragraph)};
 }
 
+// Now let's replace footnotes with references to them
+function extractFootnotes(paragraphs) {
+	var footnotes = [];
+	var currentNote = 0;
+	function replaceFootnote(fragment) {			// Will be called on every fragment.  Remember that fragments are objects
+		if (fragment.type === "footnote") {			// if the fragment is a footnote, store the footnote in the footnotes array, and return a reference
+			currentNote++;
+			footnotes.push(fragment);							// Store the footnote in the footnotes array
+			fragment.number = currentNote;				// Add a property number to the fragment, stating which number the footnote is
+			return {type: "reference", number: currentNote};		// Return an object of type: "reference", number: ***that footnote's id***
+		}
+		else
+			return fragment;			// If the fragment should stay where it is, just return it
+	}
+	forEach(paragraphs, function(paragraph) {													// Remember that each paragraph is an array of fragments, so we're looping through arrays of fragments
+		paragraph.content = map(replaceFootnote, paragraph.content);		// forEach paragraph in an array of paragraphs, replace the content with an array from running replaceFootnote on all the elements of the paragraph.content array
+	});
+	return footnotes;
+}
+
+// Honestly, I don't really get the forEach part
+// paragraphs are arrays, right?  Why are we adding properties to arrays?
+// I'll return to that later
+
+
+
+// GENERATING HTML
+// Now that we've got the tools to extract our data from the file, we need to generate HTML!
+// People ofen do this quick and dirty with concatenation, but this sucks
+var url = "http://www.gokgs.com/";
+var text = "Play Go!";
+var linkText = "<a href=\"" + url + "\">" + text + "</a>";
+console.log(linkText);
+// This is clumsy, but also...
+// What if text includes an & of < or >, all reserved characters in HTML?  We're not dealing with them!
+
+// Better to write HTML generating functions
+// Treat your HTML document as a data structure instead of a flat piece of text.  For this we can use JS objects
+var linkObject = {name: "a",
+	content: ["Play Go!"],
+	attributes: {href: "http://www.gokgs.com"}
+};
+// The name property contains the tag name (a, img, div, etc.)
+// The attributes are an object containing all the attributes
+// The content is an array of everything containing within these tags
+//   This allows us to nest things properly!
+
+// Putting this in a re-useable function
+function tag(name, content, attributes) {
+	return {name: name, attributes: attributes, content: content};
+}
+// Note that if you give tag just one argument, name, that's fine, the content and attributes wil be undefined
+// Now we can use tag to make even better HTML constructor functions
+function link(target, text) {
+	return tag("a", [text], {href: target});
+}
+function htmlDoc(title, bodyContent) {
+	return tag("html",
+		[tag("head", [tag("title", [title])]), tag("body", bodyContent)]);
+}
+// So in that second example the outer wrapper is <html>
+// Then content of <html> is an aray of two elements:
+//   The first is is <head> with <title> inside 
+//   The second is <body> with bodyContent inside
+// We gave no default attributes for the html tag
+
+// Let's make one for images
+function image(location) {
+	return tag("img", [], {src: location});
+}
+
+// Once we've created our HTML document as a data structure, we have to turn it into a string
+// First, we have to deal with special characters (&, <, >, ")
+function escapeHTML(text) {
+	var replacements = [[/&/g, "&amp;"],
+		[/"/g, "&quot;"],
+		[/</g, "&lt;"],
+		[/>/g, "&gt;"]];
+	forEach(replacements, function (replace) {
+		text = text.replace(replace[0], replace[1]);
+	});
+	return text;
+}
+
+// "
+// The replace metod for strings creates a new string in which all of the occurences of the pattern in the 1st argument are replaces by the 2nd argument
+console.log("Hello".replace(/l/g, "r"));		// Herro
+// Don't worry about the 
+// Since one of the uses of this function is to process text inside attribute tags
+//   This text will be surrounded by double quotes, i.e. src="www.blog.com/myimg.jpg"
+//   Therefore the text inside must not have any double quotes
+
+
 
 // Left off at:
 
-// The next thing to do is to take out the footnotes, and put references to them in their place. Something like this:
+// To turn an HTML element object into a string, we can use a recursive function like this:
 
 // http://eloquentjavascript.net/chapter6.html
