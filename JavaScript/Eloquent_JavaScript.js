@@ -1588,7 +1588,7 @@ function escapeHTML(text) {
 // "
 // The replace metod for strings creates a new string in which all of the occurences of the pattern in the 1st argument are replaces by the 2nd argument
 console.log("Hello".replace(/l/g, "r"));		// Herro
-// Don't worry about the 
+// Don't worry about the pattern syntax, we'll go over this later (regex?)
 // Since one of the uses of this function is to process text inside attribute tags
 //   This text will be surrounded by double quotes, i.e. src="www.blog.com/myimg.jpg"
 //   Therefore the text inside must not have any double quotes
