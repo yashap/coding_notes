@@ -1378,7 +1378,6 @@ var theBook = "% The Book of Programming\n\n%% The Two Aspects\n\nBelow the surf
 var paragraphs = theBook.split("\n\n");
 // Explore the data a bit
 console.log("Found ", + paragraphs.length + " paragraphs.");
-forEach(paragraphs, console.log);
 // And let's remember some useful functions/algorithms
 function forEach(array, action) {
 	for (var i = 0; i < array.length; i++)
@@ -1482,7 +1481,7 @@ console.log(splitParagraph(paragraph));
 var testing123 = splitParagraph(paragraph);
 console.log(testing123);
 console.log(testing123.length);
-testing123.content = "I'm testing stuff";
+testing123.content = "Im testing stuff";
 console.log(testing123);
 console.log(testing123.length);
 console.log(testing123.content);
@@ -1593,10 +1592,62 @@ console.log("Hello".replace(/l/g, "r"));		// Herro
 //   This text will be surrounded by double quotes, i.e. src="www.blog.com/myimg.jpg"
 //   Therefore the text inside must not have any double quotes
 
+// To turn an HTML element object into a string, we can use a recursive function like this:
+function renderHTML(element) {
+	// Empty array to throw HTML pieces into, later join into a string
+	// Concatenating strings is expensive, do it as little as possible
+	var pieces = [];
+	function renderAttributes(attributes) {
+		var result = [];
+		if (attributes) {
+			for (var name in attributes)
+				// The for in loop extracts the properties from a JS object, to make HTML tag attributes out of them
+				result.push(" " + name + "=\"" + escapeHTML(attributes[name]) + "\"");
+		}
+		return result.join("");
+	}
+	function render(element) {
+		// Text node
+		if (typeof element === "string") {
+			pieces.push(escapeHTML(element));
+		}
+		// Empty tag, i.e. image tags
+		// No content, so just render the tag
+		else if (!element.content || element.content.length === 0) {
+			pieces.push("<" + element.name + renderAttributes(element.attributes) + "/>");
+		}
+		// Tag with content
+		// Basically create opening tag with attributes, recursively call self for content, then create closing tag
+		else {
+			pieces.push("<" + element.name + renderAttributes(element.attributes) + ">");
+			forEach(element.content, render);
+			pieces.push("</" + element.name + ">");
+		}
+	}
+	render(element);
+	return pieces.join("");
+}
+
+// Testing
+console.log(renderHTML(link("http://www.nedroid.com", "Drawings!")));
+// More testing
+var body = [tag("h1", ["The Test"]),
+	tag("p", ["Here is a paragraph, and an image..."]),
+	image("img/sheep.png")];
+var doc = htmlDoc("The Test", body);
+var myHTML = renderHTML(doc);
+console.log(myHTML);
+// It works!
+// Note that this really renders XML, not HTML, which is almost the same, but not 100% the same
+
+
+
+
+
 
 
 // Left off at:
 
-// To turn an HTML element object into a string, we can use a recursive function like this:
+// Write a function renderFragment, and use that to implement another function renderParagraph
 
 // http://eloquentjavascript.net/chapter6.html
