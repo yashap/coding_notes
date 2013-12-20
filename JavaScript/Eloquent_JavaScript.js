@@ -1764,12 +1764,67 @@ console.log(isDefined(Math.PIE));	// false
 // Chapter 7: Searching
 // #####################################
 
+// First step, I'm going to keep re-using these
+function forEach(array, action) {
+	for (var i = 0; i < array.length; i++)
+		action(array[i]);
+}
+function reduce(combine, base, array) {
+	forEach(array, function(element) {
+		base = combine(base, element);
+	});
+	return base;
+}
+function map(func, array) {
+	var result = [];
+	forEach(array, function(element) {
+		result.push(func(element));
+	});
+	return result;
+}
+
+// Think of ways to find the shortest distance between two points
+// For example, I'll enter data for an abbreviated version of :
+var roads = {
+	"Taaoa": [
+		{"to": "Mt Temetu", "distance": 4},
+		{"to": "Atuona", "distance": 3},
+		{"to": "Point Kiukiu", "distance": 15}
+	],
+	"Point Kiukiu": [
+		{"to": "Mt Feani", "distance": 15},
+		{"to": "Hanaiapa", "distance": 19},
+		{"to": "Taaoa", "distance": 15}
+	],
+	"Mt Temetu": [
+		{"to": "Mt Feani", "distance": 8},
+		{"to": "Taaoa", "distance": 4}
+	],
+	"Mt Feani": [
+		{"to": "Mt Temetu", "distance": 8},
+		{"to": "Airport", "distance": 5},
+		{"to": "Point Kiukiu", "distance": 15}
+	],
+	"Airport": [
+		{"to": "Mt Feani", "distance": 5},
+		{"to": "Atuona", "distance": 4},
+		{"to": "Hanaiapa", "distance": 6}
+	],
+	"Atuona": [
+		{"to": "Airport", "distance": 4},
+		{"to": "Taaoa", "distance": 3}
+	],
+	"Hanaiapa": [
+		{"to": "Airport", "distance": 6},
+		{"to": "Point Kiukiu", "distance": 19}
+	]
+};
 
 
 
 
 // Left off at:
 
-// But what if we need something like equals or makeAddFunction, in which one of the arguments already has a value? In that case we are back to writing a new function again.
+// However, this new representation does contain duplicate information
 
-// http://eloquentjavascript.net/chapter6.html
+// http://eloquentjavascript.net/chapter7.html
