@@ -1698,6 +1698,73 @@ console.log(reduce(op["+"], 0, [1, 10, 100, 1000]));	// 1111
 // To sum an array!
 
 
+// But what if we want to create something a bit more complex?
+// For example, equals(10), that we made before, which creates a function which tests if something equals 10?
+// Do we have to write a new function from scratch?  No, we can use partial application
+// You want to create a new function that already knows some of its arguments, and that treats any additional arguments it's passed as coming after these fixed arguments
+// This can be done with creative use of the apply method of a function
+
+function asArray(quasiArray, start) {
+	// Remember that functions let you access arguments, but NOT as a normal array.  This turns them into a normal array
+	var result = [];
+	for (var i = (start || 0); i < quasiArray.length; i++)
+		// We'll start at start if given that argument, else we'll start at 0
+		result.push(quasiArray[i]);
+	return result;
+}
+
+function partial(func) {
+	var fixedArgs = asArray(arguments, 1);	// We'll leave off that first weird "argument" that arguments returns
+	return function() {
+		return func.apply(null, fixedArgs.concat(asArray(arguments)));
+	};
+}
+
+// apply calls a function with a given "this" value, and with arguments provided as an array
+//   "this" refers to the object that calls the function?  Not sure really
+//   We are really just calling a function with the fixed and variable arguemnts
+// Also note that we had to store the arguments of partial() is a variable, so that the inner function can see them
+//   The inner function has its own arguments, that would "overwrite" partial's arguments
+
+// Now we can do things like writing the equals(10) function as:
+console.log(partial(op["=="], 10)(6+3));	// false
+console.log(partial(op["=="], 10)(6+4));	// true
+console.log(map(partial(op["+"], 1), [0, 2, 4, 6, 8, 10]));	// [1, 3, 5, 7, 9, 11]
+
+// So remember when we gave map it's function argument before its array argument?  We did this because it's often useful to partially apply map!  This 'lifts' the function from operating on a single value to operating on an array of values!  For example, if you have an array of values, and you want to square them all:
+function square(x) {return x * x;}
+console.log(map(partial(map, square), [[1, 10, 100, 1000], [12, 16], [0, 1]]));
+
+// One last trick
+// Remember negate()?
+function negate(func) {
+	return function() {
+		return !func.apply(null, arguments);
+	};
+}
+// It applied the boolean not operator to the result of calling a function
+// This is a special case of a general pattern:
+//   Call function A, then apply function B to it
+//   We can use this "composition" concept like this:
+function compose(func1, func2) {
+	return function() {
+		return func1(func2.apply(null, arguments));
+	};
+}
+var isUndefined = partial(op["==="], undefined);	// creates a function isUndefined(), that tests if the input === undefined
+var isDefined = compose(op["!"], isUndefined);	// tests if not undefined
+console.log(isDefined(Math.PI));	// true
+console.log(isDefined(Math.PIE));	// false
+
+// These are ways to define new functions without using the function keyword at all
+// These are special tricks for specific situations, shouldn't use them all the time
+
+
+// #####################################
+// Chapter 7: Searching
+// #####################################
+
+
 
 
 
