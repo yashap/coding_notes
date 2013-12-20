@@ -1641,6 +1641,61 @@ console.log(myHTML);
 // Note that this really renders XML, not HTML, which is almost the same, but not 100% the same
 
 
+// I kind of breezed through these next steps, but it's worth working through the logic later
+
+function footnote(number) {
+	return tag("sup", [link("#footnote" + number, String(number))]);
+}
+
+function renderParagraph(paragraph) {
+	return tag(paragraph.type, map(renderFragment, paragraph.content));
+}
+
+function renderFragment(fragment) {
+	if (fragment.type == "reference")
+		return footnote(fragment.number);
+	else if (fragment.type == "emphasised")
+		return tag("em", [fragment.content]);
+	else if (fragment.type == "normal");
+		return fragment.content;
+}
+
+// Finally, we need a rendering function for the footnotes
+// An anchor tag much be included with every footnote, so we can use the #footnote1 type references (to link to lower down the page)
+function renderFootnote(footnote) {
+	var number = "[" + footnote.number + "] ";
+	var anchor = tag("a", [number], {name: "footnote" + footnote.number});
+	return tag("p", [tag("small", [anchor, footnote.content])]);
+}
+
+// Last but not least, redner an entire file into HTML
+function renderFile(file, title) {
+	var paragraphs = map(processParagraph, file.split("\n\n"));
+	var footnotes = map(renderFootnote, extractFootnotes(paragraphs));
+	var body = map(renderParagraph, paragraphs).concat(footnotes);
+	return renderHTML(htmlDoc(title, body));
+}
+
+console.log(renderFile(theBook, "The Book of Programming"));
+
+// It works!
+// The concat method of an array can be used to concatenate another array to it, similar to + for strings
+
+
+
+// When using higher-order functions, it's often annoying that operators (+, ==, ===, etc.) aren't functions
+// You end up having to write function versions of them
+// A good way to do this is with an object, for example:
+var op = {
+	"+": function(a, b) {return a + b;},
+	"==": function(a, b) {return a == b;},
+	"===": function(a, b) {return a === b;},
+	"!": function(a) {return !a;}
+	// etc.
+};
+// This allows us to do things like:
+console.log(reduce(op["+"], 0, [1, 10, 100, 1000]));	// 1111
+// To sum an array!
 
 
 
@@ -1648,6 +1703,6 @@ console.log(myHTML);
 
 // Left off at:
 
-// Write a function renderFragment, and use that to implement another function renderParagraph
+// But what if we need something like equals or makeAddFunction, in which one of the arguments already has a value? In that case we are back to writing a new function again.
 
 // http://eloquentjavascript.net/chapter6.html
