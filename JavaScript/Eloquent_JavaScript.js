@@ -1881,17 +1881,29 @@ makeRoads("Hanapaoa", "Mt Ootua", 3);
 makeRoads("Puamua", "Mt Ootua", 13,
 	"Point Teohotepapapa", 14);
 
-console.log(roads["Airport"]);
-
 // Note that there are 13 cities, 16 roads
 // Because the function makes roads to and from each city, we don't have to list each city, we just have to list each road
 // One thing this function lacks is protection against adding a road twice!
 
+// We could just select roads like this:
+console.log(roads["Airport"]);
 
+// But what happens if you search for a location that doesn't exist?
+console.log(roads["Arport"]);
+// Just returns undefined
+// Let's make it return an error instead
+function roadsFrom(place) {
+	var found = roads[place];
+	if (found === undefined)
+		throw new Error("No place named '" + place + "' found.");
+	else
+		return found;
+}
+console.log(roadsFrom("Arport"));
 
 
 // Left off at:
 
-// If you ran all the pieces of code above, you should now have a variable named roads that contains all the roads on the island.
+// Here is a first stab at a path-finding algorithm, the gambler's method:
 
 // http://eloquentjavascript.net/chapter7.html
