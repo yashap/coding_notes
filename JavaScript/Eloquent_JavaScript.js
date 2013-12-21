@@ -1690,7 +1690,9 @@ var op = {
 	"+": function(a, b) {return a + b;},
 	"==": function(a, b) {return a == b;},
 	"===": function(a, b) {return a === b;},
-	"!": function(a) {return !a;}
+	"!": function(a) {return !a;},
+	"!=": function(a, b) {return a != b;},
+	"!==": function(a, b) {return a !== b;}
 	// etc.
 };
 // This allows us to do things like:
@@ -1781,6 +1783,24 @@ function map(func, array) {
 		result.push(func(element));
 	});
 	return result;
+}
+var op = {
+	"+": function(a, b) {return a + b;},
+	"==": function(a, b) {return a == b;},
+	"===": function(a, b) {return a === b;},
+	"!": function(a) {return !a;}
+};
+function asArray(quasiArray, start) {
+	var result = [];
+	for (var i = (start || 0); i < quasiArray.length; i++)
+		result.push(quasiArray[i]);
+	return result;
+}
+function partial(func) {
+	var fixedArgs = asArray(arguments, 1);
+	return function() {
+		return func.apply(null, fixedArgs.concat(asArray(arguments)));
+	};
 }
 
 // Think of ways to find the shortest distance between two points
@@ -1901,9 +1921,118 @@ function roadsFrom(place) {
 }
 console.log(roadsFrom("Arport"));
 
+// Ok, let's create an algorithm to find a path between two points!
+// Here's the "gambler's method"
+function gamblerPath(from, to) {
+	function randomInteger(below) {
+		return Math.floor(Math.random() * below);		// so randomInteger(3) will return 0, 1 or 2
+	}
+	function randomDirection(from) {
+		var options = roadsFrom(from);		// returns an array of roads from the current location, where each road is an object with "to" and "distance" properties
+		return options[randomInteger(options.length)].to;		// returns the value of "to" from a randomly chosen road object
+	}
+	var path = [];
+	while (true) {
+		path.push(from);		// append current location to path
+		if (from === to)		// if current location is final location, we're done
+			break;
+		from = randomDirection(from);		// randomly chose new current location from the available roads
+	}
+	return path;
+}
+
+console.log(gamblerPath("Hanaiapa", "Mt Feani"));
+
+// So this gives us a path, but it gives us a different path every time
+// It doesn't optimize for distance, and it CAN let us backtrack
+// How do we do this?
+// Simple option: "Generate and Test"
+//   Step 1) Generate all possible routes
+//   Step 2) Find the shortest one
+// BUT if we allow routes with circles in them, there's an infinite number of routes
+//   Let's not consider these
+//   Let's also not consider routes that don't start at the starting point!
+// First we'll need a function to test whether an element is found within an array
+function member(array, value) {
+	var found = false;
+	forEach(array, function(element) {
+		if (element === value)
+			found = true;
+	});
+	return found;
+}
+
+myArray = [6, 7, "Hello"];
+console.log(member(myArray, 7));	// true
+console.log(member(myArray, 8));	// false
+
+// Let's make this a bit more efficient
+//   Right now we loop through the whole array no matter what
+//   We COULD use a for loop with a break statement, but we like forEach!
+//   Let's write a forEach that can recognize a certain type of exception as signalling a break
+// var Break = {toString: function() {return "Break";}};
+
+// function forEach(array, action) {
+// 	try {
+// 		for (var i = 0; i < array.length; i++)
+// 			action(array[i]);
+// 		// So we try our standard forEach loop
+// 	}
+// 	catch (exception) {
+// 		if (exception != Break)
+// 			throw exception;
+// 	}
+// }
+
+// So now, if the action function passed to forEach throws the 'Break' exception, forEach will absorb the exceoption and stop looping
+// The toString property in the exception is good practice
+//   If we somehow end up with a Break exception outside of a forEach function, we want to be able to find out where it came from
+
+// It's going to be messy to implement this with member, though
+//   We need to store the resilt, and later return it
+// When we really need is a new higher order function INSTEAD OF forEach, called any (or sometimes called some)
+function any(test, array) {
+	for (var i = 0; i < array.length; i++) {
+		var found = test(array[i]);
+		if (found)
+			return found;
+	}
+	return false;
+}
+
+// Any will return the first true-ish value found
+// Calling any(test, array) is more or less equivalent to:
+// test(array[0]) || test (array[1]) || etc.
+
+// Let's remember how to ue partial as well
+console.log(partial(op["==="], 7)(7));	// true --> here partial is a function testing if the argument is 7
+console.log(partial(op["==="], 7)(8));	// false --> here partial is a function testing if the argument is 8
+
+// Then let's write a new version of member that tests if a value is in an array
+function member(array, value) {
+	return any(partial(op["==="], value), array);
+}
+
+console.log(member(["Fear", "Loathing", "Las", "Vegas"], "Denial"));
+console.log(member(["Fear", "Loathing", "Las", "Vegas"], "Las"));
+
+// Let's also write a "companion" for any, "every"
+function every(test, array) {
+	for (var i = 0; i < array.length; i++) {
+		var found = test(array[i]);
+		if (!found)
+			return found;
+	}
+	return true;
+}
+// So this will return 
+console.log(every(partial(op["!="], 0), [1, 2, -1]));		// true
+
+
+
 
 // Left off at:
 
-// Here is a first stab at a path-finding algorithm, the gambler's method:
+// Just like && is the companion of ||, any has a companion called every:
 
 // http://eloquentjavascript.net/chapter7.html
