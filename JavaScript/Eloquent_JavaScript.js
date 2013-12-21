@@ -1820,11 +1820,78 @@ var roads = {
 	]
 };
 
+console.log(roads["Airport"]);
+console.log(roads["Airport"][1]["distance"]);
+
+// However, there's plenty of duplicate information here
+//   All roads are duplicated
+// Also, it sucks typing all that out
+// SO let's create a function that can make road data!
+
+var roads = {};			// Like above, this is what we'll populate
+
+function makeRoad(from, to, length) {
+	function addRoad(from, to) {
+		if (!(from in roads))
+			roads[from] = [];			// if we don't already have the city associated with these roads, add that city, so we can add roads to it
+		roads[from].push({to: to, distance: length});		// from and to are the 1st and 2nd arguments passed to addRoad, but length is the 3rd argument passed to makeRoad
+	}
+	addRoad(from, to);
+	addRoad(to, from);
+}
+
+makeRoad("Point Kiukiu", "Hanaiapa", 19);
+makeRoad("Point Kiukiu", "Mt Feani", 15);
+makeRoad("Point Kiukiu", "Taaoa", 15);
+console.log(roads);
+// The two calls to addRoad add both roads!
+//   So the single call makeRoad("Point Kiukiu", "Taaoa", 15) adds the road as both from Point Kiukiu and from Taaoa
+// Also note that the "from" and "to" in makeRoad are not the same as the "from" and "to" in addRoad
+//   In addRoad the from and to are just the 1st and 2nd arguments passed to it, not necessarily from and to from the outer function
+
+// Write a function makeRoads
+// Should take an uneven number of arguments
+// Argument 1 is always the starting point, after that it's pairs of end point/distance
+// This single function should be able to duplicate the 3 calls above
+
+function makeRoads(start) {
+	for (var i = 1; i < arguments.length; i += 2)
+		makeRoad(start, arguments[i], arguments[i + 1]);
+}
+// So we have just one named argument, and we get the rest from start
+// The rest is obvious
+
+// Now we can make all of our roads quickly and easily
+var roads = {};
+
+makeRoads("Point Kiukiu", "Hanaiapa", 19,
+	"Mt Feani", 15,
+	"Taaoa", 15);
+makeRoads("Airport", "Hanaiapa", 6,
+	"Mt Feani", 5,
+	"Atuona", 4,
+	"Mt Ootua", 11);
+makeRoads("Mt Temetiu", "Mt Feani", 8,
+	"Taaoa", 4);
+makeRoads("Atuona", "Taaoa", 3,
+	"Hanakee pearl lodge", 1);
+makeRoads("Cemetery", "Hanakee pearl lodge", 6,
+	"Mt Ootua", 5);
+makeRoads("Hanapaoa", "Mt Ootua", 3);
+makeRoads("Puamua", "Mt Ootua", 13,
+	"Point Teohotepapapa", 14);
+
+console.log(roads["Airport"]);
+
+// Note that there are 13 cities, 16 roads
+// Because the function makes roads to and from each city, we don't have to list each city, we just have to list each road
+// One thing this function lacks is protection against adding a road twice!
+
 
 
 
 // Left off at:
 
-// However, this new representation does contain duplicate information
+// If you ran all the pieces of code above, you should now have a variable named roads that contains all the roads on the island.
 
 // http://eloquentjavascript.net/chapter7.html
