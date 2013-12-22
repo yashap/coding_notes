@@ -2029,6 +2029,40 @@ function every(test, array) {
 console.log(every(partial(op["!="], 0), [1, 2, -1]));		// true
 
 
+var bob = {
+	id: 123345,
+	firstName: "Bob",
+	secondName: "Joey",
+	purchases: [
+		{date: '2013-04-25', amount: 25, part: "Nut"},
+		{date: '2013-04-27', amount: 15, part: "Bolt"}
+	]
+};
+
+console.log(bob);
+bob["country"] = "Canada";
+bob["purchases"].push({date: '2013-04-30', amount: 500, part: "Hammer"});
+bob["purchases"].push({date: '2013-05-02', amount: 2, part: "Nail"});
+console.log(bob["purchases"][1]["date"]);
+
+function purchaseSum(person, start, end) {
+	myPurchases = person["purchases"];
+	myStart = new Date(start);
+	myEnd = new Date(end);
+	total = 0;
+	for (var i = 0; i < myPurchases.length; i++) {
+		myDate = new Date(myPurchases["date"]);
+		if (myDate > myStart && myDate < myEnd)
+			total += myPurchases["amount"];
+	}
+	return total;
+}
+
+console.log(purchaseSum(bob, '2013-01-01', '2014-04-29'));
+
+console.log(typeof(bob));
+
+
 
 
 // Left off at:
