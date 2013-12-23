@@ -1786,9 +1786,13 @@ function map(func, array) {
 }
 var op = {
 	"+": function(a, b) {return a + b;},
+	"*": function(a, b) {return a * b;},
+	"/": function(a, b) {return a / b;},
 	"==": function(a, b) {return a == b;},
 	"===": function(a, b) {return a === b;},
-	"!": function(a) {return !a;}
+	"!": function(a) {return !a;},
+	"!=": function(a, b) {return a != b;},
+	"!==": function(a, b) {return a !== b;}
 };
 function asArray(quasiArray, start) {
 	var result = [];
@@ -1991,15 +1995,14 @@ console.log(member(myArray, 8));	// false
 // It's going to be messy to implement this with member, though
 //   We need to store the resilt, and later return it
 // When we really need is a new higher order function INSTEAD OF forEach, called any (or sometimes called some)
-function any(test, array) {
+function any(testFunc, array) {
 	for (var i = 0; i < array.length; i++) {
-		var found = test(array[i]);
+		var found = testFunc(array[i]);
 		if (found)
-			return found;
+			return found;		// note that found is the RESULT of calling testFunc on this element
 	}
 	return false;
 }
-
 // Any will return the first true-ish value found
 // Calling any(test, array) is more or less equivalent to:
 // test(array[0]) || test (array[1]) || etc.
@@ -2008,27 +2011,34 @@ function any(test, array) {
 console.log(partial(op["==="], 7)(7));	// true --> here partial is a function testing if the argument is 7
 console.log(partial(op["==="], 7)(8));	// false --> here partial is a function testing if the argument is 8
 
+// So we can do:
+console.log(any(partial(op["==="], 7), [7, 8, 9, "Alex"]));		// true
+console.log(any(partial(op["==="], 7), [8, 9, "Alex"]));			// false
+
 // Then let's write a new version of member that tests if a value is in an array
 function member(array, value) {
 	return any(partial(op["==="], value), array);
 }
 
-console.log(member(["Fear", "Loathing", "Las", "Vegas"], "Denial"));
-console.log(member(["Fear", "Loathing", "Las", "Vegas"], "Las"));
+console.log(member(["Fear", "Loathing", "Las", "Vegas"], "Denial"));		// false
+console.log(member(["Fear", "Loathing", "Las", "Vegas"], "Las"));				// true
 
 // Let's also write a "companion" for any, "every"
-function every(test, array) {
+function every(testFunc, array) {
 	for (var i = 0; i < array.length; i++) {
-		var found = test(array[i]);
+		var found = testFunc(array[i]);
 		if (!found)
 			return found;
 	}
 	return true;
 }
+// So if ANY of the test functions is semi-true, it will return FALSE
+// Only if ALL of the test functions return false will it return TRUE
 // So this will return 
-console.log(every(partial(op["!="], 0), [1, 2, -1]));		// true
-
-
+console.log(every(partial(op["==="], 7), [7, 8, 9, "Alex"]));		// false
+console.log(every(partial(op["==="], 7), [8, 9, "Alex"]));			// false
+console.log(every(partial(op["!=="], 7), [7, 8, 9, "Alex"]));		// false
+console.log(every(partial(op["!=="], 7), [8, 9, "Alex"]));			// true
 
 
 
@@ -2036,7 +2046,7 @@ console.log(every(partial(op["!="], 0), [1, 2, -1]));		// true
 
 // Left off at:
 
-// Just like && is the companion of ||, any has a companion called every:
+// Another function we will need is flatten.
 
 // http://eloquentjavascript.net/chapter7.html
 
