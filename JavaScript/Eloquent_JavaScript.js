@@ -2029,38 +2029,7 @@ function every(test, array) {
 console.log(every(partial(op["!="], 0), [1, 2, -1]));		// true
 
 
-var bob = {
-	id: 123345,
-	firstName: "Bob",
-	secondName: "Joey",
-	purchases: [
-		{date: '2013-04-25', amount: 25, part: "Nut"},
-		{date: '2013-04-27', amount: 15, part: "Bolt"}
-	]
-};
 
-console.log(bob);
-bob["country"] = "Canada";
-bob["purchases"].push({date: '2013-04-30', amount: 500, part: "Hammer"});
-bob["purchases"].push({date: '2013-05-02', amount: 2, part: "Nail"});
-console.log(bob["purchases"][1]["date"]);
-
-function purchaseSum(person, start, end) {
-	myPurchases = person["purchases"];
-	myStart = new Date(start);
-	myEnd = new Date(end);
-	total = 0;
-	for (var i = 0; i < myPurchases.length; i++) {
-		myDate = new Date(myPurchases["date"]);
-		if (myDate > myStart && myDate < myEnd)
-			total += myPurchases["amount"];
-	}
-	return total;
-}
-
-console.log(purchaseSum(bob, '2013-01-01', '2014-04-29'));
-
-console.log(typeof(bob));
 
 
 
@@ -2070,3 +2039,55 @@ console.log(typeof(bob));
 // Just like && is the companion of ||, any has a companion called every:
 
 // http://eloquentjavascript.net/chapter7.html
+
+
+
+// Me screwing around with JSON type data
+// Empty "database"
+var dataBase = {};
+// Add some users
+dataBase[123] = {
+	"firstName": "Bob",
+	"secondName": "Joey",
+	"purchases": [
+		{"date": '2013-04-25', "amount": 25, "part": "Nut"},
+		{"date": '2013-04-27', "amount": 15, "part": "Bolt"}
+	]
+};
+dataBase[124] = {
+	"firstName": "Joe",
+	"secondName": "Jones",
+	"purchases": [
+		{"date": '2010-04-25', "amount": 25, "part": "Nut"},
+		{"date": '2013-04-26', "amount": 15, "part": "Bolt"}
+	]
+};
+// Explore the data
+console.log(dataBase);
+console.log(dataBase[123]);
+console.log(dataBase[124]);
+// Add some data
+dataBase[123]["country"] = "Canada";
+dataBase[123]["purchases"].push({"date": '2013-04-30', "amount": 500, "part": "Hammer"});
+dataBase[123]["purchases"].push({"date": '2013-05-02', "amount": 2, "part": "Nail"});
+// Explore
+console.log(dataBase[123]["purchases"][1]["date"]);
+// Function to sum all purchases in date range
+function purchaseSum(startString, endString) {
+	start = new Date(startString);
+	end = new Date(endString);
+	total = 0;
+	for (var user in dataBase) {
+		thisUser = dataBase[user];
+		userPurchases = thisUser["purchases"];
+		for (var purchaseNum = 0; purchaseNum < userPurchases.length; purchaseNum++) {
+			thisPurchase = userPurchases[purchaseNum];
+			thisDate = new Date(thisPurchase["date"]);
+			if (thisDate >= start && thisDate <= end)
+				total += thisPurchase["amount"];
+		}
+	}
+	return total;
+}
+// Call function
+console.log(purchaseSum('2013-01-01', '2013-04-29'));
