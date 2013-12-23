@@ -1766,46 +1766,7 @@ console.log(isDefined(Math.PIE));	// false
 // Chapter 7: Searching
 // #####################################
 
-// First step, I'm going to keep re-using these
-function forEach(array, action) {
-	for (var i = 0; i < array.length; i++)
-		action(array[i]);
-}
-function reduce(combine, base, array) {
-	forEach(array, function(element) {
-		base = combine(base, element);
-	});
-	return base;
-}
-function map(func, array) {
-	var result = [];
-	forEach(array, function(element) {
-		result.push(func(element));
-	});
-	return result;
-}
-var op = {
-	"+": function(a, b) {return a + b;},
-	"*": function(a, b) {return a * b;},
-	"/": function(a, b) {return a / b;},
-	"==": function(a, b) {return a == b;},
-	"===": function(a, b) {return a === b;},
-	"!": function(a) {return !a;},
-	"!=": function(a, b) {return a != b;},
-	"!==": function(a, b) {return a !== b;}
-};
-function asArray(quasiArray, start) {
-	var result = [];
-	for (var i = (start || 0); i < quasiArray.length; i++)
-		result.push(quasiArray[i]);
-	return result;
-}
-function partial(func) {
-	var fixedArgs = asArray(arguments, 1);
-	return function() {
-		return func.apply(null, fixedArgs.concat(asArray(arguments)));
-	};
-}
+// First, let's load all functions from custom_library.js
 
 // Think of ways to find the shortest distance between two points
 // For example, I'll enter data for an abbreviated version of :
@@ -2040,64 +2001,82 @@ console.log(every(partial(op["==="], 7), [8, 9, "Alex"]));			// false
 console.log(every(partial(op["!=="], 7), [7, 8, 9, "Alex"]));		// false
 console.log(every(partial(op["!=="], 7), [8, 9, "Alex"]));			// true
 
+// Another function we'll need is called "flatten"
+//   It takes an array of arrays
+//   It puts the elements of the arrays together into one big array
+function flatten(arrays) {
+	var result = [];
+	forEach(arrays, function (array) {
+		forEach(array, function (element){result.push(element);});
+	});
+	return result;
+}
+// Try it out
+console.log(flatten([[2345], [3546, "bob", "joe"], ["one", "two", 3], ["end"]]));
+// Note that every element of the outer array must itself be an array!
+//   Even if it's just an array of one value
+
+// We need one more higher order function, "filter"
+// It's similar to map
+//   It takes a function and an array as arguments, and produces a new array
+//   HOWEVER, the new array is made only of elements that return a true-like value
+function filter(testFunc, array) {
+	var result = [];
+	forEach(array, function(element) {
+		if (testFunc(element))
+			result.push(element);
+	});
+	return result;
+}
+// Note that unlike map, it is not appending the result of calling the function on element
+//   It is appending element itself
+//   The function is only to test if we should append
+// Example:
+console.log(filter(partial(op[">"], 5), [0, 4, 8, 12]));
+// Returns [0, 4]
+//   Remember, op[">"] is actually a function that takes two arguments, and tests whether the first is greater than the second
+//   The first argument we give it is 5, the second is element
+//   So we are testing whether 5 is greater than element, not the other way around
+
+
+// OK, so let's get back to finding the shortest route!
+// First let's find all possible routes
+//   We have a starting location
+//   Then it starts to generate a route for every road leaving that location
+//   At the end of each of these roads it generates more routes
+//   It doesn't just run along one road, IT BRANCHES OUT
+//     Because of this, recursion is a natural way to model it
+function possibleRoutes(from, to) {
+	function findRoutes(route) {
+		function notVisited(road) {
+			return !member(route.places, road.to);
+		}
+		function continueRoute(road) {
+			return findRoutes({
+				"places": route.places.concat([road.to]),
+				"length": route.length + road.distance
+			});
+		}
+		var end = route.places[route.places.length - 1];
+		if (end === to)
+			return [route];
+		else
+			return flatten(map(continueRoute, filter(notVisited, roadsFrom(end))));
+	}
+
+	return findRoutes({"places": [from], "length": 0});
+}
+
+console.log(possibleRoutes("Point Teohotepapapa", "Point Kiukiu"));
+console.log(possibleRoutes("Hanapaoa", "Mt Ootua"));
+
+// OK, so how does this work? Figure this out
 
 
 
 
 // Left off at:
 
-// Another function we will need is flatten.
+// The function returns an array of route objects, each of which contains an array of places that the route passes, and a length.
 
 // http://eloquentjavascript.net/chapter7.html
-
-
-
-// Me screwing around with JSON type data
-// Empty "database"
-var dataBase = {};
-// Add some users
-dataBase[123] = {
-	"firstName": "Bob",
-	"secondName": "Joey",
-	"purchases": [
-		{"date": '2013-04-25', "amount": 25, "part": "Nut"},
-		{"date": '2013-04-27', "amount": 15, "part": "Bolt"}
-	]
-};
-dataBase[124] = {
-	"firstName": "Joe",
-	"secondName": "Jones",
-	"purchases": [
-		{"date": '2010-04-25', "amount": 25, "part": "Nut"},
-		{"date": '2013-04-26', "amount": 15, "part": "Bolt"}
-	]
-};
-// Explore the data
-console.log(dataBase);
-console.log(dataBase[123]);
-console.log(dataBase[124]);
-// Add some data
-dataBase[123]["country"] = "Canada";
-dataBase[123]["purchases"].push({"date": '2013-04-30', "amount": 500, "part": "Hammer"});
-dataBase[123]["purchases"].push({"date": '2013-05-02', "amount": 2, "part": "Nail"});
-// Explore
-console.log(dataBase[123]["purchases"][1]["date"]);
-// Function to sum all purchases in date range
-function purchaseSum(startString, endString) {
-	start = new Date(startString);
-	end = new Date(endString);
-	total = 0;
-	for (var user in dataBase) {
-		thisUser = dataBase[user];
-		userPurchases = thisUser["purchases"];
-		for (var purchaseNum = 0; purchaseNum < userPurchases.length; purchaseNum++) {
-			thisPurchase = userPurchases[purchaseNum];
-			thisDate = new Date(thisPurchase["date"]);
-			if (thisDate >= start && thisDate <= end)
-				total += thisPurchase["amount"];
-		}
-	}
-	return total;
-}
-// Call function
-console.log(purchaseSum('2013-01-01', '2013-04-29'));
