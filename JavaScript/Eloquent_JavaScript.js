@@ -2050,6 +2050,7 @@ function possibleRoutes(from, to) {
 	function findRoutes(route) {
 		function notVisited(road) {
 			return !member(route.places, road.to);
+			// member(array, value).  So this returns true if road.to IS NOT in route.places, false if it IS in route.places
 		}
 		function continueRoute(road) {
 			return findRoutes({
