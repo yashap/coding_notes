@@ -2071,7 +2071,13 @@ function possibleRoutes(from, to) {
 console.log(possibleRoutes("Point Teohotepapapa", "Point Kiukiu"));
 console.log(possibleRoutes("Hanapaoa", "Mt Ootua"));
 
-// OK, so how does this work? Figure this out
+// This function returns an array of objects, each object is a route
+//   Each route object has two properties
+//     place is an array of places that the route passes through (including start and end)
+//     length of the route
+//   For example, this would be one with two routes:
+//     [ { places: [ 'Point Teohotepapapa','Puamua','Mt Ootua','Airport','Hanaiapa','Point Kiukiu' ], length: 63 },
+//       { places: [ 'Point Teohotepapapa', 'Puamua', 'Mt Ootua', 'Airport', 'Mt Feani', 'Point Kiukiu' ], length: 58 }]
 
 
 
