@@ -2321,12 +2321,29 @@ possibleDirections(point(12, 19));
 possibleDirections(point(19, 19));
 
 
+// Ok, so how do we get the shortest route efficient?
+//   Many possible solutions, we're using one called A*
+// What problem does it solve?
+//   On a big map there's too much room for going in the wrong direction
+//   You can randomly search for ages before you find the destination, and then there are so many possible routes that it takes forever to find the right destination
+//   So we want to explore directions that are likely to get us to the end point first
+//     We can get a rough estimate of how good a path is by adding path length to an estimate of the distance left to go
+// We will always explore the most promising path first
+//   Once we know the best way to get to point X, we record that
+//   If another path also passes through point X, it must suck because we've already found the best way to get to point X
 
+// Our algorithm, in words:
+// We need to keep track of 2 pieces of data
+//   1) open list
+//     The partial routes that must still be explored
+//     Each route has a score, calculated by adding its length to its estimated distance from the goal
+//     The estimate must always be optimistic, it should NEVER overestimate the remaining distance
+//   2) A set of nodes we have seen, with the shortest partial route to get there
 
 
 
 // Left off at:
 
-// To find a route on this map without having our browser cut off the program because it takes too long to finish, we have to stop our amateurish attempts and implement a serious algorithm.
+// Then, as long as there are any nodes in the open list, we take out the one that has the lowest (best) score
 
 // http://eloquentjavascript.net/chapter7.html
