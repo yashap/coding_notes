@@ -39,6 +39,8 @@ function roadsFrom(place) {
 	else
 		return found;
 }
+console.log(roads["Puamua"]);
+console.log(roadsFrom("Puamua"));
 
 function gamblerPath(from, to) {
 	function randomInteger(below) {
@@ -56,4 +58,24 @@ function gamblerPath(from, to) {
 		from = randomDirection(from);		// randomly chose new current location from the available roads
 	}
 	return path;
+}
+
+function possibleRoutes(from, to) {
+	function findRoutes(route) {
+		function notVisited(road) {
+			return !member(route.places, road.to);
+		}
+		function continueRoute(road) {
+			return findRoutes({
+				"places": route.places.concat([road.to]),
+				"length": route.length + road.distance
+			});
+		}
+		var end = route.places[route.places.length - 1];
+		if (end === to)
+			return [route];
+		else
+			return flatten(map(continueRoute, filter(notVisited, roadsFrom(end))));
+	}
+	return findRoutes({"places": [from], "length": 0});
 }
