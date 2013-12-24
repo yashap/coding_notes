@@ -1725,7 +1725,7 @@ function partial(func) {
 // apply calls a function with a given "this" value, and with arguments provided as an array
 //   "this" refers to the object that calls the function?  Not sure really
 //   We are really just calling a function with the fixed and variable arguemnts
-// Also note that we had to store the arguments of partial() is a variable, so that the inner function can see them
+// Also note that we had to store the arguments of partial() in a variable, so that the inner function can see them
 //   The inner function has its own arguments, that would "overwrite" partial's arguments
 
 // Now we can do things like writing the equals(10) function as:
@@ -2243,11 +2243,90 @@ function weightedDistance(pointA, pointB) {
 
 // Points on the map are represented by objects containing x and y properties. These three functions are useful when working with such objects:
 
+function point(x, y) {
+	return {x: x, y: y};
+}
+
+function addPoints(a, b) {
+	return point(a.x + b.x, a.y + b.y);
+	// Note that a and b will be point objects
+}
+
+function samePoint(a, b) {
+	return a.x === b.x && a.y === b.y;
+}
+
+console.log(samePoint(addPoints(point(10,10), point(4, -2)),
+	point(14, 8)));
+
+// Now we need a function that can create 'signposts'
+//   Basically lists of possible moves
+//   It should take a point object as an argument, and return an array of points we can move to
+//   Note that x and y can both only range from 0 to 19
+// My solution:
+function possibleDirections(point) {
+	var mapSize = 20;
+	var moves = [];
+	var x = [point["x"] - 1, point["x"], point["x"] + 1];
+	var y = [point["y"] - 1, point["y"], point["y"] + 1];
+	forEach(x, function(x_coord) {
+		forEach(y, function(y_coord) {
+			if (x_coord >= 0 && x_coord < mapSize && y_coord >= 0 && y_coord < mapSize && (x_coord !== point["x"] || y_coord !== point["y"]))
+				moves.push({x: x_coord, y: y_coord});
+		});
+	});
+	return moves;
+}
+
+// This is their solution, but I like mine better:
+function possibleDirections(from) {
+	var mapSize = 20;
+	function insideMap(point) {
+		return point.x >= 0 && point.x < mapSize && point.y >= 0 && point.y < mapSize;
+	}
+	var directions = [point(-1, 0), point(1, 0), point(0, -1), point(0, 1), point(-1, -1), point(-1, 1), point(1, 1), point(1, -1)];
+	// note that there is no (0, 0)
+	return filter(insideMap, map(partial(addPoints, from), directions));
+
+}
+// Note that directions does not include point(0, 0), as that's just staying at the curret point!
+// All the magic is really happening in the return line.  Here's what it's doing, step by step:
+//   1) partial(addPoints, from)
+//     Remember how partial works
+//       op["==="]											--> returns function (a, b) {return a === b;}
+//       partial(op["==="], 10)					--> returns function () {return func.apply(null, fixedArgs.concat(asArray(arguments)));}
+//         func is the function passed to partial (the first argument)
+//         fixedArgs is asArray(arguments, 1)			--> really just all the arguments for partial after func
+//         That's pretty complex, but basically it's a function that is waiting for more arguments?
+//       partial(op["==="], 10)(6+4)		--> returns true
+//     So here, addPoints(a, b) needs two arguments
+//       We give it a, from, but it's still waiting for b
+//       Before it gets b, it's a function that will add point a to point b
+//       So this is a function:
+//         partial(addPoints, point(10,4))
+//       And this returns {x: 13, y: 7}
+//         partial(addPoints, point(10,4))(point(3,3));
+//       Once we map it to an array of directions, it simply adds point a to all of those directions
+//   2) map()
+//     Already dealt with this, it returns an array of possible directions
+//     BUT it includes those outside the map
+//   3) filter()
+//     Then we simply filter to include only those points where applying insideMap(point) returns a true-ish value
+//       i.e. only points inside the map are returned
+
+// Test it out:
+possibleDirections(point(0, 0));
+possibleDirections(point(8, 12));
+possibleDirections(point(12, 19));
+possibleDirections(point(19, 19));
+
+
+
 
 
 
 // Left off at:
 
-// Points on the map are represented by objects containing x and y properties. These three functions are useful when working with such objects:
+// To find a route on this map without having our browser cut off the program because it takes too long to finish, we have to stop our amateurish attempts and implement a serious algorithm.
 
 // http://eloquentjavascript.net/chapter7.html
