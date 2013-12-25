@@ -2412,6 +2412,26 @@ console.log(estimatedDistance(point(10, 11), point(9,9)));
 // It works!
 
 
+// We will use a binary heap for the open list. What would be a good data structure for the reached list?
+// This one will be used to look up routes, given a pair of x, y coordinates. Preferably in a way that is fast.
+// Write three functions, makeReachedList, storeReached, and findReached.
+//   - The first one creates your data structure
+//   - The second one, given a reached list, a point, and a route, stores a route in it
+//   - The last one, given a reached list and point, retrieves a route or returns undefined to indicate that no route was found for that point.
+function makeReachedList() {
+	//
+}
+
+function storeReached(reachedList, coord, route) {
+	//
+}
+
+function findReached(reachedList, coord) {
+	//
+}
+
+
+
 // Left off at:
 
 // We will use a binary heap for the open list. What would
