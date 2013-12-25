@@ -2,6 +2,7 @@
 // Eloquent JavaScript
 // #####################################
 
+// Side note - to cancel inputting the current command in node repl, just enter .break
 
 // #####################################
 // Chapter 1: Introduction
@@ -2400,11 +2401,19 @@ while (heap.size() > 0)
 //   - It can assume a flat map
 //   - Remember that we can only travel straight (100 units) or diagonally (141 units)
 function estimatedDistance(a, b) {
-	
+	function axisDiff(axis) {return Math.abs(b[axis] - a[axis]);}
+	if (axisDiff("x") > axisDiff("y"))
+		return 141 * axisDiff("y") + 100 * (axisDiff("x") - axisDiff("y"));
+	else
+		return 141 * axisDiff("x") + 100 * (axisDiff("y") - axisDiff("x"));
 }
+
+console.log(estimatedDistance(point(10, 11), point(9,9)));
+// It works!
+
 
 // Left off at:
 
-// The need to squeeze out as much efficiency as we can has another effect.
+// We will use a binary heap for the open list. What would
 
 // http://eloquentjavascript.net/chapter7.html
