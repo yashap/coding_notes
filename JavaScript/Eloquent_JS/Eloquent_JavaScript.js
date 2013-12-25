@@ -2419,15 +2419,23 @@ console.log(estimatedDistance(point(10, 11), point(9,9)));
 //   - The second one, given a reached list, a point, and a route, stores a route in it
 //   - The last one, given a reached list and point, retrieves a route or returns undefined to indicate that no route was found for that point.
 function makeReachedList() {
-	//
+	return {};
 }
 
-function storeReached(reachedList, coord, route) {
-	//
+function storeReached(list, point, route) {
+	var inner = list[point.x];
+	if (inner === undefined) {
+	}
+	// No else, just a setting of ...
+	// Note: will not return anything
 }
 
-function findReached(reachedList, coord) {
-	//
+function findReached(list, route) {
+	var inner = list[point.x];
+	if (inner === undefined)
+		return undefined;
+	else
+		return "figure it out";
 }
 
 
