@@ -2387,6 +2387,22 @@ while (heap.size() > 0)
 // It pops off the lowest (1), then the next lowest, etc.
 
 
+// Another problem is how to store routes
+//   - Before we were storing them in arrays, then copying and extending them with the concat method
+//   - That will be too expensive here as we'll be exploring too many routes
+//   - Instead we'll use a chain objects to store a route
+//     - Each object will have some properties, such as it's location (point) on the map, the length of the route so far, and a property pointing at the previous object in the route
+//   - Objects can be part of multiple routes this way!
+//     - This saves a lot of storage, because each point can be in a lot of different routes!
+
+
+// Write a function, estimatedDistance, that gives an optimistic estimate of the distance between 2 points
+//   - It can assume a flat map
+//   - Remember that we can only travel straight (100 units) or diagonally (141 units)
+function estimatedDistance(a, b) {
+	
+}
+
 // Left off at:
 
 // The need to squeeze out as much efficiency as we can has another effect.
