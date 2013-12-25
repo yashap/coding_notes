@@ -2338,12 +2338,57 @@ possibleDirections(point(19, 19));
 //     The partial routes that must still be explored
 //     Each route has a score, calculated by adding its length to its estimated distance from the goal
 //     The estimate must always be optimistic, it should NEVER overestimate the remaining distance
-//   2) A set of nodes we have seen, with the shortest partial route to get there
+//   2) A set of nodes we have seen, with the shortest partial route to get there (the "reached" list)
+// Then:
+//   - As long as there are nodes in the open list, we find the one with the lowest score, and find ways it can be continued (by calling possibleDirections)
+//   - For each of the nodes this returns, we create a new route by appending it to our original route, and adjusting the length of the route using weightedDistance
+//   - The endpoint of each of these new routes is then looked up in the reached list
+//   - If the node is not in this list, we haven't seen it before, so we add it to the open list and record it in the reached list
+//   - If we have seen it before:
+//     - If it's shorter, we replace the existing route with the new one
+//     - Othewise we discard it (since we already have a better way to get there)
+// Continue until . . .
+//   - The route we fetch from the open list ends at the goal node, in which case we found our route
+//   - OR until the open list is empty, in which case we've found that there's no route
+// How do we know that the first fill route we get is the shortest?
+//   - We only look at a route that has the lowest score
+//   - Since the score is the actual length plus an optimistic estimate of remaining length, the route with the lowest score is always the best route to the current endpoint
+//     - Any "better way" to that current endpoint would have had a lower score
 
+// We're going to need a new data structure!
+//   - It's called a binary heap
+//   - Similar to an array, but better for these purposes
+//   - You can create them with new BinaryHeap(scoringFunction)
+//     - The argument you pass them is a function that is used to 'score' its elements
+//     - It creates an object with push and pop methods, just like an array, BUT this time pop returns the element with the lowest score, not just the element last pushed
+
+// Example of how to use them
+//   - See Appendix 2 for more info on this data structure
+function identity(x) {
+	return x;
+}
+
+// Note - node.js doesn't seem to have BinaryHeap, so this won't run
+var heap = new BinaryHeap(identity);
+forEach([2, 4, 5, 1, 6, 3], function(number) {
+	heap.push(number);
+});
+
+while (heap.size() > 0)
+	console.log(heap.pop());
+// In JavaScript this will return:
+// 1
+// 2
+// 3
+// 4
+// 5
+// 6
+
+// It pops off the lowest (1), then the next lowest, etc.
 
 
 // Left off at:
 
-// Then, as long as there are any nodes in the open list, we take out the one that has the lowest (best) score
+// The need to squeeze out as much efficiency as we can has another effect.
 
 // http://eloquentjavascript.net/chapter7.html
