@@ -2484,11 +2484,6 @@ function findRoute(from, to) {
 	return null;
 }
 
-var points = 565;
-var games = 592;
-console.log(points/games*82);
-
-
 // So what are we doing here?
 //   - Create the necessary data structures, an open list and a reached list
 //   - routeScore is the scoring function given to the binary heap
