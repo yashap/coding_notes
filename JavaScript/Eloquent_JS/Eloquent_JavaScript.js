@@ -2423,11 +2423,20 @@ function makeReachedList() {
 }
 
 function storeReached(list, point, route) {
+	// The point of this function is to add things to the reached list (list)
+	//   - We want to be able to store routes (route), that we can look up by coordinates
+	//   - We can basically have a dictionary of x-coordinates, then for every x we can have a dictionary of y-coordinates
+	//   - The 
 	var inner = list[point.x];
+	// So this set inner to something like list["12"]
 	if (inner === undefined) {
+		// What if list["12"] is undefined?  We have to define it!  It should be an empty {}, that we will later fill
+		inner = {};
+		list[point.x] = inner;
+		// It's key that we don't wipe "inner" if it exists
 	}
-	// No else, just a setting of ...
-	// Note: will not return anything
+	inner[point.y] = route;
+	// then "inner" should get a key for each y coordinate, with the value set to route
 }
 
 function findReached(list, route) {
@@ -2435,8 +2444,79 @@ function findReached(list, route) {
 	if (inner === undefined)
 		return undefined;
 	else
-		return "figure it out";
+		return inner[point.y];
 }
+// This last function is pretty simple, simply returns the route attached to a specific x and y value
+
+
+// Then finally, the actual path finding function
+function findRoute(from, to) {
+	var open = new BinaryHeap(routeScore);	// Data structure to store all open routes
+	var reached = makeReachedList();				// {} to store reached list
+
+	function routeScore(route) {
+		if (route.score === undefined)
+			route.score = estimatedDistance(route.point, to) + route.length;
+		return route.score;
+	}
+	function addOpenRoute(route) {
+		open.push(route);
+		storeReached(reached, route.point, route);
+	}
+
+	addOpenRoute({point: from, length: 0});
+
+	while (open.size() > 0) {
+		var route = open.pop();
+		if (samePoint(route.point, to))
+			return route;
+		
+		forEach(possibleDirections(route.point), function(direction) {
+			var known = findReached(reached, direction);
+			var newLength = route.length + weightedDistance(route.point, direction);
+			if (!know || know.length > newLength) {
+				if (known)
+					open.remove(known);
+				addOpenRoute({point: direction, from: route, length: newLength});
+			}
+		});
+	}
+	return null;
+}
+
+var points = 565;
+var games = 592;
+console.log(points/games*82);
+
+
+// So what are we doing here?
+//   - Create the necessary data structures, an open list and a reached list
+//   - routeScore is the scoring function given to the binary heap
+//     - it stores its result in the route object, to make sure we don't have to re-calculate it
+//   - addOpenRoute is simply for convenience
+//     - instead of having to add a route to the open and reached lists separately, it does it all in one function
+//   - Note that route objects always have the properties point, which holds the point at the end of the route, and length, which holds the current length of the route
+//     - Routes that are more than one square long also have a from property, that points at their predecessors
+//   - What does the while loop do?
+//     - It keeps taking the lowest scoring route from the open list (open.pop()), and checks whether this gets us to the goal point
+//       - If it does, we're done!
+//       - If not, we must progress to the forEach function
+//         - This function continues to expand the route
+//         - It looks up the newest point that we've finished at in the reached list
+//         - If we haven't reached this point before, or the reached list for this point is worse than this new route (longer length to get there), a new route object is created and the existing route (if there was one) is removed
+//   - What if the route in known is not on the open list?
+//     - Not possible!  Routes are only removed from the open list when they have been found to be THE MOST OPTIMAL ROUTE TO THEIR ENDPOINT
+
+// Note that this algorithm doesn't use recursion, but still manages to explore all those branches
+//   - The open list more or less takes over the role that the function call stack played in our recursive searching solution (to the Hiva Oa problem)
+//     - It keeps track of the paths that still have to be explored
+//   - Every recursive algorithm can be rewritten in a non-recursive way by using a data structure to store the "things that must still be done"
+
+
+// #####################################
+// Chapter 8: Object-oriented Programming
+// #####################################
+
 
 
 

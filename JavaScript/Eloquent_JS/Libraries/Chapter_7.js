@@ -133,3 +133,72 @@ function possibleDirections(from) {
 	var directions = [point(-1, 0), point(1, 0), point(0, -1), point(0, 1), point(-1, -1), point(-1, 1), point(1, 1), point(1, -1)];
 	return filter(insideMap, map(partial(addPoints, from), directions));
 }
+
+function identity(x) {
+	return x;
+}
+
+// Note - node.js doesn't seem to have BinaryHeap, so this won't run
+var heap = new BinaryHeap(identity);
+forEach([2, 4, 5, 1, 6, 3], function(number) {
+	heap.push(number);
+});
+
+function estimatedDistance(a, b) {
+	function axisDiff(axis) {return Math.abs(b[axis] - a[axis]);}
+	if (axisDiff("x") > axisDiff("y"))
+		return 141 * axisDiff("y") + 100 * (axisDiff("x") - axisDiff("y"));
+	else
+		return 141 * axisDiff("x") + 100 * (axisDiff("y") - axisDiff("x"));
+}
+
+function makeReachedList() {
+	return {};
+}
+
+function storeReached(list, point, route) {
+	var inner = list[point.x];
+	if (inner === undefined) {
+		inner = {};
+		list[point.x] = inner;
+	}
+	inner[point.y] = route;
+}
+
+function findReached(list, route) {
+	var inner = list[point.x];
+	if (inner === undefined)
+		return undefined;
+	else
+		return inner[point.y];
+}
+
+function findRoute(from, to) {
+	var open = new BinaryHeap(routeScore);
+	var reached = makeReachedList();
+	function routeScore(route) {
+		if (route.score === undefined)
+			route.score = estimatedDistance(route.point, to) + route.length;
+		return route.score;
+	}
+	function addOpenRoute(route) {
+		open.push(route);
+		storeReached(reached, route.point, route);
+	}
+	addOpenRoute({point: from, length: 0});
+	while (open.size() > 0) {
+		var route = open.pop();
+		if (samePoint(route.point, to))
+			return route;
+		forEach(possibleDirections(route.point), function(direction) {
+			var known = findReached(reached, direction);
+			var newLength = route.length + weightedDistance(route.point, direction);
+			if (!know || know.length > newLength) {
+				if (known)
+					open.remove(known);
+				addOpenRoute({point: direction, from: route, length: newLength});
+			}
+		});
+	}
+	return null;
+}
