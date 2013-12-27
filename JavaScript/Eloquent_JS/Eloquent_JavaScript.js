@@ -2512,11 +2512,44 @@ function findRoute(from, to) {
 // Chapter 8: Object-oriented Programming
 // #####################################
 
+// - So far we have just used objects as dictionaries
+// - In an OO approach, they're their own little worlds!
+//   - The outside world may only touch them through a limited and well defined interface:
+//     - Through a number of specific methods and properties
+//   - Example:
+//     - The "reached" list in chapter 7
+//       - Used only 3 functions to interact with it (makeReachedList, storeReached, findReached)
+
+// - How to give objects methods?
+//   - One way: attach function values to it:
+var rabbit = {};
+rabbit.speak = function(line) {
+	console.log("The rabbit says '" + line + "'");
+};
+rabbit.speak("Well, now you're asking me.");
+
+// - In most cases, though, the method needs to know WHO it should act on
+//   - What if there are different rabbits?
+//   - The speak method should indicate which rabbit is speaking
+//   - We can use "this"
+//     - "this" is a special variable that is always present when a function is called
+//     - when a function is called as a method, it points at the relevant object
+//       - a function is called as a method when it is looked up as a property, and immediately called, for example:
+//         - object.method()
+function speak(line) {
+	console.log("The " + this.adjective + " rabbit says '" + line +"'");
+}
+
+var whiteRabbit = {adjective: "white", speak: speak};
+var fatRabbit = {adjective: "fat", speak: speak};
+
+whiteRabbit.speak("Oh my ears and whiskers, how late it's getting!");
+fatRabbit.speak("I could sure use a carrot right now.");
 
 
 
 // Left off at:
 
-// We will use a binary heap for the open list. What would
+// I can now clarify the mysterious first argument to the apply method
 
-// http://eloquentjavascript.net/chapter7.html
+// http://eloquentjavascript.net/chapter8.html
