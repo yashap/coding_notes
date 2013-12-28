@@ -2546,10 +2546,78 @@ var fatRabbit = {adjective: "fat", speak: speak};
 whiteRabbit.speak("Oh my ears and whiskers, how late it's getting!");
 fatRabbit.speak("I could sure use a carrot right now.");
 
+// - So we set up the speak function to look at this.adjective
+//   - which is the adjective property of the object you apply the function to
+// - Note that we also explicitly had to specify a speak property, which is the speak function
+//   - so calling whiteRabbit.speak gives us access to the speak() function!
+
+// Remember the "apply" method for functions?
+console.log(Math.min.apply(null, [6, 20, -1, 0, -100]));		// returns -100
+// - Takes two arguments:
+//   - The 2nd argument is an array of arguments to pass to the function
+//   - The 1st argument we always left as null before
+// - The first argument is all about OOP!
+//   - Here you can spcify the object you want to apply the function to!
+//   - For non-method functions, this is irrelevant, so we leave it null
+speak.apply(fatRabbit, ["Yum."]);
+
+// - Functions also have a "call" method, which is similar to apply
+//   - However, with "call" you give the arguments for the function separately instead of as an array
+speak.call(fatRabbit, "Burp.");
+
+// - The "new" keyword provides a convenient way of creating new objects
+//   - When a function is called with the word "new" in front of it, its "this" variable will point at a NEW object, which it will automatically return
+// - Functions used to create new objects like this are called "constructors"
+//   - It's a JS convention to name constructor functions with a capital first letter
+//   - Here's a constructor for a Rabbit, that we use to make a new Rabbit
+function Rabbit(adjective) {
+	this.adjective = adjective;
+	this.speak = function(line) {
+		console.log("The " + this.adjective + " rabbit says '" + line + "'");
+	};
+}
+// - The above is a constructor function
+//   - Note the lack of a "return" statement
+//     - We're going to use this with "new", and "new" automatically returns the object that was created, it doesn't have to be specified within the constructor function
+var killerRabbit = new Rabbit("killer");
+// Here we create a new rabbit object using the constructor function
+killerRabbit.speak("GRAHHHHHHH!!!!");
+speak.apply(killerRabbit, ["Grah!"]);
+speak.call(killerRabbit, "Grahhh!");
+// Calling the speak method for the killer rabbit in 3 different ways
+console.log(killerRabbit);
+// { adjective: 'killer', speak: [Function] }
+
+
+// - What does the "new" keyword really do?  Why not just do this?
+function makeRabbit(adjective) {
+	return {
+		adjective: adjective,
+		speak: function(line) {
+			console.log("The " + this.adjective + " rabbit says '" + line + "'");
+		}
+	};
+}
+var blackRabbit = makeRabbit("black");
+blackRabbit.speak("Sup homie?");
+// - This works, and is done in the style we were previously using
+
+// - So, why use new/constructors?
+//   - "new" does a few things "behind the scenes"
+//     - One is that it creates a constructor property that points at the function that created it
+console.log(killerRabbit.constructor);		// [Function: Rabbit]
+// - blackRabbit also has a constructor property:
+console.log(blackRabbit.constructor);			// [Function: Object]
+// - BUT it points at the Object function
+// - Where did the constructor property come from?
+//   - It's part of the prototype of a rabbit
+//   
+
+
 
 
 // Left off at:
 
-// I can now clarify the mysterious first argument to the apply method
+// Where did the constructor property come from?
 
 // http://eloquentjavascript.net/chapter8.html
