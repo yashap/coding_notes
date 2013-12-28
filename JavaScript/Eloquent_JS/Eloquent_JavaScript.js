@@ -2611,13 +2611,89 @@ console.log(blackRabbit.constructor);			// [Function: Object]
 // - BUT it points at the Object function
 // - Where did the constructor property come from?
 //   - It's part of the prototype of a rabbit
-//   
+//     - Every object is based on a prototype, with come with a set of inherent properties
+//     - So far the objects we've used are associated with the Object constructor
+//       - Typing {} is equivalent to typing new Object()
+
+var simpleObject = {};
+console.log(simpleObject.constructor);		// [Function: Object]
+console.log(simpleObject.toString);				// [Function: toString]
+// - toString is a method that is part of the Object prototype
+//   - Therefore all objects have a toString method
+
+console.log(Rabbit.prototype);							// {}
+console.log(Rabbit.prototype.constructor);	// [Function: Rabbit]
+// - Every function automatically gets a prototype property
+//   - The constructor property of the prototype points back at the function
+// - Because the rabbit prototype is itself an object, it's based on the Object prototype
+//   - it thus shares its toString method
+console.log(killerRabbit.toString);					// [Function: toString]
+console.log(simpleObject.toString);					// [Function: toString]
+console.log(killerRabbit.toString === simpleObject.toString);		// true
+
+// - objects "share" the properties of their prototypes, BUT this sharing is one-way
+//   - the properties of the object have no effect on the prototype
+// - How JS works with properties/objects:
+//   - When LOOKING UP the value of a property:
+//     - First JS looks at the properties the object ITSELF has
+//     - If there is a property, we get that value
+//     - If there isn't, it looks up a level to the prototype, then up another level if it's still not there, etc.
+//     - If no property is found, undefined is returned
+//   - When SETTING the value of a property:
+//     - JS never goes to the prototype, but always sets the property in the object itself
+
+// - First a recap:
+console.log(killerRabbit);						//{ adjective: 'killer', speak: [Function] }
+console.log(killerRabbit.prototype);	// undefined --> why? Why not {} or Rabbit or something like that?
+console.log(killerRabbit.constructor);	// [Function: Rabbit]
+console.log(Rabbit);									// [Function: Rabbit]
+
+// - Now some new examples
+console.log(Rabbit.prototype);				// {}
+Rabbit.prototype.teeth = "small";
+console.log(killerRabbit.teeth);			// "small"
+// - Note that killerRabbit still does not have a teeth property itself
+//   - We gave it to the prototype, and killerRabbit inherited it
+killerRabbit.teeth = "long, sharp, and bloody";
+console.log(killerRabbit.teeth);			// "long, sharp, and bloody"
+console.log(Rabbit.prototype.teeth);	// "small"
+// - So killerRabbit.teeth overrode the prototype's property
+
+// - Adding properties to the prototype allows us to add them to all rabbits!
+Rabbit.prototype.dance = function() {
+	console.log("The " + this.adjective + " rabbit dances a jig.");
+};
+
+killerRabbit.dance();			// The killer rabbit dances a jig.
+var homelessRabbit = new Rabbit("homeless");
+homelessRabbit.dance();		// The homeless rabbit dances a jig.
+blackRabbit.dance();			// error, because blackRabbit wasn't made with the Rabbit constructor!
+
+// - The prototypical rabbit is the perfect place for values that all rabbits have in common
+// - Before we made the Rabbit constructor like this:
+function Rabbit(adjective) {
+	this.adjective = adjective;
+	this.speak = function(line) {
+		console.log("The " + this.adjective + " rabbit says '" + line + "'");
+	};
+}
+
+// - Here's another approach
+function Rabbit(adjective) {
+	this.adjective = adjective;
+}
+Rabbit.prototype.speak = function(line) {
+	console.log("The " + this.adjective + " rabbit says '" + line + "'");
+};
+
+var hazelRabbit = new Rabbit("hazel");
+hazelRabbit.speak("Good Frith!");				// The hazel rabbit says 'Good Frith!'
 
 
 
 
 // Left off at:
 
-// Where did the constructor property come from?
+// The fact that all objects have a prototype and receive some properties from this prototype can be tricky.
 
 // http://eloquentjavascript.net/chapter8.html
