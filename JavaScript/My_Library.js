@@ -97,3 +97,10 @@ function addPoints(a, b) {
 function samePoint(a, b) {
 	return a.x === b.x && a.y === b.y;
 }
+
+function forEachIn(object, action) {
+	for (var property in object) {
+		if (object.hasOwnProperty(property))
+			action(property, object[property]);
+	}
+}

@@ -2690,10 +2690,87 @@ var hazelRabbit = new Rabbit("hazel");
 hazelRabbit.speak("Good Frith!");				// The hazel rabbit says 'Good Frith!'
 
 
+// - All objects have a prototype, and receive some properties from it
+//   - This can cause problems
+//   - For example, when using an object to store a set of things
+// - Example, what if we wanted to know whether there's a cat called consructor back when we were doing cat problems?
+var noCatsAtAll = {};
+if ("constructor" in noCatsAtAll)
+	console.log("There APPEARS to be a cat called 'constructor'!");
+// - We wanted {} to only contain cats, but it contains other properties too!
+
+
+// - Another problem comes with extending standard constructors, such as Object and Array
+//   - For example, what if we wanted to give all objects a method called properties, that returns an array with the names of the (non-hidden) properties an object has?
+Object.prototype.properties = function() {
+	var result = [];
+	for (var property in this)
+		result.push(property);
+	return result;
+};
+
+var test = {x: 10, y: 3};
+console.log(test.properties());
+// - It returns [ 'x', 'y', 'properties' ]
+//   - We didn't mean from properties to be in there, but it is!
+//   - Now that the Object prototype has a property called properties, looping over the properties of any object, using for and in, will also give us that shared property
+//   - This is generally NOT what we want
+//   - In general, when using for or in for an object, we want ONLY THE PROPERTIES THAT BELONG TO THE OBJECT ITSELF
+
+// - Is there a way to do this in JS?  Yes!
+//   - Every object has a method called hasOwnProperty
+//   - This tells us whether the object has a property with a given name
+//     - object.hasOwnProperty(property) returns either true or false, if it has/doesn't have this property in the object itself
+//   - We could thus re-write out properties method like this:
+Object.prototype.properties = function() {
+	var result = [];
+	for (var property in this) {
+		if (this.hasOwnProperty(property))
+			result.push(property);
+	}
+	return result;
+};
+
+var test = {x: 10, y: 3};
+console.log(test.properties());
+// - It returns [ 'x', 'y' ]
+//   - That's what we wanted!
+
+
+// - We can also abstract this into a higher order function:
+function forEachIn(object, action) {
+	for (var property in object) {
+		if (object.hasOwnProperty(property))
+			action(property, object[property]);
+	}
+}
+
+// - Uses:
+
+// 1) Same as above
+var test = {x: 10, y: 3};
+var result = [];
+forEachIn(test, function(propName) {result.push(propName);});
+console.log(result);					// [ 'x', 'y' ]
+
+// 2) As above, but push values instead of names
+var result2 = [];
+forEachIn(test, function(propName, propValue) {result2.push(propValue);});
+console.log(result2);					// [ 10, 3 ]
+
+// 3) Similar, but simply log to console instead of pushing
+var chimera = {head: "lion", body: "goat", tail: "snake"};
+forEachIn(chimera, function(propName, propValue) {console.log("The " + propName + " of a " + propValue + ".");});
+// - Returns:
+// The head of a lion.
+// The body of a goat.
+// The tail of a snake.
+
+
 
 
 // Left off at:
 
-// The fact that all objects have a prototype and receive some properties from this prototype can be tricky.
+// But, what if we find a cat named hasOwnProperty?
 
 // http://eloquentjavascript.net/chapter8.html
