@@ -2767,10 +2767,173 @@ forEachIn(chimera, function(propName, propValue) {console.log("The " + propName 
 // The tail of a snake.
 
 
+// - But what if one of the letters has a cat called hasOwnProperty?
+//   - Then calling object.hasOwnProperty will fail, because it will no longer point to a function
+// - We can solve this with:
+function forEachIn(object, action) {
+	for (var property in object) {
+		if (Object.prototype.hasOwnProperty.call(object, property))
+			action(property, object[property]);
+	}
+}
+
+var test = {name: "Mordecai", hasOwnProperty: "Uh-oh"};
+forEachIn(test, function(name, value) {console.log("Property " + name + " = " + value);});
+// It works!  It returns:
+// Property name = Mordecai
+// Property hasOwnProperty = Uh-oh
+
+// - What happened here?
+//   - Before we were using the hasOwnProperty method found in the object itself
+//     - That's why we called object.hasOwnProperty(property)
+//   - This time, we get the method from the Object prototype, because nobody should be messing with the method in Object.prototype
+//     - Then we use call to apply the method to the right object
+// - As long as nobody messes with the method in Object.prototype, we're good
+
+// - Clarifying some things for myself
+console.log(typeof(Object.prototype.hasOwnProperty));		// function
+console.log(Object.prototype.hasOwnProperty(toString));		// false, I guess toString doesn't come from the Object prototype
+console.log(Object.prototype.hasOwnProperty(constructor));	// still false, I don't really get this
+
+
+// - hasOwnProperty can also be used in situations where we were using the in operator
+//   - to test if an object has a specific property
+// - There is a catch, though
+//   - some properties, like toString, are 'hidden'
+//     - they won't show up when going over properties with for/in
+//   - browsers like Firefox give every object a hidden property names __proto__, that points to the prototype of that object
+//     - hasOwnProperty will return true for __proto__, even though the program did not explicitly add it
+// - How to get around this?
+//   - We can use the propertyIsEnumerable
+//     - returns false for hidden properties
+var myObject = {foo: "bar"};
+console.log(Object.prototype.hasOwnProperty.call(myObject, "foo") &&
+	Object.prototype.propertyIsEnumerable.call(myObject, "foo"));
+// - This returns true, but would return false for hidden properties
+// - This is an ugly but reliable workaround
+
+
+// - Instead of dealing with all this ugliness, WHEN YOU WANT TO APPROACH AN OBJECT AS JUST A SET OF VALUES, it's probably better to write a constructor and prototype for this specific situation
+
+// First our constructor:
+function Dictionary(startValues) {
+	this.values = startValues || {};
+}
+
+// Then all the prototype methods to add to it:
+Dictionary.prototype.store = function (name, value) {
+	this.values[name] = value;
+};
+Dictionary.prototype.lookup = function(name) {
+	return this.values[name];
+};
+Dictionary.prototype.contains = function(name) {
+	return Object.prototype.hasOwnProperty.call(this.values, name) &&
+		Object.prototype.propertyIsEnumerable.call(this.values, name);
+};
+Dictionary.prototype.each = function(action) {
+	forEachIn(this.values, action);
+};
+
+// Now let's test it:
+var colours = new Dictionary({Grover: "blue", Elmo: "orange", Bert: "yellow"});
+console.log(colours.contains("Grover"));				// true
+console.log(colours.contains("constructor"));		// false, as it should be, since contains is meant to ignore hidden properties
+colours.each(function(name, colour) {
+	console.log(name + " is " + colour);
+});
+// Grover is blue
+// Elmo is orange
+// Bert is yellow
+
+// Sweet!  Now the whole mess related to approaching objects as plain sets of properties has been 'encapsulated' in a convenient interface: one constructor and four methods
+//   - Note that the 'values' property of a Dictionart object is not part of this interface
+//   - It's an internal detail, and when using Dictionart objects we don't need to directly use it
+
+// When writing new interfaces like this, it's often a good idea to add comments about what it does and how it should be used
+
+// Why use interfaces instead of just dealing with the object's internal details?
+//   1) It makes the object easier to use
+//     - You just have to keep the interface in mind
+//     - Don't have to worry about the rest unless you're changing the object itself
+//   2) It's great "insurance" against future changes
+//     - Often you'll want to change something about the internal implementation of an object type
+//     - If outside code had to access every single property/detail, changes to the object could easily break this code
+//     - If outside code only uses a small interface, you're probably fine
+
+// Adding new methods to existing prototypes:
+//   - This can be very convenient
+//     - The Array and String prototypes especially in JS could use a few more basic methods
+//     - For example, we could:
+//       - implement forEach and map as methods of the Array prototype
+//       - implement startsWith as a method of the String prototype
+//   - However, if our program has to run on the same web-page as another program that uses for/in natively, then adding things to prototypes (especially Object and Array) can break things
+//     - Some people therefore think you shouldn't touch prototypes at all
+//     - In reality it can be fine as long as your code doesn't have to co-exist with badly written code
+
+
+// Our big project for this chapter will be building a virtual terrarium
+//   - A tank with insects moving inside it
+//   - It will be a 2D grid
+//   - All the insects will get to take actions like moving, every half second
+// Overall we'll chop both time and space into units with a fixed size
+//   - squares for space
+//   - half seconds for time
+
+// We will start with a "plan" for the terrarium, which is an array of strings:
+var thePlan =
+  ["############################",
+   "#      #    #      o      ##",
+   "#                          #",
+   "#          #####           #",
+   "##         #   #    ##     #",
+   "###           ##     #     #",
+   "#           ###      #     #",
+   "#   ####                   #",
+   "#   ##       o             #",
+   "# o  #         o       ### #",
+   "#    #                     #",
+   "############################"];
+
+// We used an array because JS doesn't allow multi-line strings
+// In the above:
+//   - # represents walls/rocks
+//   - o respresents bugs
+//   - spaces are empty space
+
+// We'll be using this plan array to create a terrarium object
+//   - The object will be used to keep track of the shape/content of the terrarium, and to let the bugs inside move
+//   - It has 4 methods:
+//     1) toString, which converts the terrarium object back to a string (so we can see what's going on inside it)
+//     2) step, which allows all the bugs to move one step, if they want
+//     3/4) start and stop, which control whether the terrarium is "running".  When it's running, step is automatically called every half second
+
+// Create a constructor that creates point objects with x/y coordinates
+//   - It should have 2 methods:
+//     1) add, which can add the point to another point
+//     2) isEqualTo, which can tell you if the point equals another point
+function Point(x, y) {
+	this.x = x;
+	this.y = y;
+}
+Point.prototype.add = function(other) {
+	return new Point(this.x + other.x, this.y + other.y);
+};
+Point.prototype.isEqualTo = function(other) {
+	return this.x === other.x && this.y === other.y;
+};
+
+console.log(new Point(3, 1));		// {x: 3, y: 1}
+console.log(new Point(3, 1).add(new Point(2, 4)));		// {x: 5, y: 5}
+console.log(new Point(3, 1).isEqualTo(new Point(3, 1)));		// true
+console.log(new Point(3, 1).isEqualTo(new Point(3, 2)));		// false
+
+
+
 
 
 // Left off at:
 
-// But, what if we find a cat named hasOwnProperty?
+// When writing objects to implement a certain program, it is not always very clear which functionality goes where.
 
 // http://eloquentjavascript.net/chapter8.html
