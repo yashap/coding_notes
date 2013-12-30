@@ -79,6 +79,7 @@ function Terrarium(plan) {
             elementFromCharacter(line.charAt(x)));
       }
    }
+   this.grid = grid;
 }
 
 function elementFromCharacter(character) {

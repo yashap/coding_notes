@@ -3118,13 +3118,41 @@ console.log(characterFromElement(new StupidBug()));		// o
 
 // Now we can use the 'each' method of the 'Grid' object to build up a string
 //   - Really we should have a newline at the end of every row
-//   
+//     - Use the x-coord to determine when the end of a line is reached
+// Add a method toString to the Terrarium prototype
+//   - takes no arguments
+//   - returns a string
+//     - if we console.log this string, it should give a nice 2D view of the terrarium
+Terrarium.prototype.toString = function() {
+	var characters = [];
+	var endOfLine = this.grid.width - 1;		// remember that grid has width, height and cells properties (cells is an array of all cell elements)
+	this.grid.each(function(point, value) {
+		// remember that each is essentially a for loop over all points in the grid
+		// the function is what happens at each step of the loop
+		// it loops through all points in the grid, starting at "0,0", then to "1,0", etc.
+		// at every step you have access to the point object, {x: 3, y: 1}, and the value
+		characters.push(characterFromElement(value));
+		if (point.x === endOfLine)
+			characters.push("\n");
+	});
+	return characters.join("");
+};
+
+var testTerr = new Terrarium(thePlan);
+console.log(testTerr.toString());
+
+// It works!
+
+// Note:
+//   - If we had tried to access this.grid inside of the function we passed as an argument to each, it wouldn't have worked!
+//   - Why?  Because this always refers to the function it's defined inside of, even if that function is not a method
+
 
 
 
 
 // Left off at:
 
-// Now we can use the each method of the Grid object to build up a string.
+// Sometimes it is straightforward to work around this by storing the information you need in a variable, like endOfLine, which is visible in the inner function
 
 // http://eloquentjavascript.net/chapter8.html
