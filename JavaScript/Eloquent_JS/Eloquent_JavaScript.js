@@ -2929,11 +2929,202 @@ console.log(new Point(3, 1).isEqualTo(new Point(3, 1)));		// true
 console.log(new Point(3, 1).isEqualTo(new Point(3, 2)));		// false
 
 
+// General principles on organizing functionality
+//   - You can basically implement functionality with methods of objects, separate functions, and new objects
+//   - To keep things organized, you should keep methods/responsibilities that an object has as small as possible
+
+// Applying this to the terrarium object:
+//   - Note that it LETS bugs move, but doesn't MAKE them move
+//   - The bugs themselves will also be objects, and the BUG OBJECTS will decide what they want to do
+//     - The terrarium just provides the infrastructure for them to move in, and lets them move every half second, if they want
+//     - Putting functionality in the bug objects makes it so no one object is too complex
+//   - The grid on which the content of the terrarium is kept is also going to be pretty complex
+//     - Things it has to do:
+//       - Define some kind of representation
+//       - Provide ways to access this representation
+//       - Provide a way to initialize the grid from a 'plan' array
+//       - Provide a way to write the content of the grid to a string for the toString method
+//       - Allow for the movement of bugs on the grid
+//     - With this much complexity, the grid should probably also be its own object
+
+// Whenever you're going to mix data representation and problem-specific code in one object, it's a good idea to put the data representation code into a separate type of object
+//   - In this case we need to represent a grid of values, so let's write a Grid type
+//   - First, let's decide how to store the values:
+
+// Option 1: an array of arrays (nesting)
+var grid = [["0,0", "1,0", "2,0"],
+	["0,1", "1,1", "2,1"]];
+console.log(grid[1][2]);		// This returns "2,1", or x = 2, y = 1
+
+// Option 2: a single long array
+//   - in this case we get elements with the following fomula:
+//   x,y = grid[x + y * width]
+//   - where width is the width of the grid (in this case 3)
+var grid = ["0,0", "1,0", "2,0",
+	"0,1", "1,1", "2,1"];
+console.log(grid[2 + 1 * 3]);		// Again, returns "2,1", or x = 2, y = 1
+
+// We chose Option 2 because it makes it much easier to initialize the array
+//   - Note that:
+//   new Array(x)
+//   - produces a new array of length x, filled with undefined values
+//   - for example:
+console.log(new Array(3));
+
+// Let's write the Grid constructor
+function Grid(width, height) {
+	this.width = width;
+	this.height = height;
+	this.cells = new Array(width * height);		// So we're storing the representation of the data in a new type of object, an array
+}
+
+// And the prototypes
+Grid.prototype.valueAt = function(point) {
+	return this.cells[point.x + point.y * this.width];
+};
+Grid.prototype.setValueAt = function(point, value) {
+	this.cells[point.x + point.y * this.width] = value;
+};
+Grid.prototype.isInside = function(point) {
+	return point.x >= 0 && point.y >= 0 &&
+		point.x < this.width && point.y < this.height;		// remember that we pass the width and height when defining a new Grid with the Grid constructor
+};
+Grid.prototype.moveValue = function(from, to) {		// from and to will both be points
+	this.setValueAt(to, this.valueAt(from));		// we set the value at "to" to be equal to the value at "from"
+	this.setValueAt(from, undefined);		// the value at from is now undefined, since it moved away!
+};
+
+// We'll need to be able to go over all of the elements of a grid
+//   - So we can do things like finding the bugs we need to move, or converting the whole thing to a string
+//   - To do this, let's make a higher order function that takes an action as the argument
+//     - Add the method "each" to the prototype of "Grid"
+//     - "each" should take a function of two arguments as it's argument
+//     - It calls this function for every point on the grid, giving it the point object for that point as its first argument, and the value that is on the grid at that point as its second argument
+//     - go over the points starting at "0,0" one row at a time, so that "1,0" (x = 1, y = 0) is handled before "0,1" (x = 0, y = 1)
+//       - we do this to make it easier to write toString later
+//       - Hint:
+//         - put a for loop for the x-coordinate inside a loop for the y-coordinate
+//     - don't much about in the cells property of the grid object directly, instead use valueAt to get at the values
+Grid.prototype.each = function(action) {
+	// action is a function of 2 arguments
+	// the first is the point object for that point, i.e. {x = 1, y = 4}
+	// the second is the value at that point
+	// when we use this method, we'll pass an action function that acts on points and values
+	for (var y = 0; y < this.height; y++) {
+		for (var x = 0; x < this.width; x++) {
+			var point = new Point(x, y);
+			action(point, this.valueAt(point));
+		}
+	}
+};
+
+// Testing out the grid
+var testGrid = new Grid(3, 2);
+console.log(testGrid);	// {width: 3, height: 2, cells: [ , , , , , ]}
+testGrid.setValueAt(new Point(1, 0), "#");
+testGrid.setValueAt(new Point(1, 1), "o");
+testGrid.each(function(point, value) {
+	console.log(point.x + "," + point.y + ": " + value);
+});
+// 0,0: undefined
+// 1,0: #
+// 2,0: undefined
+// 0,1: undefined
+// 1,1: o
+// 2,1: undefined
+
+
+// Before we can write a Terrarium constructor, let's thing a bit more about the 'bug objects' living inside it
+//   - bug objects will have an 'act' method, which returns an 'action'
+//   - an 'action' is an object with a 'type' property
+//     - 'type' names the type of action the bug wants to take, for example "move"
+//     - for most actions, 'action' also contains extra info, like the direction the bug wants to go
+//   - when 'act' is called, it's given an object with info about all the adjacent squares
+//     - for each of the 8 directions, it contains a property
+//     - the property indicating what's above the bug will be called "n" (for north), above and right "ne" (for north-east), etc.
+//     - to look up the directions these names refer to, we can use the following Dictionary object:
+var directions = new Dictionary({
+	"n":  new Point( 0, -1),
+	"ne": new Point( 1, -1),
+	"e":  new Point( 1,  0),
+	"se": new Point( 1,  1),
+	"s":  new Point( 0,  1),
+	"sw": new Point(-1,  1),
+	"w":  new Point(-1,  0),
+	"nw": new Point(-1, -1)
+});
+
+// So let's say we're at point "4, 4" on the grid, and want to move south east
+//   - Where will we go?
+console.log(new Point(4, 4).add(directions.lookup("se")));	// { x: 5, y: 5 }
+
+// Let's make a StupidBug object type, that simply always moves south
+function StupidBug() {}
+StupidBug.prototype.act = function(surroundings) {
+	return {type: "move", direction: "s"};
+};
+// The act method returns an action object, as it should
+//   - However, this bug is stupid, so the act is takes doesn't actually depend on its surroundings
+
+
+// Now let's start work on the Terrarium object type
+//   - it's constructor should take a plan (an array of strings) as an argument, and initialize an empty grid
+var wall = {};
+
+function Terrarium(plan) {
+	var grid = new Grid(plan[0].length, plan.length);
+	// remember --> Grid(width, height)
+	// so from the plan we're creating a grid object of the right size, but for now its empty (every coordinate is undefined)
+	// new Grid(3, 2) would create {width: 3, height: 2, cells: [ , , , , , ]}
+	for (var y = 0; y < plan.length; y++) {
+		var line = plan[y];		// so we're looping through every row of the grid
+		for (var x = 0; x < line.length; x++) {
+			grid.setValueAt(new Point(x, y),
+				elementFromCharacter(line.charAt(x)));
+			// basically we're looping through the grid, and setting each point to the appropriate value based on the plan
+			// elementFromCharacter is defined below, it just handles characters
+			//   - spaces are undefined
+			//   - # returns wall, which is an empty object
+			//   - o returns a new StupidBug object
+		}
+	}
+}
+
+function elementFromCharacter(character) {
+	if (character === " ")
+		return undefined;
+	else if (character === "#")
+		return wall;
+	else if (character === "o")
+		return new StupidBug();
+}
+
+
+// New the Terrarium will need a toString method, which converts it into a string
+//   - to make this easier, we mark both the wall and the prototype for StupidBug with a property character, which holds the character that represents walls
+wall.character = "#";
+StupidBug.prototype.character = "o";
+
+function characterFromElement(element) {
+	if (element === undefined)
+		return " ";
+	else
+		return element.character;
+		// this is why it was key we gave the property the same name for both walls and bugs
+}
+
+console.log(characterFromElement(wall));							// #
+console.log(characterFromElement(new StupidBug()));		// o
+
+// Now we can use the 'each' method of the 'Grid' object to build up a string
+//   - Really we should have a newline at the end of every row
+//   
+
 
 
 
 // Left off at:
 
-// When writing objects to implement a certain program, it is not always very clear which functionality goes where.
+// Now we can use the each method of the Grid object to build up a string.
 
 // http://eloquentjavascript.net/chapter8.html
