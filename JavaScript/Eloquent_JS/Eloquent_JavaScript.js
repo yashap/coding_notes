@@ -3147,12 +3147,60 @@ console.log(testTerr.toString());
 //   - If we had tried to access this.grid inside of the function we passed as an argument to each, it wouldn't have worked!
 //   - Why?  Because this always refers to the function it's defined inside of, even if that function is not a method
 
+// So, how do we get data from a previous 'this' statement, when we're in a new function?
+//   - We can store values in a variable, like endOfLine above
+//     var endOfLine = this.grid.width - 1;
+//   - or we can store the entire this object in a variable, i.e.:
+//     var self = this;
+//   - by convention people often name such a variable 'self' or 'that'
+// Another option is to use a function similar to 'partial' from Chapter 6
+//   - "partial" added arguments to a function
+//   - "bind" will add a "this" argument, using the first argument to the function's apply method
+function bind(func, object) {
+	return function() {
+		return func.apply(object, arguments);
+	};
+}
+
+var testArray = [];
+var pushTest = bind(testArray.push, testArray);
+pushTest("A");
+pushTest("B");
+console.log(testArray);		// ['A', 'B']
+
+// Remember how apply works
+//   - It takes two arguments
+//   - The first is the object you want to apply the function to
+//     - If it's a plain function, this is null
+//     - If it's a method, you list the method's object here
+//   - The second is an array of arguments to use as the arguments for the function
+//     - if the argument takes just one arg, pass [arg], if two then [arg1, arg2], etc.
+
+// So how is bind working?
+//   - Say we have a specific object/method we want to access, but we can't do this.whatever because we're in a different this
+//   - we can instead just use:
+//   bind(object.method, object)
+//   - which will return
+//   object.method.apply(object, [array of arguments for method])
+
+// However, that function is a bit ugly.  To use it we wrote:
+//   bind(testArray.push, testArray)
+// Re-write the function specifically for methods, where we don't have to name the object twice
+function method(object, name) {
+	return function() {
+		return object[name].apply(object, arguments);
+	};
+}
+
+var pushTest = method(testArray, "push");
+pushTest("Sup homie?");
+console.log(testArray);
 
 
 
 
 // Left off at:
 
-// Sometimes it is straightforward to work around this by storing the information you need in a variable, like endOfLine, which is visible in the inner function
+// We will need bind (or method) when implementing the step method of a terrarium.
 
 // http://eloquentjavascript.net/chapter8.html

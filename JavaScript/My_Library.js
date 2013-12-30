@@ -121,3 +121,15 @@ Dictionary.prototype.contains = function(name) {
 Dictionary.prototype.each = function(action) {
 	forEachIn(this.values, action);
 };
+
+function bind(func, object) {
+	return function() {
+		return func.apply(object, arguments);
+	};
+}
+
+function method(object, name) {
+	return function() {
+		return object[name].apply(object, arguments);
+	};
+}
