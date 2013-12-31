@@ -3258,6 +3258,8 @@ Terrarium.prototype.listSurroundings = function(point) {
 	// write method here
 };
 
+
+
 // Junk space
 
 meTesting.grid.each(function(point, value) {
@@ -3290,6 +3292,6 @@ console.log(testTerr.toString());
 
 // Left off at:
 
-// We will need bind (or method) when implementing the step method of a terrarium.
+// Hint: Do not write out all the directions, use the each method on the directions dictionary.
 
 // http://eloquentjavascript.net/chapter8.html
