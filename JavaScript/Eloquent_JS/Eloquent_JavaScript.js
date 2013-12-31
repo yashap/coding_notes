@@ -3261,6 +3261,7 @@ Terrarium.prototype.listSurroundings = function(point) {
 
 
 
+
 // Junk space
 
 meTesting.grid.each(function(point, value) {
