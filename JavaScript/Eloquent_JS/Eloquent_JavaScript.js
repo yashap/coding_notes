@@ -3100,8 +3100,9 @@ function elementFromCharacter(character) {
 }
 
 
-// New the Terrarium will need a toString method, which converts it into a string
+// Now the Terrarium will need a toString method, which converts it into a string
 //   - to make this easier, we mark both the wall and the prototype for StupidBug with a property character, which holds the character that represents walls
+//   - a nice side benefit is that if we want to change how terrariums look when converted to strings, it will be very easy to do so!  We just change the character property of both walls and bugs
 wall.character = "#";
 StupidBug.prototype.character = "o";
 
@@ -3142,6 +3143,22 @@ var testTerr = new Terrarium(thePlan);
 console.log(testTerr.toString());
 
 // It works!
+
+// Overall, terrariums are ordered like this:
+// {grid: 
+// 		{width: 28,
+// 		height: 12,
+// 		cells: [
+// 			array of:
+// 			1) bug objects
+// 				o -> new StupidBug()
+// 			2) wall objects (# -> wall)
+// 				# -> wall
+// 			3) blank spaces
+// 				" " -> undefined
+// 		]
+// 		}
+// }
 
 // Note:
 //   - If we had tried to access this.grid inside of the function we passed as an argument to each, it wouldn't have worked!
@@ -3197,6 +3214,78 @@ pushTest("Sup homie?");
 console.log(testArray);
 
 
+// When implementing the 'step' method of a terrarium, we'll need to use 'bind' (or 'method')
+//   - this method will go over all the bugs in the grid, and:
+//     1) Ask them for an action
+//     2) Execute the given action
+// Why not just use 'each' on the grid, and just handle bugs as we come accross them?
+//   - when a bug moves south or east, we'd come accross it again in the same turn!
+// Better to first gather all the bugs in an array, then process them
+
+// This method gathers anything that has an 'act' method, and stores them in objects that also contain their crrent position
+//   - Bugs have an 'act' method
+Terrarium.prototype.listActingCreatues = function() {
+	var found = [];
+	this.grid.each(function(point, value) {
+	// so we'll be going over each property of the terrarium grid
+	//   - remember that grids have 3 properties; height, width, cells
+	//   - remember that Grid.each sets x to width, y to height, then loops through all x/y combos of grid.cell
+		if (value !== undefined && value.act)
+		// basically, value cannot be undefined, and value must be an object with a method "act"
+			found.push({object: value, point: point});
+	});
+	return found;
+};
+
+console.log(new Terrarium(thePlan).listActingCreatues());
+// Returns:
+// [ { object: {}, point: { x: 19, y: 1 } },
+// 	{ object: {}, point: { x: 13, y: 8 } },
+// 	{ object: {}, point: { x: 2, y: 9 } },
+// 	{ object: {}, point: { x: 15, y: 9 } } ]
+
+
+// When asking a bug to act, we must pass it an object with info about its current surroundings
+//   - the bug will use the directions names we saw earlier ("n", "ne", etc.) as property names
+//   - each property will hold a 1 character string, as returned by characterFromElement, indicating what the bug can see in that direction
+//   - add a method listSurroundings to the Terrarium prototype
+//     - takes one argument, the point at which the bug is currently standing
+//     - returns an object with info about the surroundings (i.e. {"n": "#", "ne": " ", etc.})
+//     - if the point is at the edge of the grid (think equal to 0 or height/width), then just pass "#", because it's basically like a wall (the bug can't go there)
+//     - don't write out all the directions, use the each method on the directions dictionary
+//       - note that this is Dictionary.each, not Grid.each, it's a different method
+Terrarium.prototype.listSurroundings = function(point) {
+	// write method here
+};
+
+// Junk space
+
+meTesting.grid.each(function(point, value) {
+	console.log("point: " + point + "  value: " + value);
+});
+
+console.log(meTesting.grid.cells[47].character);		// 'o'
+console.log(meTesting.grid.cells[0].character);		// '#'
+
+console.log(testTerr.toString());
+
+// Overall, terrariums are ordered like this:
+// {grid: 
+// 		{width: 28,
+// 		height: 12,
+// 		cells: [
+// 			array of:
+// 			1) bug objects
+// 				o -> new StupidBug()
+// 				
+// 			2) wall objects (# -> wall)
+// 				# -> wall
+// 				{character: '#'}
+// 			3) blank spaces
+// 				" " -> undefined
+// 		]
+// 		}
+// }
 
 
 // Left off at:

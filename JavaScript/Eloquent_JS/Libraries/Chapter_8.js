@@ -111,3 +111,12 @@ Terrarium.prototype.toString = function() {
 	});
 	return characters.join("");
 };
+
+Terrarium.prototype.listActingCreatues = function() {
+	var found = [];
+	this.grid.each(function(point, value) {
+		if (value !== undefined && value.act)
+			found.push({object: value, point: point});
+	});
+	return found;
+};
