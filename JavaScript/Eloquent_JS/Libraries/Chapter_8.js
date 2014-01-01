@@ -9,20 +9,6 @@ Point.prototype.isEqualTo = function(other) {
 	return this.x === other.x && this.y === other.y;
 };
 
-var thePlan =
-	["############################",
-	"#      #    #      o      ##",
-	"#                          #",
-	"#          #####           #",
-	"##         #   #    ##     #",
-	"###           ##     #     #",
-	"#           ###      #     #",
-	"#   ####                   #",
-	"#   ##       o             #",
-	"# o  #         o       ### #",
-	"#    #                     #",
-	"############################"];
-
 function Grid(width, height) {
 	this.width = width;
 	this.height = height;
@@ -42,7 +28,6 @@ Grid.prototype.moveValue = function(from, to) {
 	this.setValueAt(to, this.valueAt(from));
 	this.setValueAt(from, undefined);
 };
-
 Grid.prototype.each = function(action) {
 	for (var y = 0; y < this.height; y++) {
 		for (var x = 0; x < this.width; x++) {
@@ -52,23 +37,29 @@ Grid.prototype.each = function(action) {
 	}
 };
 
-var directions = new Dictionary({
-	"n":  new Point( 0, -1),
-	"ne": new Point( 1, -1),
-	"e":  new Point( 1,  0),
-	"se": new Point( 1,  1),
-	"s":  new Point( 0,  1),
-	"sw": new Point(-1,  1),
-	"w":  new Point(-1,  0),
-	"nw": new Point(-1, -1)
-});
+function Dictionary(startValues) {
+	this.values = startValues || {};
+}
+Dictionary.prototype.store = function (name, value) {
+	this.values[name] = value;
+};
+Dictionary.prototype.lookup = function(name) {
+	return this.values[name];
+};
+Dictionary.prototype.contains = function(name) {
+	return Object.prototype.hasOwnProperty.call(this.values, name) &&
+		Object.prototype.propertyIsEnumerable.call(this.values, name);
+};
+Dictionary.prototype.each = function(action) {
+	forEachIn(this.values, action);
+};
 
-function StupidBug() {}
+function StupidBug() {
+	this.character = "o";
+}
 StupidBug.prototype.act = function(surroundings) {
 	return {type: "move", direction: "s"};
 };
-
-var wall = {};
 
 function Terrarium(plan) {
 	var grid = new Grid(plan[0].length, plan.length);
@@ -81,26 +72,6 @@ function Terrarium(plan) {
 	}
 	this.grid = grid;
 }
-
-function elementFromCharacter(character) {
-	if (character === " ")
-		return undefined;
-	else if (character === "#")
-		return wall;
-	else if (character === "o")
-		return new StupidBug();
-}
-
-wall.character = "#";
-StupidBug.prototype.character = "o";
-
-function characterFromElement(element) {
-	if (element === undefined)
-		return " ";
-	else
-		return element.character;
-}
-
 Terrarium.prototype.toString = function() {
 	var characters = [];
 	var endOfLine = this.grid.width - 1;
@@ -111,7 +82,6 @@ Terrarium.prototype.toString = function() {
 	});
 	return characters.join("");
 };
-
 Terrarium.prototype.listActingCreatues = function() {
 	var found = [];
 	this.grid.each(function(point, value) {
@@ -120,3 +90,58 @@ Terrarium.prototype.listActingCreatues = function() {
 	});
 	return found;
 };
+Terrarium.prototype.listSurroundings = function(center) {
+	var result = {};
+	var grid = this.grid;
+	directions.each(function(name, direction) {
+		var place = center.add(direction);
+		if (grid.isInside(place))
+			result[name] = characterFromElement(grid.valueAt(place));
+		else
+			result[name] = "#";
+	});
+	return result;
+};
+
+var thePlan =
+	["############################",
+	"#      #    #      o      ##",
+	"#                          #",
+	"#          #####           #",
+	"##         #   #    ##     #",
+	"###           ##     #     #",
+	"#           ###      #     #",
+	"#   ####                   #",
+	"#   ##       o             #",
+	"# o  #         o       ### #",
+	"#    #                     #",
+	"############################"];
+
+var wall = {character: "#"};
+
+var directions = new Dictionary({
+	"n":  new Point( 0, -1),
+	"ne": new Point( 1, -1),
+	"e":  new Point( 1,  0),
+	"se": new Point( 1,  1),
+	"s":  new Point( 0,  1),
+	"sw": new Point(-1,  1),
+	"w":  new Point(-1,  0),
+	"nw": new Point(-1, -1)
+});
+
+function elementFromCharacter(character) {
+	if (character === " ")
+		return undefined;
+	else if (character === "#")
+		return wall;
+	else if (character === "o")
+		return new StupidBug();
+}
+
+function characterFromElement(element) {
+	if (element === undefined)
+		return " ";
+	else
+		return element.character;
+}

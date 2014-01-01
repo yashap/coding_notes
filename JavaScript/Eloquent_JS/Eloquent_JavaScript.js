@@ -3254,15 +3254,40 @@ console.log(new Terrarium(thePlan).listActingCreatues());
 //     - if the point is at the edge of the grid (think equal to 0 or height/width), then just pass "#", because it's basically like a wall (the bug can't go there)
 //     - don't write out all the directions, use the each method on the directions dictionary
 //       - note that this is Dictionary.each, not Grid.each, it's a different method
-Terrarium.prototype.listSurroundings = function(point) {
-	// write method here
+Terrarium.prototype.listSurroundings = function(center) {
+	var result = {};
+	var grid = this.grid;		// have to do this because we'll be using it in a new function, with a new 'this'
+	directions.each(function(name, direction) {
+		var place = center.add(direction);
+		if (grid.isInside(place))
+			result[name] = characterFromElement(grid.valueAt(place));
+		else
+			result[name] = "#";
+	});
+	return result;
 };
 
+myTest = new Terrarium(thePlan);
+console.log(myTest.toString());
+console.log(myTest.listSurroundings(new Point(3,4)));
+console.log(myTest.listSurroundings(new Point(0,0)));
+
+// It works!
 
 
 
 
+
+// #################
 // Junk space
+// #################
+
+directions.each(function(direction, point) {
+	console.log("point: " + key + " value: " + value);
+});
+console.log(directions.values.n);
+
+
 
 meTesting.grid.each(function(point, value) {
 	console.log("point: " + point + "  value: " + value);
@@ -3294,6 +3319,6 @@ console.log(testTerr.toString());
 
 // Left off at:
 
-// Hint: Do not write out all the directions, use the each method on the directions dictionary.
+// Both above methods are not part of the external interface of a Terrarium object, they are internal details
 
 // http://eloquentjavascript.net/chapter8.html
