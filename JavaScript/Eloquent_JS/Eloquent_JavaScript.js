@@ -3365,13 +3365,22 @@ Terrarium.prototype.step = function() {
 };
 
 // Now when an onStep property has been added to a terrarium, it will be called on every step
+
+// Ideally we would just modify the current print-out, which is possible in JS, but I can't do it easily in node
+//   - In the example he has a function inPlacePrinter, which is basically a modified console.log
+//   - I will write my own
+function terrariumPrinter() {
+	console.log(terrarium.toString());
+}
+terrarium.onStep = terrariumPrinter;
+
+// Now to implement
 var terrarium = new Terrarium(thePlan);
-// terrarium.onStep = partial(terrarium.toString(), terrarium);
+terrarium.onStep = terrariumPrinter;
 terrarium.start();
-// FIND OUT HOW TO MAKE THIS WORK
+terrarium.stop();
+// It works!
 
-
-// ideally we would just modify the current print-out, which is possible in JS, but I can't do it easily in node
 
 
 
@@ -3417,6 +3426,6 @@ console.log(testTerr.toString());
 
 // Left off at:
 
-// Now we have a terrarium with some simple-minded bugs, and we can run it.
+// But who wants a terrarium with just one kind of bug, and a stupid bug at that?
 
 // http://eloquentjavascript.net/chapter8.html

@@ -175,3 +175,8 @@ function characterFromElement(element) {
 	else
 		return element.character;
 }
+
+function terrariumPrinter() {
+	console.log(terrarium.toString());
+}
+terrarium.onStep = terrariumPrinter;
