@@ -102,6 +102,18 @@ Terrarium.prototype.listSurroundings = function(center) {
 	});
 	return result;
 };
+Terrarium.prototype.processCreature = function(creature) {
+	var surroundings = this.listSurroundings(creature.point);
+	var action = creature.object.act(surroundings);
+	if (action.type === "move" && directions.contains(action.direction)) {
+		var to = creature.point.add(directions.lookup(action.direction));
+		if (this.grid.isInside(to) && this.grid.valueAt(to) === undefined)
+			this.grid.moveValue(creature.point, to);
+	}
+	else {
+		throw new Error("Unsupported action: " + action.type);
+	}
+};
 
 var thePlan =
 	["############################",

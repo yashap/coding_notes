@@ -3274,8 +3274,38 @@ console.log(myTest.listSurroundings(new Point(0,0)));
 
 // It works!
 
+// Note that both of these last 2 Terrarium methods(listActingCreatues and listSurroundings) are "internal" details
+//   - They aren't meant to be used utside the object
+// Some languages let you declare "private" methods, and make it an error to use them outside the object
+//   - JS does not, you have to rely on comments to describe the interface of the object
+//   - sometimes prefix internal methods with an '_', i.e. _listSurroundings
 
 
+// One more internal method:
+//   - it will be called processCreatures
+//   - it will ask a bug for an action, and carry it out
+//   - it takes an object with 'object' and 'point' properties, as returned by listActingCreatures, as an argument
+//   - for now, it only knows about the 'move' action
+Terrarium.prototype.processCreature = function(creature) {
+	var surroundings = this.listSurroundings(creature.point);
+	// lists surrounding for this creature, in this kind of format:
+	// { n: '#', ne: '#', e: '#', se: ' ', s: '#', sw: '#', w: '#', nw: '#' }
+	var action = creature.object.act(surroundings);
+	// remember that creatures look like this:
+	// {point: {x: 19, y: 1}, object: {character: "o", act: function(surroundings) {return {type: "move", direction: "s"};};}}
+	// Two properties, one is a point object, the other is a StupidBug object, which has an act method
+	// ##### make sure to understand the rest #####
+	// #####
+	// #####
+	if (action.type === "move" && directions.contains(action.direction)) {
+		var to = creature.point.add(directions.lookup(action.direction));
+		if (this.grid.isInside(to) && this.grid.valueAt(to) === undefined)
+			this.grid.moveValue(creature.point, to);
+	}
+	else {
+		throw new Error("Unsupported action: " + action.type);
+	}
+};
 
 
 // #################
