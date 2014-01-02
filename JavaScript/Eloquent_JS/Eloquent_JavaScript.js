@@ -3294,16 +3294,60 @@ Terrarium.prototype.processCreature = function(creature) {
 	// remember that creatures look like this:
 	// {point: {x: 19, y: 1}, object: {character: "o", act: function(surroundings) {return {type: "move", direction: "s"};};}}
 	// Two properties, one is a point object, the other is a StupidBug object, which has an act method
-	// ##### make sure to understand the rest #####
-	// #####
-	// #####
+	// So here we're calling the 'act' method of the object property of a creature
+	//   - right now it always returns the same thing, but later we'll make bugs smart, so that surroundings matter
+	//   - regardless, it will return an object with 'type' and 'direction' properties
 	if (action.type === "move" && directions.contains(action.direction)) {
+		// So we're checking 2 things:
+		//   1) We only want ot deal with creature actions of type 'move'
+		//   2) The direction this action moves in must be in our directions dictionary (i.e. we must not pass it some bullshit)
 		var to = creature.point.add(directions.lookup(action.direction));
+		// creature.point is a Point object with an add method
+		//   - so we're taking the current location, and adding the point associated with the direction the creature wants to move, i.e. {x: 0, y: 1} for "s"
 		if (this.grid.isInside(to) && this.grid.valueAt(to) === undefined)
+			// if where we want to move is inside the grid, and it's currently an empty space...
 			this.grid.moveValue(creature.point, to);
+			// move the creature there!
 	}
 	else {
 		throw new Error("Unsupported action: " + action.type);
+		// won't this occasionally be the wrong error?  i.e. if we try an action of type 'move', but with an invlaid direction?
+	}
+};
+
+// Note the inner 'if' statement:
+//   - it checks if the chosen direction is inside of the grid and empty, and ignores it otherwise
+//   - this way bugs can ask for any action they like (i.e. StupidBug always wanting to go south), but our Terrarium object will only carry it out if it's actually possible
+
+// Now we can write the 'step' method, which gives all bugs a chance to do something!
+Terrarium.prototype.step = function() {
+	forEach(this.listActingCreatues(), bind(this.processCreature, this));
+};
+// So it grabs an array of all bugs with this.listActingCreatures() (with each bug being a creature object, as described above), and calls this.processCreature a bunch of times with all of the different acting creatures as the arguments
+
+// Now to test if this all works!
+var terrarium = new Terrarium(thePlan);
+console.log(terrarium.toString());
+terrarium.step();
+console.log(terrarium.toString());
+
+// It worked!  All the bugs moved south
+// How do we get this to work periodically, though?
+// We'll use two JS functions, setInterval and clearInterval
+var annoy = setInterval(function() {console.log("What?");}, 400);
+// This causes the function (arg 1) to be executed every 400 ms (arg 2)
+clearInterval(annoy);
+// This stops the effect, when passed a return of setInterval
+
+// Now to put them into use:
+Terrarium.prototype.start = function() {
+	if (!this.running)
+		this.running = setInterval(bind(this.step, this), 500);
+};
+Terrarium.prototype.stop = function() {
+	if (this.running) {
+		clearInterval(this.running);
+		this.running = null;
 	}
 };
 
@@ -3313,11 +3357,12 @@ Terrarium.prototype.processCreature = function(creature) {
 // #################
 
 directions.each(function(direction, point) {
-	console.log("point: " + key + " value: " + value);
+	console.log("point: " + point + " value: " + direction);
 });
-console.log(directions.values.n);
+console.log(directions.values);
 
-
+console.log(directions.contains("n"));	// true
+console.log(directions.contains("m"));	// false
 
 meTesting.grid.each(function(point, value) {
 	console.log("point: " + point + "  value: " + value);
@@ -3349,6 +3394,6 @@ console.log(testTerr.toString());
 
 // Left off at:
 
-// Both above methods are not part of the external interface of a Terrarium object, they are internal details
+// Now we have a terrarium with some simple-minded bugs, and we can run it.
 
 // http://eloquentjavascript.net/chapter8.html

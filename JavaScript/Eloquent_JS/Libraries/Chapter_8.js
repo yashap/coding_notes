@@ -8,6 +8,9 @@ Point.prototype.add = function(other) {
 Point.prototype.isEqualTo = function(other) {
 	return this.x === other.x && this.y === other.y;
 };
+Point.prototype.toString = function() {
+	return "(" + this.x + "," + this.y + ")";
+};
 
 function Grid(width, height) {
 	this.width = width;
@@ -112,6 +115,19 @@ Terrarium.prototype.processCreature = function(creature) {
 	}
 	else {
 		throw new Error("Unsupported action: " + action.type);
+	}
+};
+Terrarium.prototype.step = function() {
+	forEach(this.listActingCreatues(), method(this, processCreature));
+};
+Terrarium.prototype.start = function() {
+	if (!this.running)
+		this.running = setInterval(bind(this.step, this), 500);
+};
+Terrarium.prototype.stop = function() {
+	if (this.running) {
+		clearInterval(this.running);
+		this.running = null;
 	}
 };
 
