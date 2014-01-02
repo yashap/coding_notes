@@ -3351,6 +3351,29 @@ Terrarium.prototype.stop = function() {
 	}
 };
 
+// And now lets make sure the terrarium gets automatically printed every time it changes
+//   - We can do this by modifying the step method
+// Before:
+Terrarium.prototype.step = function() {
+	forEach(this.listActingCreatues(), bind(this.processCreature, this));
+};
+// Modified
+Terrarium.prototype.step = function() {
+	forEach(this.listActingCreatues(), bind(this.processCreature, this));
+	if (this.onStep)
+		this.onStep();
+};
+
+// Now when an onStep property has been added to a terrarium, it will be called on every step
+var terrarium = new Terrarium(thePlan);
+// terrarium.onStep = partial(terrarium.toString(), terrarium);
+terrarium.start();
+// FIND OUT HOW TO MAKE THIS WORK
+
+
+// ideally we would just modify the current print-out, which is possible in JS, but I can't do it easily in node
+
+
 
 // #################
 // Junk space

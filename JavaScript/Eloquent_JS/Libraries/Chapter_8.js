@@ -118,7 +118,9 @@ Terrarium.prototype.processCreature = function(creature) {
 	}
 };
 Terrarium.prototype.step = function() {
-	forEach(this.listActingCreatues(), method(this, processCreature));
+	forEach(this.listActingCreatues(), bind(this.processCreature, this));
+	if (this.onStep)
+		this.onStep();
 };
 Terrarium.prototype.start = function() {
 	if (!this.running)
