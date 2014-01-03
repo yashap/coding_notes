@@ -1,0 +1,196 @@
+#####################################
+Lesson 1
+#####################################
+
+We'll cover
+	- the web (what is it)
+	- HTML (main doc type of the web)
+	- URLs (how to refer to docs)
+	- HTTP (protocol that the web runs on)
+	- web applications
+
+The World Wide Web
+	- a collection of HTML docs
+	- HTML
+		- HyperText Markup Language
+		- links btwn HTML = Hyper Links
+	- Note that we can find many files other than HTML
+		- plain text, images, pdfs, videos, etc.
+	- Major pieces of the web
+			1) You (your computer + browser)
+				- browser = a program that displays files found on the web
+				- all browsers are a bit different, none are "perfect"
+				- must always keep in mind that all browsers behave differently
+			2) The Internet
+				- the world's largest computer network
+			3) HTTP
+				- the main protocol of the web
+			3) Servers
+				- computers that host the files that make up the web
+	- So how does this all work?
+		- You make requests via the internet to servers, using the HTTP protocol
+		- Servers are computers optimized for sitting in a closet, hosting files
+
+HTML basics
+	- made up of:
+		- text content
+			- "what you see"
+			- if you just enter text with zero markup, it will simpply show up as plain text
+		- markup
+			- "what it looks like"
+			- Elements:
+				<NAME>Contents</NAME>
+			- tags can be nested
+		- references to
+			- "i.e. images and videos"
+		- links to other pages
+	- Example tabs:
+		- bold tag
+			<b>Makes stuff bold</b>
+		- emphasis tag
+			<em>Makes stuff italic</em>
+		- anchor tag
+			<a href="www.reddit.com">derp</a>
+		- images tag
+			<img src="url" alt="text">
+				- note the two attributes, src and alt
+				- definitely nice to include alt, good for broken pages and blind people
+				- image tags are VOID tags
+					- they have no content, so they don't need a closing tag
+				- note that images just appear in line with text
+	- What happens when we forget to close tags?
+		- say it's an <em> tag, everything after will be italicized
+		- depends on the tag/browser, though
+	- Whitespace
+		- in HTML all whitespace (tabs, single spaces, multiple spaces, new lines) turn into single spaces
+		- BY DEFAULT, ANY AMOUNT OF WHITESPACE TURNS INTO A SINGLE SPACE
+		- for example:
+			this text is really
+			too long for one line
+		- displays as:
+			this text is really too long for one line
+		- if we want a new line
+			this text is really
+			<br>
+			too long for one line
+		- or a blank line between
+			this text is really
+			<br>
+			<br>
+			too long for one line
+	- Other ways of doing new lines
+		- paragraph tag
+			<p>this text is really</p>
+			<p>too long for onw linw</p>
+	- Inline vs. block
+		- the <br> tag is inline
+			- it just ends a line
+			- examples: <b>, <em>, <img>, <span>
+		- the <p> tag is block
+			- it creates an invisible box, with things lke a 
+			- examples: <p>, <div>
+		- <span> and <div> are basically inline and block versions of the same thing
+			- they just contain text, but don't do anything else
+
+HTML documents
+	- Example of basic structure:
+<!doctype html>
+<html>
+<head>
+	<title>Title!</title>
+</head>
+<body>
+	<b>content</b>
+</body>
+</html>
+
+		- head contains meta-data, title, JavaScript, CSS, etc.
+			- also contains the doctype
+		- body contains the actual contents of the document
+			- for most of this course we'll be working on generating the contents of the body tags
+
+URLs
+	- Uniform Resource Locator
+	- Example:
+			http://www.udacity.com/
+				Protocol: http
+					- could also be something like ftp
+				Host: www.udacity.com
+					- domain name of server that has the doc we want to fetch
+					- can also just be an IP address
+				Path: /
+	- Query parameters
+		- also called GET parameters
+		- example:
+			http://example.com/foo?P=1&q=neat
+				- First parameter is after the ?, subsequent parameters are after the &
+					- so in this case parameter P is "1", parameter q is "neat"
+				- when you make a request to the server for said path, you ALSO pass this extra info
+					- all sorts of handy uses for this!
+	- Fragments
+		- represented with a # sign
+		- examples:
+			http://www.example.com/foo#fragment
+			http://www.example.com/foo?p=1#fragment
+		- note that fragments come after query params
+		- fragments ARE NOT SENT TO THE SERVER, just used on the local machine
+	- Ports
+		- to connect to a machine, you need the host AND the port
+		- by default the port = 80, so:
+			http://www.example.com/
+			- Is really
+			http://www.example.com:80/
+		- You can also explicitly specify the port
+			http://localhost:8000/
+	- Final example of structure:
+		http://example.com:80/toys?p=foo#blah
+	- There are other parts to a url, but we won't cover them now
+
+HTTP
+	- HyperText Transfer Protocol
+	- the main protocol of the web
+		- what our browser uses to talk to web servers
+	- For example, when we type:
+		htttp://www.example.com/foo
+		- We send this request line
+		GET /foo HTTP/1.1
+			- GET is the method
+				- most often used for getting docs from the server
+				- another popular method is POST
+					- most often used for posting data to the server
+			- /foo is the path
+				- the actual document we're requesting
+			- HTTP/1.1 is the version
+				- most browser speak 1.1, but 1.0 still has a few uses
+			- Note that there's no host name
+				- Our browser already connected to the host
+					- www.example.com was used to make this connection
+				- it's just the /foo part that's making the request
+	- More complex example:
+		- URL
+			http://www.example.com/foo/logo.png?p=1#tricky
+		- GET request:
+			GET /foo/logo.png?p=1 HTTP/1.1
+		- Note that the path...
+			- INCLUDES the query parameters
+			- DOESN'T INCLUDE fragments
+	- The request line is followed by a number of headers, for example:
+		GET /foo?p=1 HTTP/1.1
+		Host: www.example.com
+		User-Agent: chrome
+		- We're already connected to the server, why do we need the host?
+			- Because one server can host multiple websites!
+		- User-Agent is generally your browser
+			- if one IP and one fake user agent is just pumelling your site, they're probably malicious
+	- Valid Headers:
+			Host: www.hipmunk.com
+			User-Agent: Chrome
+			i-made-this-up: whatever
+	- Invalid headers
+			User Agent: Chrome
+			Host www.hipmunk.com
+	- HEADERS NAMES MUST BE ALL ONE WORD, AND MUST BE FOLLOWED BY A ": "
+
+
+
+LEFT OFF AT THE START OF HTTP RESPONSES
