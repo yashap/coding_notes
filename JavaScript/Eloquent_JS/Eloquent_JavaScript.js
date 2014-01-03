@@ -3382,6 +3382,152 @@ terrarium.stop();
 // It works!
 
 
+// So far so good, but what if we want to add different kinds of bugs?
+//   - all we have to do is modify the elementFromCharacter function to be more general
+//   - let's store the characters and the corresponding bug-contructors in a dictionary, and look for them from there
+var creatureTypes = new Dictionary();
+
+// Now let's add a method to the creatureTypes dictionary that will log 
+creatureTypes.register = function(constructor) {
+	this.store(constructor.prototype.character, constructor);
+};
+// remember that Dictionary.store takes two args, (name, value)
+//   - so here the name is the bug constructor's character property, i.e. "o"
+//   - the value is simply the bug constructor itself, i.e. 'StupidBug'
+
+// Now to modify elementFromCharacter to use this dictionary
+function elementFromCharacter(character) {
+	if (character === " ")
+		return undefined;
+	else if (character === "#")
+		return wall;
+	else if (creatureTypes.contains(character))
+		return new (creatureTypes.lookup(character))();
+	else
+		throw new Error("Unknown character: " + character);
+}
+// So now this function looks up the character its given in the creatureTypes dictionary
+//   - if it's not there it returns an Error, otherwise it returns a new creature of said type
+
+// Here's a new bug type, and the call to register its character in creatureTypes
+function BouncingBug() {
+	this.direction = "ne";
+}
+BouncingBug.prototype.act = function(surroundings) {
+	if (surroundings[this.direction] != " ")
+		this.direction = (this.direction === "ne" ? "sw" : "ne");
+	return {type: "move", direction: this.direction};
+};
+BouncingBug.prototype.character = "%";
+
+creatureTypes.register(BouncingBug);
+
+// What does BouncingBug do when the act method is called?
+//   - if the north-east direction is empty, it moves that way
+//   - if it's not empty, it will move south-west
+//     - when it hits something that way, it'll switch to moving north-east
+
+// Let's implement
+var thePlan2 =
+	["############################",
+	"#      #    #      %      ##",
+	"#                          #",
+	"#          #####           #",
+	"##         #   #    ##     #",
+	"###           ##     #     #",
+	"#           ###      #     #",
+	"#   ####                   #",
+	"#   ##       %             #",
+	"# %  #         %       ### #",
+	"#    #                     #",
+	"############################"];
+var terrarium = new Terrarium(thePlan2);
+terrarium.onStep = terrariumPrinter;
+terrarium.start();
+terrarium.stop();
+
+
+// Create a bug type called DrunkBug which tries to move in a random direction every turn
+//   - will do so even if there is a wall there
+//   - Remember the Math.random trick from chapter 7
+//   - its character should be ~
+function DrunkBug() {
+	this.character = "~";
+}
+DrunkBug.prototype.act = function(surroundings) {
+	var choices = [];
+	directions.each(function(direction, point) {
+		choices.push(point);
+	});
+	var pick = Math.floor(Math.random() * choices.length);
+	return {type: "move", direction: choices[pick]};
+};
+
+var testingBug = new DrunkBug();
+for (var i = 0; i < 20; i++) {
+	console.log(testingBug.act("blah"));
+}
+
+// Or we can do this in a more general way:
+// Step 1: add the ability to get an array of names/values out of a dictionary
+Dictionary.prototype.namesArray = function() {
+	var names = [];
+	this.each(function(name, value) {names.push(name);});
+	return names;
+};
+Dictionary.prototype.valuesArray = function() {
+	var values = [];
+	this.each(function(name, value) {values.push(value);});
+	return values;
+};
+
+console.log(directions.namesArray());
+console.log(directions.valuesArray());
+
+// Step 2: function to get a random element out of an array
+function randomElement(array) {
+	if (array.length === 0)
+		throw new Error("The array is empty.");
+	return array[Math.floor(Math.random() * array.length)];
+}
+
+for (var i = 0; i < 20; i++) {
+	console.log(randomElement(["heads", "tails"]));
+}
+
+// Step 3: write the bug constructor
+function DrunkBug() {}
+DrunkBug.prototype.act = function(surroundings) {
+	return {type: "move", direction: randomElement(directions.namesArray())};
+};
+DrunkBug.prototype.character = "~";
+creatureTypes.register(DrunkBug);
+
+var testingBug = new DrunkBug();
+for (var i = 0; i < 20; i++) {
+	console.log(testingBug.act("blah"));
+}
+console.log(creatureTypes);
+
+// And finally, let's test!
+var newPlan =
+	["############################",
+	"#                      #####",
+	"#    ##              o  ####",
+	"#   ####     ~ ~          ##",
+	"#    ##       ~            #",
+	"#                          #",
+	"#            o   ###       #",
+	"#               #####      #",
+	"#                ###       #",
+	"# %        ###        %    #",
+	"#        #######           #",
+	"############################"];
+
+var terrarium = new Terrarium(newPlan);
+terrarium.onStep = terrariumPrinter;
+terrarium.start();
+terrarium.stop();
 
 
 // #################
@@ -3426,6 +3572,6 @@ console.log(testTerr.toString());
 
 // Left off at:
 
-// But who wants a terrarium with just one kind of bug, and a stupid bug at that?
+// We now have two kinds of objects that both have an act method and a character property.
 
 // http://eloquentjavascript.net/chapter8.html

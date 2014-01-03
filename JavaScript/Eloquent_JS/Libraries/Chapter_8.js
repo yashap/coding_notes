@@ -56,13 +56,45 @@ Dictionary.prototype.contains = function(name) {
 Dictionary.prototype.each = function(action) {
 	forEachIn(this.values, action);
 };
+Dictionary.prototype.namesArray = function() {
+	var names = [];
+	this.each(function(name, value) {names.push(name);});
+	return names;
+};
+Dictionary.prototype.valuesArray = function() {
+	var values = [];
+	this.each(function(name, value) {values.push(value);});
+	return values;
+};
 
-function StupidBug() {
-	this.character = "o";
-}
+var creatureTypes = new Dictionary();
+creatureTypes.register = function(constructor) {
+	this.store(constructor.prototype.character, constructor);
+};
+function StupidBug() {}
 StupidBug.prototype.act = function(surroundings) {
 	return {type: "move", direction: "s"};
 };
+StupidBug.prototype.character = "o";
+creatureTypes.register(StupidBug);
+
+function BouncingBug() {
+	this.direction = "ne";
+}
+BouncingBug.prototype.act = function(surroundings) {
+	if (surroundings[this.direction] != " ")
+		this.direction = (this.direction === "ne" ? "sw" : "ne");
+	return {type: "move", direction: this.direction};
+};
+BouncingBug.prototype.character = "%";
+creatureTypes.register(BouncingBug);
+
+function DrunkBug() {}
+DrunkBug.prototype.act = function(surroundings) {
+	return {type: "move", direction: randomElement(directions.namesArray())};
+};
+DrunkBug.prototype.character = "~";
+creatureTypes.register(DrunkBug);
 
 function Terrarium(plan) {
 	var grid = new Grid(plan[0].length, plan.length);
@@ -165,8 +197,10 @@ function elementFromCharacter(character) {
 		return undefined;
 	else if (character === "#")
 		return wall;
-	else if (character === "o")
-		return new StupidBug();
+	else if (creatureTypes.contains(character))
+		return new (creatureTypes.lookup(character))();
+	else
+		throw new Error("Unknown character: " + character);
 }
 
 function characterFromElement(element) {
