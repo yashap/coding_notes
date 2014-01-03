@@ -121,6 +121,16 @@ Dictionary.prototype.contains = function(name) {
 Dictionary.prototype.each = function(action) {
 	forEachIn(this.values, action);
 };
+Dictionary.prototype.namesArray = function() {
+	var names = [];
+	this.each(function(name, value) {names.push(name);});
+	return names;
+};
+Dictionary.prototype.valuesArray = function() {
+	var values = [];
+	this.each(function(name, value) {values.push(value);});
+	return values;
+};
 
 function bind(func, object) {
 	return function() {
@@ -132,4 +142,10 @@ function method(object, name) {
 	return function() {
 		return object[name].apply(object, arguments);
 	};
+}
+
+function randomElement(array) {
+	if (array.length === 0)
+		throw new Error("The array is empty.");
+	return array[Math.floor(Math.random() * array.length)];
 }
