@@ -3530,6 +3530,61 @@ terrarium.start();
 terrarium.stop();
 
 
+// Polymorphism:
+//   - note how we now have multiple bugs object classes that are structured the same way:
+//     - they have 'act' and 'character' properties
+//   - the terrarium can approach them in the same way!
+//     - this kind of design is called polymorphism
+//     - it allows us to have all kinds of bugs without changing anything about the terrarium code
+//   - basic idea:
+//     - write pieces of code to work with objects that have a certain interface
+//     - as long as the object has this interface, the code will work
+//   - similarly:
+//     - forEach works on both real arrays and the pseudo-arrays found in the arguments variable
+//     - this is because all it needs is a length property, and properties called 0, 1, etc. for the elements of the array
+
+
+// Let's make our terrarium more complex
+//   - let's add food and reproduction!
+//   - every living thing in the terrarium will get a new property, 'energy'
+//     - energy is reduced by performing actions
+//     - energy is increased by eating things
+//     - when things have enough energy, they can reproduce, generating a new creature of the same kind
+//   - if there was no food, the terrarium would eventually become a lifeless wasteland
+//     - let's stop this from happening!
+//     - we can add lichen
+//       - they don't move, they just gather energy and reproduce
+
+// To make all this work, we'll need a new processCreature method
+//   - we COULD just replace the method of the Terrarium prototype, but then we'd break our old terrarium
+//   - let's create a new constructor, LifeLikeTerrarium
+//     - it's constructor will be based on the Terrarium prototype, but with a different processCreature method
+//   - JS doesn't have an easy way to do this, but we can write our own function
+
+function clone(object) {
+	function OneShotConstructor() {}
+	OneShotConstructor.prototype = object;
+	return new OneShotConstructor();
+}
+
+// So basically the new prototype object is simply the old prototype object
+//   - it thus inherits all of its properties
+
+function LifeLikeTerrarium(plan) {
+	Terrarium.call(this, plan);
+}
+LifeLikeTerrarium.prototype = clone(Terrarium.prototype);
+LifeLikeTerrarium.prototype.constructor = LifeLikeTerrarium;
+
+// The new constructor doesn't need to do anything different from the old one, so it just calls the old one on the 'this' object
+// ##################
+// review .call()
+// ###################
+//   - then we set it's prototype to be a clone of the prototype object of Terrarium
+//   - finally, we also have to restire the 'constructor' property in the new prototype, otherwise it would claim its constructor is Terrarium
+
+
+
 // #################
 // Junk space
 // #################
@@ -3572,6 +3627,6 @@ console.log(testTerr.toString());
 
 // Left off at:
 
-// We now have two kinds of objects that both have an act method and a character property.
+// It is now possible to replace some of the methods of the LifeLikeTerrarium object, or add new ones.
 
 // http://eloquentjavascript.net/chapter8.html

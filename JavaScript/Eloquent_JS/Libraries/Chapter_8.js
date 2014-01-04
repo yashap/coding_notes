@@ -213,4 +213,16 @@ function characterFromElement(element) {
 function terrariumPrinter() {
 	console.log(terrarium.toString());
 }
+var terrarium = new Terrarium(thePlan);
 terrarium.onStep = terrariumPrinter;
+
+function clone(object) {
+	function OneShotConstructor() {}
+	OneShotConstructor.prototype = object;
+	return new OneShotConstructor();
+}
+function LifeLikeTerrarium(plan) {
+	Terrarium.call(this, plan);
+}
+LifeLikeTerrarium.prototype = clone(Terrarium.prototype);
+LifeLikeTerrarium.prototype.constructor = LifeLikeTerrarium;

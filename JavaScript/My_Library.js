@@ -149,3 +149,9 @@ function randomElement(array) {
 		throw new Error("The array is empty.");
 	return array[Math.floor(Math.random() * array.length)];
 }
+
+function clone(object) {
+	function OneShotConstructor() {}
+	OneShotConstructor.prototype = object;
+	return new OneShotConstructor();
+}
