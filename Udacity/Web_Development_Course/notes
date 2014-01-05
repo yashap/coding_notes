@@ -146,10 +146,11 @@ URLs
 		http://example.com:80/toys?p=foo#blah
 	- There are other parts to a url, but we won't cover them now
 
-HTTP
-	- HyperText Transfer Protocol
-	- the main protocol of the web
-		- what our browser uses to talk to web servers
+HTTP Requests
+	- HTTP
+			-HyperText Transfer Protocol
+			- the main protocol of the web
+				- what our browser uses to talk to web servers
 	- For example, when we type:
 		htttp://www.example.com/foo
 		- We send this request line
@@ -191,6 +192,165 @@ HTTP
 			Host www.hipmunk.com
 	- HEADERS NAMES MUST BE ALL ONE WORD, AND MUST BE FOLLOWED BY A ": "
 
+HTTP Responses
+	- Browser makes a request, server responds with a response
+	- Returns docs plus...
+	- Basic HTTP response:
+		- Request:
+			- Request line:
+				GET /foo HTTP/1.1
+		- Response:
+			- Status line (alagous to request line):
+				HTTP/1.1 200 OK
+					- version status-code reason-phrase
+					- Common status codes:
+						- 200 OK
+							- "Document was found"
+							- the most common status code on the internet
+						- 302 Found
+							- "Document is located somewhere else"
+						- 404 Not Found
+							- "Document was not found"
+						- 500 Server Error
+							- Server broke trying to handle your request
+		- Status codes start with a 1, 2, 3, 4 or 5
+			- 2 = success
+			- 3 = need to do something different to find this doc
+			- 4 = error on the browser side (trying to request a doc that doesn't exist)
+			- 5 = error on the server side
+	- Status line is followed by headers
+		- Example:
+				HTTP/1.1 200 OK
+				Date: Tue Mar 2012 04:33:33 GMT
+				Server: Apache/2.2.3
+				Content-Type: text/html;
+				Content-Length: 1539
+		- Some headers are required, some are not
+			- Date is always there
+			- You may not want to include the server, or to make something up
+				- Why display vulnerabilities to a hacker?
+			- Content type is always there
+			- Content length is somewhat optional
+
+Playing around with HTTP requests
+	- Open terminal, enter:
+
+telnet www.yashley2014.com 80
+
+	- This is what your browser is sending when you enter the URL www.yashley2014.com (it's going to port 80)
+	- Returns:
+
+Trying 74.125.28.147...
+Connected to http://www.yashley2014.com.
+Escape character is '^]'.
+
+	- Then we can include the GET request
+
+GET / HTTP/1.0
+Host: www.yashley2014.com
+
+	- Why HTTP 1.0 and not 1.1?
+		 - The default behaviour in 1.1 is to not close the connection once it's finished, which is annoying for testing
+	- Returns:
+
+HTTP/1.1 200 OK
+Server: nginx/1.4.3
+Date: Sun, 05 Jan 2014 01:11:31 GMT
+Content-Type: text/html
+Content-Length: 3110
+Last-Modified: Mon, 04 Nov 2013 03:51:03 GMT
+Connection: close
+ETag: "527719a7-c26"
+Accept-Ranges: bytes
+
+<!DOCTYPE html>
+<!-- saved from url=(0043)http://getbootstrap.com/examples/jumbotron/ -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+etc. (more HTML code)
+
+	- So we see the HTTP response there at the top!
+		- the status line, and a whole bunch of headers
+
+	- What if you get a 302 error?
+		- it should return a "Location" header
+			- this should tell you where the document is actually located (a new URL)
+		- if you do a GET request for this new URL, you *SHOULD* get a 200 response, with your doc
 
 
-LEFT OFF AT THE START OF HTTP RESPONSES
+Servers
+	- Purpose: to respond to HTTP requests
+	- 2 main types of responses from servers
+		1) Static
+			- server returns a pre-written file
+				- e.g. an image
+		2) Dynamic
+			- response built on the fly by the program that's running on the server
+			- most sites now are built dynamically, on the fly, by web applications
+	- So a web application lives on a server, gets HTTP requests, and generates documents to return to clients
+
+
+#####################################
+Problem Set 1
+#####################################
+
+Directions:
+	- Install Google App Engine (the Pythin version)
+	- Put online a basic app that says "Hello, Udacity!"
+	- Submit the URL to Udacity
+
+Basically just follow directions on this page:
+https://developers.google.com/appengine/?csw=1#getstarted-framework-flask
+
+My local copy is at:
+/Users/yasha.podeswa/Documents/everything_else/git_repos/appengine-django-skeleton
+
+/usr/local/google_appengine points to the SDK, so add this to my path
+
+Open the Google app engine app, create a new project
+Mine is called "hello-udacity-yasha"
+And it's located at:
+/Users/yasha.podeswa/Documents/everything_else/git_repos/hello-udacity-yasha
+
+Edit main.py so the argument here is 'Hello Udacity!'
+class MainHandler(webapp2.RequestHandler):
+    def get(self):
+        self.response.write('Hello Udacity!')
+
+Make the app in the online app engine console as well
+
+Deploy with the local app engine program
+
+Go to:
+http://hello-udacity-yasha.appspot.com/
+
+To see it deployed
+
+Or, to run it locally:
+
+Through the GUI, simply click run
+
+Or, through terminal
+
+cd to the app
+dev_appserver.py .
+
+. is for current directory, or you can type the directory
+
+Then visit at localhost:8080
+
+And to deploy online:
+
+appcfg.py update .
+
+User: ypodeswa@gmail.com
+Paswword: mypass
+
+Or just use deploy in the GUI
+
+Again, to see it deployed, go to:
+http://hello-udacity-yasha.appspot.com/
+
+
+
+LEFT OFF AT THE START OF "Office Hours 1"
