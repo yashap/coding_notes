@@ -356,12 +356,76 @@ http://hello-udacity-yasha.appspot.com/
 Office Hours 1
 #####################################
 
+Questions and Answers:
+
+- Why Google App Engine?
+	- Easiest way to get something up an running
+- What is Google App Enginge
+	- You just write Python code
+	- You use the console or launcher to upload your app
+- What are some useful things to know about front end app development?
+	- Need to know HTML, CSS, JS
+- Is Google App Engine a good solution for large scale projects?
+	- Many people do use it in production
+	- But it can get a bit expensive
+	- ALSO, when we start doing things like user registration and cookies, we'll be looking at it from a general overall sense
+
 
 #####################################
 Lesson 2
 #####################################
 
+Forms
+	- We'll be working with the file "play.html"
+	- See <form> tag in play.html
+
+<form>
+	<input name="q">
+</form>
+
+	- What happens when a user types "hello", then hits enter on the form?
+	- the url changes to: play.html?q=hello
+
+	- Let's add a submit button:
+
+<form>
+	<input name="q">
+	<input type="submit">
+</form>
+
+	- creates a submit button, which is no different to submitting with enter
+
+	- Ok, so now the form just submits to itself, which kind of sucks
+	- How do we make it submit elsewhere?
+		- With the "action" attribute
+
+<form action="/foo">
+	<input name="q">
+	<input type="submit">
+</form>
+
+	- the action tag contains the URL where we should search to
+	- for example:
+
+<form action="http://www.google.com/search">
+	<input name="q">
+	<input type="submit">
+</form>
+
+	- Now queries are submitted to Google search results, and our browser re-directs there!
+		- Why did this work?
+			- We generated code that sent us to:
+				http://www.google.com/search?q=what+we+searched
+			- This is the same syntax Google search uses!
+	- Why the "pluses"?
+		- URLs can't have spaces in them
+		- Browser did "URL encoding"
+			- turns spaces into pluses
+		- There are other escape characters, i.e.
+			- many browsers turn ! into %21, for example
 
 
-
-LEFT OFF AT THE START OF "Office Hours 1"
+LEFT OFF AT:
+Lesson 2
+"Hello Webapp World"
+(start of section 8)
