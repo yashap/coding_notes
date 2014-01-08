@@ -424,8 +424,104 @@ Forms
 		- There are other escape characters, i.e.
 			- many browsers turn ! into %21, for example
 
+###########
+Live web applications
+###########
 
-LEFT OFF AT:
-Lesson 2
-"Hello Webapp World"
-(start of section 8)
+	- Let's start with the simple hello world Python example that Google has on the app engine
+
+import webapp2
+
+class MainHandler(webapp2.RequestHandler):
+	def get(self):
+		self.response.headers['Content-Type'] = 'text/plain'
+		self.response.write('Hello, Udacity!')
+
+app = webapp2.WSGIApplication([('/', MainHandler)], debug=True)
+
+The "app = " line is the URL mapping section
+	- there's one URL, "/", and it maps to the handler "MainHandler"
+	- The class has a function called "get", which takes a parameter called "self" (a common parameter to many Python methods)
+		- get does two things:
+			1) It takes self.response, the global response object that this framework uses.  Then it sets a header, where the "Content-Type" is set to "text/plain".  By default this is set to "text/html"
+			2) Then it writes the string "Hello, Udacity!"
+
+What if we want something more interesting?  Let's replace the string with a variable that holds a string:
+
+import webapp2
+
+form = """
+<form action="http://www.google.com/search">
+	<input name="q">
+	<input type="submit">
+</form>
+"""
+
+class MainHandler(webapp2.RequestHandler):
+	def get(self):
+		self.response.headers['Content-Type'] = 'text/plain'
+		self.response.write(form)
+
+app = webapp2.WSGIApplication([('/', MainHandler)], debug=True)
+
+But this only returns text showing the HTML, not the rendered HTML!
+	- Why?  Because of the "text/html" header!
+	- Comment out that line to render properly
+
+Now lets make it submit to the server, not to Google!
+	- Change the form's attribute:
+
+<form action="/testform">
+
+	- And also we need our app to be able to handle more than just '/'
+
+class TestHandler(webapp2.RequestHandler):
+	def get(self):
+		q = self.request.get("q")
+		self.response.out.write(q)
+
+app = webapp2.WSGIApplication([('/', MainHandler),
+	('/testform', TestHandler)],
+	debug=True)
+
+	- Note how we added the URL mapping for '/testform', and had it handled by TestHandler
+	- BUT we had to create the TestHandler class!
+		- This class:
+			- Sets a variable called q, that comes from self.request
+				- response is an object representing the response we'll send to the client
+				- request is an object representing the request we'll get from the client
+					- we can call get on it to get different parameters (in this case we're 'getting' the parameter q)
+			- returns q
+				- So the response will now display this variable
+				- So now when we submit "hello", it will just return a page saying "hello", at the URL http://localhost:8080/testform?q=hello
+
+- What if we change TestHandler to this, then submit?
+
+class TestHandler(webapp2.RequestHandler):
+	def get(self):
+		# q = self.request.get("q")
+		# self.response.out.write(q)
+		self.response.headers['Content-Type'] = 'text/plain'
+		self.response.out.write(self.request)
+
+- We see the HTTP request!
+GET /testform?q=hello+world HTTP/1.1
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+Accept-Language: en-US,en;q=0.8
+Host: localhost:8080
+Referer: http://localhost:8080/
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.63 Safari/537.36
+X-Appengine-Country: ZZ
+
+- There's the request line, then a bunch of headers
+	- The Referer header is interesting, it tells you the URL that sent the request
+		- Also, Referer is misspelled :)  Happened once, kept that way for backwards compatibility
+- Note that if we hadn't set the content type to text/plain, it would have looked weird
+- We printed out the Python object self.request
+	- This object prints to look exactly like an HTTP request
+
+The above is a very handy debugging tool!
+
+
+
+Left off at Lesson 2: The Method Attribute
