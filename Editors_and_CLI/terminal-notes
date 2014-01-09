@@ -1,0 +1,52 @@
+Terminal shortcuts:
+
+cd						Same as cd ~
+opt + arrow		Skip word
+ctrl + a			Home
+ctrl + e			End
+ctrl + u			Delete all before cursor
+ctrl + k			Delete all after cursor
+ctrl + w			Delete word after cursor
+ctrl + y			Undo delete
+ctrl + c			Cancel current command
+ctrl + r			Search for comands containing search string
+!!						Variable representing last command you ran
+!<command>		Example: !git will re-run the last git command you ran
+!<command>:p	As above, but just shows the command, doesn't run it
+								You can then run it with !!
+!$						New command with same argument as last command
+								i.e.
+									mkdir /new/awesome/folder
+									cd !$
+
+
+Other terminal hacks:
+
+Drag file in
+	Add path to file to current command
+
+Tab while cd-ing
+	If uncomplete path, will complete
+	Else will list possible completions (basically like ls)
+
+Expansions:
+	Say you have a command with 2 arguments that are ALMOST the same
+	For example, you want to rename the file extension:
+		Normal way:
+			mv /path/to/file.txt /path/to/file.xml
+		Faster:
+			mv /path/to/file.{txt,xml}
+
+history				Print all commands
+	history | grep <search term>
+		i.e. history | grep cd
+			Then to run a specific command from history, look at the numbers and
+			!<number>
+				i.e. !516 to run command 516
+
+^<typo>^<correct command>
+							If you have a typo in the command, so it fails, you can fix it
+								i.e.
+									eccho "Hello"
+									<fails>
+									^eccho^echo

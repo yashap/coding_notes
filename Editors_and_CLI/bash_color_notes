@@ -1,0 +1,68 @@
+My config:
+
+gxBxhxDxfxhxhxhxhxcxcx
+
+Which is text/background for the following 11:
+
+gx
+Bx
+hx
+Dx
+fx
+hx
+hx
+hx
+hx
+cx
+cx
+
+1.	cyan (g)				directory
+2.	bold red (B)		symbolic link
+3.	light grey (h)	socket
+4.	bold borwn (D)	pipe
+5.	magenta (f)			executable
+6.	light grey (h)	block special
+7.	light grey (h)	character special
+8.	light grey (h)	executable with setuid bit set
+9.	light grey (h)	executable with setgid bit set
+10.	green (c)				directory writable to others, with sticky bit
+11.	green (c)				directory writable to others, without sticky bit
+
+
+The color designators are as follows:
+
+a		black
+b		red
+c		green
+d		brown
+e		blue
+f		magenta
+g		cyan
+h		light grey
+A		bold black, usually shows up as dark grey
+B		bold red
+C		bold green
+D		bold brown, usually shows up as yellow
+E		bold blue
+F		bold magenta
+G		bold cyan
+H		bold light grey; looks like bright white
+x		default foreground or background
+
+Note that the above are standard ANSI colors.  The actual
+display may differ depending on the color capabilities of
+the terminal in use.
+
+The order of the attributes are as follows:
+
+1.	directory
+2.	symbolic link
+3.	socket
+4.	pipe
+5.	executable
+6.	block special
+7.	character special
+8.	executable with setuid bit set
+9.	executable with setgid bit set
+10.	directory writable to others, with sticky bit
+11.	directory writable to others, without sticky bit
