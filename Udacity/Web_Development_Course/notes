@@ -523,5 +523,353 @@ X-Appengine-Country: ZZ
 The above is a very handy debugging tool!
 
 
+Ok, let's add a new method to our form, "post"
+	- We do this in the HTML:
 
-Left off at Lesson 2: The Method Attribute
+form = """
+<form method="post" action="/testform">
+	<input name="q">
+	<input type="submit">
+</form>
+"""
+
+	- the default for forms method is "get"
+		- but here we can specify a different method for what will happen when you submit
+	- What will happen if we submit now?
+		- We get the following error message
+"""405 Method Not Allowed
+The method POST is not allowed for this resource."""
+
+- Remember, 405 is the status code
+	- status codes starting with 4 are errors on the browser side
+	- this one means "method not allowed"
+- What's wrong?
+	- The handler class for /testform is TestHandler
+	- This class does not have a method defining what to do with get methods
+		- let's add one:
+
+class TestHandler(webapp2.RequestHandler):
+	def get(self):
+		q = self.request.get("q")
+		self.response.out.write(q)
+	def post(self):
+		q = self.request.get("q")
+		self.response.out.write(q)
+		# self.response.headers['Content-Type'] = 'text/plain'
+		# self.response.out.write(self.request)
+
+- Now it once again just takes us to a new page displaying our query
+	- However, the URL is different!
+		- instead of:
+			localhost:8080/testform?q=hello
+		- it's
+			localhost:8080/testform
+		- there's no query part!
+	- How do we see what happened?
+
+class TestHandler(webapp2.RequestHandler):
+	def get(self):
+		q = self.request.get("q")
+		self.response.out.write(q)
+	def post(self):
+		# q = self.request.get("q")
+		# self.response.out.write(q)
+		self.response.headers['Content-Type'] = 'text/plain'
+		self.response.out.write(self.request)
+
+- And this is what we see:
+
+POST /testform HTTP/1.1
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+Accept-Language: en-US,en;q=0.8
+Cache-Control: max-age=0
+Content-Length: 7
+Content-Type: application/x-www-form-urlencoded
+Content_Length: 7
+Content_Type: application/x-www-form-urlencoded
+Host: localhost:8080
+Origin: http://localhost:8080
+Referer: http://localhost:8080/
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.63 Safari/537.36
+X-Appengine-Country: ZZ
+
+q=dfhhh
+
+- So the query has been passes in the HTML request
+	- after the HTTP request headers, but still part of the request
+	- note also that it's a POST request, not a GET request
+- Also note that some headers are printed twice
+	- we're not printing the actual request, we're printing the Python representation of the request
+	- it's a little glitchy
+
+- GET vs. POST:
+	- GET
+		- parameters in URL
+		- used for fetching documents
+		- maximum URL length
+		- OK to cache
+			- there are lots of machines btwn you and the server
+			- caching along the way saves effort
+				- You can turn this off with headers, but it's generally good
+		- shouldn't change the server
+		- OVERALL:
+			- GET requests = simple requests for fetching files
+			- GET parameters should be used to describe what files to fetch
+	- POST
+		- parameters in body
+		- used for updating data
+		- no max URL length (though servers can be configured to have a max length, often a few MB)
+		- not OK to cache
+			- the data in them is potentially sensitive
+		- OK/meant to change the server
+			- POST requests are for updating the server
+			- POST requests are generally destructive in nature
+
+- What if you don't use these requests as you should?
+	- Case study: Base Camp, back in the day
+		- you used to see a page with task, and a bunch of "Delete" options beside them
+			- clicking delete would remove the item
+		- the delete options were HTML links
+			- automatically GET requests!
+			- POST is for forms, not links
+		- There was also another program, Google web accelerator
+			- This was a browser extension
+			- It would pre-load all links, so they're "ready to go" when you click on them
+				- It would pre-load the delete links, and delete all your items!
+	- So really these "delete" buttons should have been forms, not links
+
+- Back to playing around with static html
+	- simple form
+
+<form>
+	<input type="text" name="q">
+	<input type="submit">
+</form>
+
+- Submit "some junk", will load the same page with the following URL:
+file://localhost/Users/yasha.podeswa/Documents/everything_else/git_repos/coding_notes/Udacity/Web_Development_Course/play.html?q=some+junk
+
+- So just adds the query parameter to the URL
+	- the type="text" attribute is optional, it's the default
+- Let's try other types!
+	- type="password"
+	- the URL is the same, but text typed in the in input appears as documents
+- Key takeway:
+	- the password is not sent securely to the server here, it's sent like any other parameter
+
+- type="checkbox"
+	- adds ?q=on if the box is checked when you hit submit
+	- else simply adds ?
+		- the q parameter doesn't appear at all
+	- however, not all browsers behave the same
+		- best practice when writing server side scripts:
+			- treat q=on as checked
+			- treat ANYTHING ELSE as off, just in case
+	- what if there are a few checkboxes?
+
+<form>
+	<input type="checkbox" name="q">
+	<input type="checkbox" name="r">
+	<input type="checkbox" name="s">
+	<br>
+	<input type="submit">
+</form>
+
+- If you check the first two, the query section (after the ?) of the URL will be:
+q=on&r=on
+
+- Note how the parameters are separated by "&"
+
+- type="radio"
+	- by default, identical to checkboxes, EXCEPT they can't be unchecked
+		- NOT how you'd expect them to perform!
+		- how to make them perform as a group, so that only one can be selected at a time?
+			- give them all the same name!
+
+<form>
+	<input type="radio" name="q">
+	<input type="radio" name="q">
+	<input type="radio" name="q">
+	<br>
+	<input type="submit">
+</form>
+
+- This makes sense, as only one can be on, no need for multiple names
+	- BUT no matter which button you select, q=on
+	- How do we know what button was selected?
+		- the value parameter!
+
+<form>
+	<input type="radio" name="q" value="one">
+	<input type="radio" name="q" value="two">
+	<input type="radio" name="q" value="three">
+	<br>
+	<input type="submit">
+</form>
+
+- Click the second, submit, and:
+q=two
+- So it changes the value of the query parameter!
+
+- Ok, so right now we have 3 annonymous radio buttons
+	- How do we let the user know what they're clicking on?
+
+<form>
+	<label>
+		One
+		<input type="radio" name="q" value="one">
+	</label>
+
+	<label>
+		Two
+		<input type="radio" name="q" value="two">
+	</label>
+
+	<label>
+		Three
+		<input type="radio" name="q" value="three">
+	</label>
+
+	<br>
+	<input type="submit">
+</form>
+
+- Will add labels in front of the radio buttons
+
+- Lastly, let's look at how to do dropdown form elements:
+
+<form>
+	<select name="q">
+		<option>one</option>
+		<option>two</option>
+		<option>three</option>
+	</select>
+
+	<br>
+	<input type="submit">
+</form>
+
+- will give a dropdown
+	- selecting the third item and hitting submit will give you:
+q=three
+
+- note how it's just the contents of the option tag
+	- what if you want a different param passed?
+		- use the value parameter!
+
+<form>
+	<select name="q">
+		<option value="1">one</option>
+		<option value="2">two</option>
+		<option value="3">three</option>
+	</select>
+
+	<br>
+	<input type="submit">
+</form>
+
+- will return:
+q=1
+
+
+#########
+Validation
+#########
+
+- Idea - verify on the server side that we received what we expected to received
+	- i.e. you're sending q=on
+		- that's fine, server knows what to do
+	- but what if you send q=broken, and our server doesn't know what to do with it?
+		- even if the checkbox can't send this, it doesn't mean that users can't send arbitrary junk to our servers through other means
+- Basically, your server can receive junk, and your server needs to know how to deal with it
+
+
+- Example: back to the live web app
+	- I'm not going to take notes on everything, just copy the code
+	- Inspect the code to see what happens
+
+- Quiz:
+# Write a function valid_month() to verify 
+# whether the data a user enters is a valid 
+# month. If the passed in parameter 'month' 
+# is not a valid month, return nothing. 
+# If 'month' is a valid month, then return 
+# the name of the month with the first letter 
+# capitalized.
+
+months = ['January',
+	'February',
+	'March',
+	'April',
+	'May',
+	'June',
+	'July',
+	'August',
+	'September',
+	'October',
+	'November',
+	'December']
+
+month_abbvs = dict((m[:3].lower(), m) for m in months)
+# What this says is:
+#   - we're creating a new dictionary
+#   - for m in month (i.e. it will be 'January', then 'February', etc.)
+#   - we'll create a dictionary where the keys are a substrings of the first 3 characters, to lower
+#   - and the values are the original strings
+# print month_abbvs
+
+# If we weren't using the abbreviations:
+# def valid_month(month):
+# 	if month:
+# 		cap_month = month.capitalize()
+# 		if cap_month in months:
+# 			return cap_month
+
+# Using the abbvs:
+def valid_month(month):
+	if month:
+		short_month = month[:3].lower()
+		return month_abbvs.get(short_month)
+# The get method of a Python dictionary first checks if the key is in the dict
+#   - if it is, it'll return the value
+
+print valid_month('JAN')					# January
+print valid_month('JANuary')			# January
+print valid_month('Jannnnnnnny')	# January
+print valid_month('blah')					# None
+
+
+# Ok, now let's do the same for days
+# My solution:
+def valid_day(day):
+	if day:
+		try:
+			day_num = int(day)
+		except ValueError:
+			day_num = None
+		if day_num:
+			if day_num >= 1 and day_num <= 31:
+				return day_num
+
+# Their solution
+def valid_day(day):
+	if day and day.isdigit():
+		day = int(day)
+		if day > 0 and day <= 31:
+			return day
+
+# However, I think their solution will only work if passed strings
+#  - .isdigit() is a method for strings
+#  - if passed a number, you got problems
+
+# Now to test for a valid year, which we'll say is between 1900 and 2020
+
+def valid_year(year):
+	if year and year.isdigit():
+		year = int(year)
+		if year > 1900 and year < 2020:
+			return year
+
+
+
+Left off at Lesson 2: Checking Validation (~70% through)
