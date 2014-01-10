@@ -915,7 +915,62 @@ def sub_m(name, nickname):
 print sub_m("Mike", "Goose") 
 # => "I'm Goose. My real name is Mike, but my friends call me Goose."
 
+# Ok, so we've integrated the above
+# 	We now have a form that's showing an error message when you input the wrong data
+# 	But it would be nice to keep the correct data!
+# Let's look at default values:
+<input type="text" value="cool">
+
+# So for perserving a correct month, we'd do something like:
+<input type="text" name="month" value="%(month)s">
+
+- What about weird input?
+	- For example, say someone enters foo">derp as the month
+	- We'll be substituting this into the input tag's value attribute
+		- So we'll get:
+		<input value="foo">derp">
+		- the string will be cut off, and it will be followed by derp">
+			- Not what we want!
+		- And what if instead of derp, they put in some malicious shit!
+
+- How to fix this?  Escaping!
+	- instead of returning ", we return &quot;
+	- also:
+		>		&gt;
+		<		&lt;
+		&		&amp;
+
+- My escape html function:
+def escape_html(s):
+	terms = {
+		">": "&gt;",
+		"<": "&lt;",
+		'"': "&quot;",
+		"&": "&amp;"
+	}
+	l = list(s)
+	output = []
+	for c in l:
+		if c in terms:
+			output.append(terms[c])
+		else:
+			output.append(c)
+	return "".join(output)
+
+- Their solution:
+def escape_html(s):
+	for (i, o) in (("&", "&amp;"),
+									(">", "&gt;"),
+									("<", "&lt;"),
+									('"', "&quot;")):
+		s = s.replace(i, o)
+	return s
+
+- Or even simpler
+import cgi
+def escape_html(s):
+	return cgi.escape(s, quote = True)
 
 
 
-Left off at Lesson 2: Substituting Into Our Form
+Left off at Lesson 2: Current Limitations
