@@ -870,6 +870,52 @@ def valid_year(year):
 		if year > 1900 and year < 2020:
 			return year
 
+- How will these functions fit in?
+	1) User makes GET request for the form
+	2) Server responds with form data
+	3) User makes POST request with the data
+	4) Server runs valudation function
+		- if data is good, server says thanks
+		- if data is bad, re-send form data + error message
+
+- So 3 things we have to do:
+	1) Verify the user's input
+	2) On error, render form again
+	3) Include error message
+
+# String substitution in Python
+a = "hello"
+print("<b> %s </b>" % a)
+# prints: <b> hello </b>
+
+# Another example:
+t1 = "I think %s is a perfectly normal thing to do in public."
+def sub1(s):
+	return t1 % s
+print sub1("running") 
+# => "I think running is a perfectly normal thing to do in public."    
+
+# Or to substitute multiple strings
+t2 = "I think %s and %s are perfectly normal things to do in public."
+def sub2(s1, s2):
+	return t2 % (s1, s2)
+print sub2("running", "sleeping") 
+# => "I think running and sleeping are perfectly normal things to do in public."
+
+# Finally, even more complex
+#		Instead of stacking tonnes of %s, then %(s1, s2, s3, etc.)
+#		We can use names and dictionaries
+"test %(NAME)s text" % {"NAME": value}
+# The name can appear in the string multiple times, and we can have multiple names
+
+# Example
+t3 = "I'm %(nickname)s. My real name is %(name)s, but my friends call me %(nickname)s."
+def sub_m(name, nickname):
+	return t3 % {"name": name, "nickname": nickname} 
+print sub_m("Mike", "Goose") 
+# => "I'm Goose. My real name is Mike, but my friends call me Goose."
 
 
-Left off at Lesson 2: Checking Validation (~70% through)
+
+
+Left off at Lesson 2: Substituting Into Our Form
