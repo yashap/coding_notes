@@ -972,5 +972,141 @@ def escape_html(s):
 	return cgi.escape(s, quote = True)
 
 
+- Redirection
+	- OK, so up to now our "success" doesn't send you to a new page
+		- This is annoying because you can't share the link
+		- You also can't refresh without an annoying message
+	- Instead of returning the success HTML, we should return a redirect!
+		- The server sends the redirect, then when we hit the new page we send a GET request, then we get the success HTML
 
-Left off at Lesson 2: Current Limitations
+- Optimal form behaviour
+	- Keep re-serving the form until the user enters valid info
+	- Once you get valid input, redirect them to a success page
+
+- What we need to do:
+	- make a "thanks" handler
+	- add the /thanks URL
+	- redirect to the /thanks URL
+
+- In this case:
+	- the post method of the main handler will redirect to /thanks when it gets valid data
+	- the thanks handler will write our success message when it gets a GET request
+	- finally, we must map '/thanks' to the ThanksHandler
+
+###########
+# Our app so far
+###########
+
+import webapp2
+import cgi
+
+months = ['January',
+	'February',
+	'March',
+	'April',
+	'May',
+	'June',
+	'July',
+	'August',
+	'September',
+	'October',
+	'November',
+	'December']
+
+month_abbvs = dict((m[:3].lower(), m) for m in months)
+
+def valid_month(month):
+	if month:
+		short_month = month[:3].lower()
+		return month_abbvs.get(short_month)
+
+def valid_day(day):
+	if day and day.isdigit():
+		day = int(day)
+		if day > 0 and day <= 31:
+			return day
+
+def valid_year(year):
+	if year and year.isdigit():
+		year = int(year)
+		if year > 1900 and year < 2020:
+			return year
+
+def escape_html(s):
+	return cgi.escape(s, quote = True)
+
+form = """
+<form method="post">
+	What is your birthday?
+	<br>
+	
+	<label> Month
+		<input type="text" name="month" value="%(month)s">
+	</label>
+	
+	<label> Day
+		<input type="text" name="day" value="%(day)s">
+	</label>
+
+	<label> Year
+		<input type="text" name="year" value="%(year)s">
+	</label>
+
+	<div style="color: red">%(error)s</div>
+
+	<br>
+	<br>
+	<input type="submit">
+</form>
+"""
+
+class MainHandler(webapp2.RequestHandler):
+	def write_form(self, error="", month="", day="", year=""):
+	# We will be calling this instead of:
+	# self.response.out.write(form)
+	# Because it let's us substitute in error messages
+		self.response.out.write(form % {"error": error,
+			"month": escape_html(month),
+			"day": escape_html(day),
+			"year": escape_html(year)})
+
+	def get(self):
+		self.write_form()
+
+	def post(self):
+		user_month = self.request.get('month')
+		user_day = self.request.get('day')
+		user_year = self.request.get('year')
+
+		month = valid_month(user_month)
+		day = valid_day(user_day)
+		year = valid_year(user_year)
+
+		if not (month and day and year):
+			self.write_form("That doesn't look valid to me, friend.",
+				user_month, user_day, user_year)
+			# We've used our error message!
+		else:
+			self.redirect("/thanks")
+
+class ThanksHandler(webapp2.RequestHandler):
+	def get(self):
+		self.response.out.write("Thanks! That's a totally valid day!")
+
+app = webapp2.WSGIApplication([('/', MainHandler),
+	('/thanks', ThanksHandler)],
+	debug=True)
+
+##########
+# End of app
+##########
+
+
+#####################################
+Problem Set 2
+#####################################
+
+
+
+
+
