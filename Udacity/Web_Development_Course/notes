@@ -1,5 +1,5 @@
 #####################################
-Lesson 1
+# Lesson 1: How the Web Works
 #####################################
 
 We'll cover
@@ -291,7 +291,7 @@ Servers
 
 
 #####################################
-Problem Set 1
+# Problem Set 1 - Creating Your First Site
 #####################################
 
 Directions:
@@ -353,7 +353,7 @@ http://hello-udacity-yasha.appspot.com/
 
 
 #####################################
-Office Hours 1
+# Office Hours 1
 #####################################
 
 Questions and Answers:
@@ -372,7 +372,7 @@ Questions and Answers:
 
 
 #####################################
-Lesson 2
+# Lesson 2
 #####################################
 
 Forms
@@ -1103,10 +1103,184 @@ app = webapp2.WSGIApplication([('/', MainHandler),
 
 
 #####################################
-Problem Set 2
+# Problem Set 2
 #####################################
 
+- Make a site to ROT13 some text
+	- ROT13 is a simple encryption algorithm, where you increment every letter by 13
+	- Running it through twice should convert it back to the same word
+	- It should:
+		- preserve case
+		- preserve punctuation
+		- preserve whitespace (including new lines)
+
+- Example at:
+udacity-cs253.appspot.com/unit2/rot13
+
+##########
+# My solution
+##########
+
+import webapp2
+
+def escape_html(text):
+	html_escape_table = {"&": "&amp;", '"': "&quot;", "'": "&apos;", ">": "&gt;", "<": "&lt;"}
+	return "".join(html_escape_table.get(c,c) for c in text)
+
+doc = """
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>Unit 2 Rot 13</title>
+	<style type="text/css"></style>
+</head>
+
+<body style="">
+	<h2>Enter some text to ROT13:</h2>
+	<form method="post">
+		<textarea name="text" style="height: 100px; width: 400px;">%(text)s</textarea>
+		<br>
+		<input type="submit">
+	</form>
+</body>
+</html>
+"""
+
+class MainHandler(webapp2.RequestHandler):
+	def write_form(self, text=""):
+		self.response.out.write(doc % {"text": escape_html(text)})
+
+	def rot13(self, s):
+		transformed = ""
+		for c in s:
+			if c.isalpha():
+				if c.isupper():
+					c = c.lower()
+					transformed += self.switch(c).upper()
+				else:
+					transformed += self.switch(c)
+			else:
+				transformed += c
+		return transformed
+
+	def switch(self, c):
+		first = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m"]
+		last = ["n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
+		if c in first:
+			return last[first.index(c)]
+		else:
+			return first[last.index(c)]
+
+	def get(self):
+		self.write_form()
+
+	def post(self):
+		user_input = self.request.get('text')
+		transformed = self.rot13(user_input)
+		self.write_form(transformed)
+
+app = webapp2.WSGIApplication([('/', MainHandler)],
+	debug=True)
+
+
+
+#####################################
+# Lesson 3: Databases
+#####################################
+
+- Databases are quite complex
+	- We'll split the lesson into 2 parts:
+		- 1) We'll talk about SQL
+		- 2) We'll talk about Google App Engine's implementation
+
+- What is a database?
+	- A program that stores and retreives data
+		- Particularly large amounts of structured data
+	- Note that databases are often stored on a separate server, or even a system of servers
+		- So sometimes "database" refers not to the program, but to the machine or system of machines
+		- Same as how "web server" could refer to a program/machine/system of machines
+
+- Tables
+	- In almost all databases
+	- Example: building a site lik reddit
+		- users post links
+		- other users can vote on links
+		- they show what's most popular
+	- Tables:
+		- Links
+			- Columns (type):
+				- ID (int)
+				- votes (int)
+				- user (int)
+				- date (date)
+				- title (str -> could also be called "text", "varchar", etc.)
+				- url (str)
+	- Let's play around with link type data in Python!
+		- See play.py for how we played around with this data in Python
+		- Note that it's a bit tedious, and a db could make it easier!
+
+- Why databases?
+	- downsides of querying by hand
+		- error prone (have to custom write every query)
+		- tedious
+		- SLOW
+		- can handle more data than you can fit in memory
+
+- Types of databases
+	- Relational/SQL databases
+		- Examples:
+			- PostgreSQL
+				- Used by reddit, hipmunk, etc.
+			- MySQL
+				- Used by almost everyone
+			- SQLite
+				- Light weight, simple db
+			- Oracle
+	- Google App Engine's Datastore
+		- Lots of similarities to relational DBs, but also some differences
+	- Amazon Dynamo
+		- See their paper
+	- NoSQL
+		- e.g. mongo, couch
+		- try to solve some of the limitations that SQL places on you
+
+- SQL
+	- Structured Query Language
+	- invented in the 1970s
+		- designed to solve pre-web problems
+	- basic query:
+		SELECT * FROM links WHERE id = 5;
+	- "fetch all columns from the links table, and return only rows where the id is 5"
+
+- We'll be playing around with SQL by using import sqlite3
+	- this lets us use SQL in Python
+	- see play.py
+
+- Joins
+	- I know how they work
+	- But he uses different syntax:
+		- For example, say we have a user table and a link table
+		- We only know the users name (in the user table, but not the link table)
+		- We want all data from the link table for this user
+		SELECT link.* FROM link, user WHERE link.user_id = user_id AND user.name = 'Spez'
+	- HOWEVER, we don't use joins often when writing web applications
+		- We'll get into why later (they're slow?)
+
+- Indexes
+	- So far we've been doing sequential scans
+		- i.e. looking through a link from left to right
+		- This is slow with a lot of data
+	- Indexes make lookups faster
+		- Example: hash tables
+			- We hash and index the value of the key, so we don't have to look up the keys sequentially
+	- See play.py for indexing examples
+		- From the add_new_link(link) function, we can see that there's a cost to having indeces
+			- Though they make lookups faster, they also make extra work when you're adding new rows
+			- Faster reads, slower inserts (and generally slower writes in general, even when updating data)
 
 
 
 
+# Left off at Lesson 3 - Real World Example
