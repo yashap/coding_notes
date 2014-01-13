@@ -1279,8 +1279,147 @@ app = webapp2.WSGIApplication([('/', MainHandler)],
 		- From the add_new_link(link) function, we can see that there's a cost to having indeces
 			- Though they make lookups faster, they also make extra work when you're adding new rows
 			- Faster reads, slower inserts (and generally slower writes in general, even when updating data)
+	- Example of creating an index:
+		CREATE INDEX hotel_id ON hotels(id);
+		- We've named the index hotel_id, it's created on the hotels table, and specifically on the id field
+	- To get rid of an index:
+		DROP INDEX hotel_id;
+	- PostgreSQL
+		- EXPLAIN ANALYZE
+			- Just throw that in front of a query, and it'll say what it did!
+			- You can see how much faster queries run on indexed fields
+
+- Indexes for sorting
+	- hastables are not sorted
+		- you lose sorting info when you use a hashtable
+	- trees are a different datastructure, a different type of mapping
+		- tress are sorted!
+		- however, the lookups are slower
+	- hashtables have constant time lookups
+		- not really dependent on the number of elements in the table
+	- trees have log n time lookups
+
+- Reddit Hotness Algorithm
+	- computed using a special index
+	- start with the link table
+		- one of the fields is 'score'
+			- it's a floating point field
+			- there's an index on this field
+		- every time there's an up or down vote, the score is re-calculated
+			- score = hot(ups, downs, date)
+			- why is date in there?
+				- later (newer) date = higher score
+				- this is what keeps the newest links near the top!
+	- then you can just:
+	SELECT * FROM links ORDER BY score DESC
+	- to get the links ordered with the hotest ones at the top!
+	- note that this would be a tree type index
+		- the db actually keeps the records ordered in order of Hotness
+		- this makes it super fast to pull them out in the right order
+
+- Scaling Databases
+	- Why would you need to scale a DB?
+		1) Too much load
+			- a single machine can't keep up with all the requests
+			- one solution:
+				- replicate the db
+				- all writes go to a single master db
+				- this db gets replicated accross two slave DBs
+				- now we have 3 dbs with all the data on it
+					- more machines to handle the requests!
+				- you generally have a lot more reads than writes
+					- as long as master can keep up with the writes, the slaves can just handle the reads
+				- downsides:
+					- doesn't increase write speed
+					- replication lag
+						- what if you try to read the data from the slave before its been uploaded!
+		2) Too much data
+			- you literally cannot store all the data on one machine
+			- one solution: shard the db
+				- one db holds links 1-100, the next holds 101-200, etc.
+				- or you can use a hashing approach, where you hash on a specific key (i.e. link ids)
+			- also solves the "too much load" issue, as you now have a lot of machines sharing the load
+				- can handle large read load AND large write load!
+			- downsides:
+				- queries get much more complex
+					- i.e. what if you try to get all the links sorted by hotness!
+						- where do they reside?
+						- you have to do a range query, which hits all the machines, you lose the 
+				- joins becomes difficult, or even impossible
+				- you probably need to design your data in a way that you don't need to do joins or complex queries
+				- the database we'll be using in this class (Google Data Store) is like this:
+					- we can't do joins, and a number of other things
+					- BUT it's very fast and stable
+
+- ACID
+	- Stands for:
+		- Atomicity
+			- all parts of a transaction succeed or fail together
+			- transaction = group of statements
+			- i.e. say we're updating multiple rows in a db together, in one cohesive unit (i.e. in reddit example, we'd increase the score of the link and user together)
+			- so these grouped jobs always succeed or fail together
+		- Consistency
+			- the DB will always be consistent
+			- i.e. the db will always move from one valid transaction to the next
+			- so, for example, you can't read a specific piece of data until the write on that data is done
+		- Isolation
+			- no transaction can interfere with another
+			- i.e. say you have an upvote and a downvote
+			- you should make sure they BOTH apply, not just one with the other failing
+		- Durability
+			- once a transaction s committed, it won't be lost
+				- even if the db is turned off, unplugged, etc. we won't lose the data
+	- It's hard to have a DB that really fulfils all of this
+
+- Google App Engine Datastore
+	- what they call 'entities' are basically tables
+		- columns are not fixed
+			- adding/changing them is easy
+			- even entities of the same type don't have to have the same columns
+		- entities all have an ID
+		- entities have parents/ancestors
+			- say we have an entity called Link
+			- It might have a parent called Reddit
+				- You can do things like "get me all Links that are children of Reddit"
+				- can help with consistency
+	- uses GQL instead of SQL
+		- all queries begin with SELECT *
+			- no way to select columns
+		- no joins
+		- all queries must be indexed
+			- for the most part, Google App Engine will build the indeces for you, though you can define your own too
+	- the datastore is shared and replicated
+		- you won't have to think about scaling (too much)
+		- queries will be quick (because they have to be simple)
+		- we WILL have to think about consistency
+
+- We're going to build a website, right now, called 'ASCII Chan'
+	- it'll be a website for sharing ASCII art
+	- a 1 page site
+	- a form on top to submit ASCII art, with some previously submitted ASCII art below
+
+- Google App Engine Datastore Types:
+	Integer
+	Flot
+	String (<500 chars, indexed)
+	Text (>500 chars, not indexed)
+	Date
+	Time
+	DateTime
+	Email
+	Link
+	PostalAddress
+	etc.
+
+- HTML <pre> tag
+	- like <div>, but contains pre-formatted text
+	- basically, preserves whitespace, newlines, etc.
+
+
+#####################################
+# Problem Set 3 - Building a Basic Blog
+#####################################
 
 
 
-
-# Left off at Lesson 3 - Real World Example
+# Left off at Lesson 3 - Form Handling
