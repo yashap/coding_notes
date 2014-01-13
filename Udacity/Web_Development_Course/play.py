@@ -157,7 +157,7 @@ print query()
 
 # QUIZ - implement the function link_by_id() that takes a link's ID and returns the link itself
 # DON'T use SQL, just use the lins list
-def link_by_id(link_id):
+def OLDlink_by_id(link_id):
 	for link in links:
 		if link.id == link_id:
 			return link
@@ -172,4 +172,23 @@ def build_link_index():
 		output[link.id] = link
 	return output
 
-print build_link_index()
+link_index = build_link_index()
+
+def link_by_id(link_id):
+	return link_index.get(link_id)
+	# Get is a method for Python dictionaries
+	# It's like dict[key], except if key not in dict, it returns None instead of an error
+
+print link_by_id(4)
+
+
+# QUIZ - implement the function add_new_link(), that adds a link to both the "links" list and updates the "link_index" dictionary
+def add_new_link(link):
+	links.append(link)
+	link_index[link.id] = link
+
+l = Link(50, 1, 1, 1, "Test title", "testURL")
+add_new_link(l)
+print links[-1]
+# Prints the last element in links
+print link_by_id(50)
