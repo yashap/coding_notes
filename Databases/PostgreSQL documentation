@@ -1,0 +1,19 @@
+# Typically want a separate db for each project, for each user
+# To create a db
+createdb mydb
+
+# log in
+psql mydb
+
+# if you're a normal user you'll see:
+mydb=>
+# if you're the db superuser, you'll see
+mydb=#
+
+
+
+Left off at:
+
+http://www.postgresql.org/docs/9.3/interactive/tutorial-accessdb.html
+
+That would mean you are a database superuser, which is most likely the case if you installed PostgreSQL yourself. Being a superuser means that you are not subject to access controls. For the purposes of this tutorial that is not important.

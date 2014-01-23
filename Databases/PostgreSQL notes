@@ -1,0 +1,105 @@
+######################
+# PostgreSQL notes
+######################
+
+#### Key commands:
+# Start postgres
+lunchy stop postgres
+# Stop postgres
+lunchy start postgres
+
+# Check if Postgres running
+ps auxwww | grep postgres
+# Then look for something like
+# /usr/local/opt/postgresql/bin/postgres -D /usr/local/var/postgres -r /usr/local/var/postgres/server.log
+
+# Create databases (two dbs here, syntax is owner/encoding/db_name)
+createdb -Opostgres -Eutf8 testdb_development
+createdb -Opostgres -Eutf8 testdb_test
+
+# Log in to one of these dbs through the command line
+psql -U postgres testdb_development
+
+
+
+##### When homebrew finished, it gave me this:
+	To have launchd start postgresql at login:
+	    ln -sfv /usr/local/opt/postgresql/*.plist ~/Library/LaunchAgents
+	Then to load postgresql now:
+	    launchctl load ~/Library/LaunchAgents/homebrew.mxcl.postgresql.plist
+	Or, if you don't want/need launchctl, you can just run:
+	    postgres -D /usr/local/var/postgres
+
+	==> /usr/local/Cellar/postgresql/9.3.2/bin/initdb /usr/local/var/postgres -E utf
+	==> Summary
+	🍺  /usr/local/Cellar/postgresql/9.3.2: 2924 files, 40M
+
+##### Or the next time I did it:
+502 yasha.podeswa:~$ brew install postgres
+==> Downloading https://downloads.sf.net/project/machomebrew/Bottles/postgresql-
+Already downloaded: /Library/Caches/Homebrew/postgresql-9.3.2.mountain_lion.bottle.tar.gz
+==> Pouring postgresql-9.3.2.mountain_lion.bottle.tar.gz
+==> Caveats
+If builds of PostgreSQL 9 are failing and you have version 8.x installed,
+you may need to remove the previous version first. See:
+  https://github.com/Homebrew/homebrew/issues/issue/2510
+
+To migrate existing data from a previous major version (pre-9.3) of PostgreSQL, see:
+  http://www.postgresql.org/docs/9.3/static/upgrading.html
+
+When installing the postgres gem, including ARCHFLAGS is recommended:
+  ARCHFLAGS="-arch x86_64" gem install pg
+
+To install gems without sudo, see the Homebrew wiki.
+
+To reload postgresql after an upgrade:
+    launchctl unload ~/Library/LaunchAgents/homebrew.mxcl.postgresql.plist
+    launchctl load ~/Library/LaunchAgents/homebrew.mxcl.postgresql.plist
+==> Summary
+🍺  /usr/local/Cellar/postgresql/9.3.2: 2924 files, 40M
+
+
+
+Other notes:
+
+1) If this is your first install, create a db with:
+initdb /usr/local/var/postgres
+(creates a db "cluster", stored where noted above)
+
+2) To have launchd start postgresql at login:
+    ln -sfv /usr/local/opt/postgresql/*.plist ~/Library/LaunchAgents
+Then to load postgresql now:
+    launchctl load ~/Library/LaunchAgents/homebrew.mxcl.postgresql.plist
+
+3) How to make it really easy to start and stop postgres
+sudo gem install lunchy
+
+Now we can:
+lunchy stop postgres
+lunchy start postgres
+
+Then I created a postgres user using the following steps:
+http://www.maclife.com/article/columns/terminal_101_creating_new_users
+
+And I can check out all users with:
+dscacheutil -q user | grep -A 3 -B 2 -e uid:\ 5'[0-9][0-9]'
+
+4) Now we can create a db owned by this user (postgres):
+createdb -Opostgres -Eutf8 testdb_development
+createdb -Opostgres -Eutf8 testdb_test
+#					owner			encoding	db name
+
+5) Now to access the db through the command line:
+psql -U postgres testdb_development
+#			users				database to connect to
+
+Type:
+help
+To get help
+
+6) Now I'm just following along through the postgres documentation
+
+
+
+
+http://www.postgresql.org/docs/9.3/interactive/tutorial-createdb.html
