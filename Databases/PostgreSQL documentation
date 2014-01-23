@@ -10,10 +10,115 @@ mydb=>
 # if you're the db superuser, you'll see
 mydb=#
 
+# Some sample queries
+SELECT verison();
+SELECT current_date;
+SELECT 2+2;
+
+# Internal commands
+\h			# help with commands
+					# i.e. \h SELECT
+\q			# quit
+\?			# more internal commands
+\i file.sql		# reads in SQL commands from a sql file
+
+# Tables
+# 	Columns have a fixed order in each row
+# 	Rows DO NOT have a guaranteed order, though they can be sorted for display
+
+# Tables are grouped into databases
+# 	A collection of dbs managed by a single PostgreSQL server instance constitutes a database cluster
+
+# Creating a new table
+# 	Use the following syntax
+CREATE TABLE weather (
+    city            varchar(80),
+    temp_lo         int,           -- low temperature
+    temp_hi         int,           -- high temperature
+    prcp            real,          -- precipitation
+    date            date
+);
+CREATE TABLE cities (
+    name            varchar(80),
+    location        point
+);
+# Note how both comments (--) and whitesapce (spaces or dashes) are ignored
+# SQL is case insensitive about keywords and identifiers, EXCEPT when double-quoted to preserve case (not done above)
+# Can also drop tables like this:
+DROP TABLE cities;
+
+# PostgreSQL types
+int
+smallint
+real
+double precision
+char(N)
+varchar(N)
+date
+time
+timestamp
+interval
+# Also a bunch of other general utility types
+# And a rich set of geometric types
+# AND you can define your own data types
+# Because of this, types ARE NOT keywords, except in specific cases where they need to be
+
+# Populating a table with rows
+INSERT INTO weather VALUES ('San Francisco', 46, 50, 0.25, '1994-11-27');
+# Check
+SELECT * FROM WEATHER;
+
+# Another example
+INSERT INTO cities VALUES ('San Francisco', '(-194.0, 53.0)');
+SELECT * FROM cities;
+
+# Some notes:
+# 	Everything that's not a simple numeric value must be surrounded by single quotes (even dates, points, etc.)
+# 	point accepts coordinate pairs
+
+# You can also explicitly say which data to insert into which columns
+# 	This way you don't have to remember the order of columns
+# 	You also don't have to enter NULL values, but you can if you want
+INSERT INTO weather (date, city, temp_hi, temp_lo)
+	VALUES ('1994-11-29', 'Hayward', 54, 37);
+INSERT INTO weather (city, temp_lo, temp_hi, prcp, date)
+	VALUES ('San Francisco', 43, 57, NULL,'1994-11-29');
+SELECT * FROM weather;
+
+# Then to alter data:
+UPDATE weather SET (prcp, temp_hi) = (0, 58)
+	WHERE city = 'San Francisco' AND date = '1994-11-29';
+
+# You can also insert data from flat text files, for example:
+COPY weather FROM '/home/user/weather.txt';
+# The source file must be stored on the machine running psql, not on the client
+# Read more about COPY here:
+http://www.postgresql.org/docs/9.3/interactive/sql-copy.html
+
+############
+# Queries
+############
+
+SELECT city, temp_lo, temp_hi, date FROM weather;
+
+SELECT city, (temp_lo + temp_hi)/2 AS temp_avg, date FROM weather;
+
+SELECT * FROM weather
+	WHERE city = 'San Francisco' and prcp > 0.0;
+
+SELECT * FROM weather
+	ORDER BY city, temp_lo;
+
+SELECT DISTINCT city
+	FROM weather
+	ORDER BY city;
 
 
-Left off at:
 
-http://www.postgresql.org/docs/9.3/interactive/tutorial-accessdb.html
 
-That would mean you are a database superuser, which is most likely the case if you installed PostgreSQL yourself. Being a superuser means that you are not subject to access controls. For the purposes of this tutorial that is not important.
+
+# Left off at:
+
+http://www.postgresql.org/docs/9.3/interactive/tutorial-join.html
+
+[start]
