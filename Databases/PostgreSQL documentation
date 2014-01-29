@@ -95,8 +95,9 @@ COPY weather FROM '/home/user/weather.txt';
 # Read more about COPY here:
 http://www.postgresql.org/docs/9.3/interactive/sql-copy.html
 
+
 ############
-# Queries
+# Basic queries
 ############
 
 SELECT city, temp_lo, temp_hi, date FROM weather;
@@ -114,11 +115,90 @@ SELECT DISTINCT city
 	ORDER BY city;
 
 
+############
+# Joins
+############
+
+SELECT *
+	FROM weather, cities
+	WHERE city = name;
+# What will this return?
+# 	1) It'll be an INNER JOIN, won't include cities that aren't in both tables
+# 	2) It'll have both the city and name fields (duplicate info)
+# 		Can "fix" this by explicitly specifying columns
+SELECT city, temp_lo, temp_hi, prcp, date, location
+	FROM weather, cities
+	WHERE city = name;
+# It's even better form to state what table everything is coming from
+SELECT weather.city, weather.temp_lo, weather.temp_hi, weather.prcp, weather.date, cities.location
+	FROM weather, cities
+	WHERE cities.name = weather.city;
+
+# Other join syntax
+SELECT *
+	FROM weather
+	INNER JOIN cities ON (weather.city = cities.name);
+
+# Or, if we want all cities in the weather table
+SELECT *
+	FROM weather
+	LEFT OUTER JOIN cities ON (weather.city = cities.name);
+
+# Self joins
+# 	For example, let's say we want to find all cities with temperature ranges that that fall completely within anther city's temp range
+SELECT W1.city AS outer_city,
+	W1.temp_lo AS outer_low,
+	W1.temp_hi AS outer_high,
+	W2.city AS inner_city,
+	W2.temp_lo AS inner_low,
+	W2.temp_hi AS inner_high
+FROM weather W1, weather W2
+WHERE W1.temp_lo < W2.temp_lo
+	AND W1.temp_hi > W2.temp_hi;
+
+
+############
+# Aggregate functions
+############
+
+SELECT MAX(temp_lo) FROM weather;
+# 46
+
+# But what if we want to know what city, or cities, that max temp occurs in?
+SELECT city
+FROM weather
+WHERE temp_lo = (
+	SELECT MAX(temp_lo)
+	FROM weather
+);
+# San Francisco
+# Note the use of nesting
+# 	Need to find the max temp first, then can find the cities
+
+# Aggregates also go great with GROUP BY
+SELECT city,
+	MAX(temp_lo)
+FROM weather
+GROUP BY city
+HAVING MAX(temp_lo) < 40;
+
+# Note the use of HAVING
+# 	Similar to a WHERE clause
+# 	With a WHERE clause only the rows with temp_lo < 40 would be included
+# 	But if one city occurs multiple times, sometimes with temp_lo below and sometimes above 40, the WHERE clause won't exclude the city
+# 	HAVING will exclude the city, it filters for cities that ONLY have temp_lo values below 40
+
+# More on HAVING vs. WHERE
+# 	1) WHERE selects rows before the groups/aggregates are computed, while HAVING selects rows after groups and aggregates are computed
+# 	2) HAVING should really only be used with groups/aggregates
+# 	3) Sometimes you can use either - use WHERE in that case, as it's more efficient (filtering out rows before aggregating means less work to aggregate)
+
+
 
 
 
 # Left off at:
 
-http://www.postgresql.org/docs/9.3/interactive/tutorial-join.html
+http://www.postgresql.org/docs/9.3/interactive/tutorial-update.html
 
 [start]
