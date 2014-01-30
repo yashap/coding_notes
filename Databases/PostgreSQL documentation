@@ -194,11 +194,132 @@ HAVING MAX(temp_lo) < 40;
 # 	3) Sometimes you can use either - use WHERE in that case, as it's more efficient (filtering out rows before aggregating means less work to aggregate)
 
 
+############
+# Updates and deletions
+############
+
+# Say all temps are off by 2 degrees after November 28th
+# 	How to correct?
+# 		Use UPDATE
+UPDATE weather
+	SET temp_hi = temp_hi - 2, temp_lo = temp_lo - 2
+	WHERE date > '1994-11-28';
+
+# Or what if we're no longer interested in the weather of Hayward?
+DELETE
+	FROM weather
+	WHERE city = 'Hayward';
+
+# Be really careful with delete!!!!!
+#		For example, this would delete all rows, and wouldn't even ask you for confirmation:
+DELETE FROM weather;
+# Super dangerous!!!!!
 
 
+############
+# Views
+############
+
+# Views are basically queries saved to a specific name
+# You can then SELECT from the view, just as you would from a table
+CREATE VIEW myview AS
+	SELECT city, temp_lo, temp_hi, prcp, date, location
+		FROM weather, cities
+		WHERE city = name;
+
+SELECT * FROM myview;
+
+# Can then type
+\dv
+# To list all views (similar to \dt for tables)
+
+
+############
+# Foreign Keys
+############
+
+# Drop old tables (and dependents, like views)
+DROP TABLE cities CASCADE;
+DROP TABLE weather CASCADE;
+
+# Now create them again, but with cities in both tables intrinsically linked
+CREATE TABLE cities (
+	city      varchar(80) primary key,
+	location  point
+);
+
+CREATE TABLE weather (
+	city      varchar(80) references cities(city),
+	temp_lo   int,
+	temp_hi   int,
+	prcp      real,
+	date      date
+);
+
+# Now try inserting an invlaid record
+
+INSERT INTO weather VALUES ('Berkeley', 45, 53, 0.0, '1994-11-28');
+-- ERROR:  insert or update on table "weather" violates foreign key constraint "weather_city_fkey"
+-- DETAIL:  Key (city)=(Berkeley) is not present in table "cities".
+
+# More on this later, in Chapter 5
+
+
+############
+# Transactions
+############
+
+# A transaction bundles multiple steps into a single, all-or-nothing operation
+# 	If any step fails, none of them affect the db at all
+
+# Example, image we've got a bank
+CREATE TABLE accounts (
+  name         varchar(80),
+  balance      real,
+  branch_name  varchar(80)
+);
+
+CREATE TABLE branches (
+  name         varchar(80),
+  balance      real
+);
+
+INSERT INTO accounts (name, balance, branch_name) VALUES ('Alice', 452.05, 'Kitsilano');
+INSERT INTO accounts (name, balance, branch_name) VALUES ('Bob', 123.79, 'Kitsilano');
+INSERT INTO accounts (name, balance, branch_name) VALUES ('Keith', 99452.00, 'Point Grey');
+
+SELECT SUM(balance) FROM accounts WHERE branch_name = 'Kitsilano';
+# 575.84
+INSERT INTO branches (name, balance) VALUES ('Kitsilano', 575.84);
+INSERT INTO branches (name, balance) VALUES ('Point Grey', 99452.00);
+
+# Now let's try a transaction
+#   We want to make sure that when someone deposits or withdraws money
+#   We just do what we would normally do, but surround it with BEGIN and COMMIT
+# For example, say Alice is sending $100 to Bob
+#   We need to make sure that EVERYTHING updates!
+BEGIN;
+UPDATE accounts SET balance = balance - 100
+  WHERE name = 'Alice';
+UPDATE branches SET balance = balance - 100
+  WHERE name = (SELECT branch_name FROM accounts WHERE name = 'Alice');
+UPDATE accounts SET balance = balance + 100
+  WHERE name = 'Bob';
+UPDATE branches SET balance = balance + 100
+  WHERE name = (SELECT branch_name FROM accounts WHERE name = 'Bob');
+COMMIT;
+
+# Or, say you're entering a transaction, then you realize you want to cancel before you're done?
+#   Just enter ROLLBACK instead of COMMIT
+BEGIN;
+UPDATE accounts SET balance = balance - 100
+  WHERE name = 'Alice';
+UPDATE branches SET balance = balance - 100
+  WHERE name = (SELECT branch_name FROM accounts WHERE name = 'Alice');
+ROLLBACK;
 
 # Left off at:
 
-http://www.postgresql.org/docs/9.3/interactive/tutorial-update.html
+http://www.postgresql.org/docs/9.3/interactive/tutorial-transactions.html
 
-[start]
+It's possible to control the statements in a transaction in a more granular fashion through the use of savepoints.
