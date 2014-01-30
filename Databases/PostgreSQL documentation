@@ -318,8 +318,34 @@ UPDATE branches SET balance = balance - 100
   WHERE name = (SELECT branch_name FROM accounts WHERE name = 'Alice');
 ROLLBACK;
 
+# Can also include SAVEPOINT, which change the behaviour of ROLLBACK, so you can roll back to them instead of all the way to the start
+# 	Example:
+BEGIN;
+UPDATE accounts SET balance = balance - 100
+  WHERE name = 'Alice';
+SAVEPOINT my_savepoint;
+UPDATE accounts SET balance = balance + 100
+  WHERE name = 'Bob';
+-- oops, that transaction was supposed to go to Wally, not Bob!
+ROLLBACK TO my_savepoint;
+UPDATE accounts SET balance = balance + 100
+  WHERE name = 'Wally';
+COMMIT;
+
+# For the above example to work, I should have added 'Wally'
+#   I'll give him as much money as everyone else combined
+BEGIN;
+INSERT INTO accounts (name, balance, branch_name)
+  VALUES ('Wally', (SELECT SUM(balance) FROM accounts), 'Point Grey');
+UPDATE branches SET balance = balance + (SELECT balance FROM accounts WHERE name = 'Wally')
+  WHERE name = (SELECT branch_name FROM accounts WHERE name = 'Wally');
+COMMIT;
+
+
+
+
 # Left off at:
 
-http://www.postgresql.org/docs/9.3/interactive/tutorial-transactions.html
+http://www.postgresql.org/docs/9.3/interactive/tutorial-window.html
 
-It's possible to control the statements in a transaction in a more granular fashion through the use of savepoints.
+[start]
