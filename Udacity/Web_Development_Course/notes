@@ -14,7 +14,7 @@ And to deploy online:
 appcfg.py update .
 
 User: ypodeswa@gmail.com
-Paswword: mypass
+Paswword: my Google pass (see LP, it's not a common one)
 
 Or just use deploy in the GUI
 
@@ -22,8 +22,8 @@ Again, to see it deployed, go to:
 http://hello-udacity-yasha.appspot.com/
 
 To backup my app, something like:
-cp app.yaml main.py index.yaml past_versions/2014-01-15_ascii_chan/
-cp -r templates/ past_versions/2014-01-15_ascii_chan/templates/
+cp app.yaml main.py index.yaml past_versions/1_ascii_chan/
+cp -r templates/ past_versions/1_ascii_chan/templates/
 
 #####################################
 # Lesson 1: How the Web Works
