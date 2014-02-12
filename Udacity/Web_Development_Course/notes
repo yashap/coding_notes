@@ -1,3 +1,30 @@
+Through the GUI, simply click run
+
+Or, through terminal
+
+cd to the app
+dev_appserver.py .
+
+. is for current directory, or you can type the directory
+
+Then visit at localhost:8080
+
+And to deploy online:
+
+appcfg.py update .
+
+User: ypodeswa@gmail.com
+Paswword: mypass
+
+Or just use deploy in the GUI
+
+Again, to see it deployed, go to:
+http://hello-udacity-yasha.appspot.com/
+
+To backup my app, something like:
+cp app.yaml main.py index.yaml past_versions/2014-01-15_ascii_chan/
+cp -r templates/ past_versions/2014-01-15_ascii_chan/templates/
+
 #####################################
 # Lesson 1: How the Web Works
 #####################################
@@ -1204,7 +1231,7 @@ app = webapp2.WSGIApplication([('/', MainHandler)],
 
 - Tables
 	- In almost all databases
-	- Example: building a site lik reddit
+	- Example: building a site like reddit
 		- users post links
 		- other users can vote on links
 		- they show what's most popular
@@ -1376,8 +1403,10 @@ app = webapp2.WSGIApplication([('/', MainHandler)],
 		- columns are not fixed
 			- adding/changing them is easy
 			- even entities of the same type don't have to have the same columns
+				- sometimes adding columns to dbs with lots of data is hard, with app engine it isn't
 		- entities all have an ID
 		- entities have parents/ancestors
+			- these are relationships to other entities
 			- say we have an entity called Link
 			- It might have a parent called Reddit
 				- You can do things like "get me all Links that are children of Reddit"
@@ -1388,21 +1417,27 @@ app = webapp2.WSGIApplication([('/', MainHandler)],
 		- no joins
 		- all queries must be indexed
 			- for the most part, Google App Engine will build the indeces for you, though you can define your own too
-	- the datastore is shared and replicated
+	- can use a procedural language instead of GQL if you want
+	- the datastore is sharded and replicated
 		- you won't have to think about scaling (too much)
 		- queries will be quick (because they have to be simple)
 		- we WILL have to think about consistency
+			- because things are sharded/replicated, so updates can take time to fully propogate through the system
+	- Check out the documentation here, no need to learn everything first:
+		https://developers.google.com/appengine/docs/python/storage
 
 - We're going to build a website, right now, called 'ASCII Chan'
 	- it'll be a website for sharing ASCII art
 	- a 1 page site
 	- a form on top to submit ASCII art, with some previously submitted ASCII art below
 
+**** Next bunch of lessons - just me working on ascii_chan!
+
 - Google App Engine Datastore Types:
 	Integer
-	Flot
+	Float
 	String (<500 chars, indexed)
-	Text (>500 chars, not indexed)
+	Text (>500 chars, can not be indexed.  Can't say "get me stuff where Text = x")
 	Date
 	Time
 	DateTime
@@ -1414,6 +1449,8 @@ app = webapp2.WSGIApplication([('/', MainHandler)],
 - HTML <pre> tag
 	- like <div>, but contains pre-formatted text
 	- basically, preserves whitespace, newlines, etc.
+
+# Left off at start of 4th last video in lesson 3 ('Creating Entities Continued')
 
 
 #####################################

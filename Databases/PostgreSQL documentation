@@ -342,10 +342,110 @@ UPDATE branches SET balance = balance + (SELECT balance FROM accounts WHERE name
 COMMIT;
 
 
+############
+# Window Functions
+############
+
+# A window function performs a calculation accross a set of rows that are somehow related to the current row
+# 	Comparable to the type of calculation done with an aggregate function
+# 	BUT aggregate groups rows into a single output, window does not
+
+SELECT name,
+  balance,
+  branch_name,
+  AVG(balance)
+  OVER (PARTITION BY branch_name)
+  FROM accounts;
+# Returns
+--  name  | balance | branch_name |       avg        
+-- -------+---------+-------------+------------------
+--  Alice |  352.05 | Kitsilano   | 312.919998168945
+--  Bob   |  273.79 | Kitsilano   | 312.919998168945
+--  Keith |   99452 | Point Grey  |   99764.91796875
+--  Wally |  100078 | Point Grey  |   99764.91796875
+
+# So it's like a normal SELECT, but we can add a new calculated row!
+#   We can also throw an ORDER BY into the OVER function, which will order the rows within each PARTITION
+SELECT name,
+  balance,
+  branch_name,
+  RANK() OVER (PARTITION BY branch_name ORDER BY balance DESC)
+  FROM accounts;
+# Returns
+--  name  | balance | branch_name | rank 
+-- -------+---------+-------------+------
+--  Alice |  352.05 | Kitsilano   |    1
+--  Bob   |  273.79 | Kitsilano   |    2
+--  Wally |  100078 | Point Grey  |    1
+--  Keith |   99452 | Point Grey  |    2
+
+# Some notes:
+# 	1) OVER is processed after FROM, WHERE, GROUP BY and HAVING
+# 		So if we've already filtered out rows with WHERE, OVER won't see them
+# 	2) Queries can have multiple OVER clauses to slice up the data in different ways!
+
+# What if we ommit partitions?
+SELECT name,
+  balance,
+  branch_name,
+  AVG(balance) OVER ()
+  FROM accounts;
+--  name  | balance | branch_name |       avg        
+-- -------+---------+-------------+------------------
+--  Keith |   99452 | Point Grey  | 50038.9189834595
+--  Alice |  352.05 | Kitsilano   | 50038.9189834595
+--  Bob   |  273.79 | Kitsilano   | 50038.9189834595
+--  Wally |  100078 | Point Grey  | 50038.9189834595
+
+# Behaves just as you'd expect, one big parition
+# Interesting note, if you ommit PARTITION, ORDER BY works VERRRRY differently!
+SELECT name,
+  balance,
+  branch_name,
+  AVG(balance) OVER (ORDER BY balance ASC)
+  FROM accounts;
+--  name  | balance | branch_name |       avg        
+-- -------+---------+-------------+------------------
+--  Bob   |  273.79 | Kitsilano   | 273.790008544922
+--  Alice |  352.05 | Kitsilano   | 312.919998168945
+--  Keith |   99452 | Point Grey  | 33359.2799987793
+--  Wally |  100078 | Point Grey  | 50038.9189834595
+
+# Gives you a sort of running average!
+
+# Finally, if you want to filter or GROUP BY the rows after the window calculations are performed, just nest queries
+SELECT u.name, u.balance, u.branch_name, u.rank
+FROM
+  (SELECT name, balance, branch_name,
+    RANK() OVER (PARTITION BY branch_name ORDER BY balance DESC) AS rank
+    FROM accounts
+  ) AS u
+WHERE u.rank = 1;
+--  name  | balance | branch_name | rank 
+-- -------+---------+-------------+------
+--  Alice |  352.05 | Kitsilano   |    1
+--  Wally |  100078 | Point Grey  |    1
+
+# If you want to involve multiple window functions, it's best to do so like this:
+SELECT name, balance, branch_name,
+  AVG(balance) OVER w AS branch_avg_balance,
+  SUM(balance) OVER w AS branch_total_balance
+  FROM accounts
+  WINDOW w AS (PARTITION BY branch_name ORDER BY balance DESC);
+--  name  | balance | branch_name | branch_avg_balance | branch_total_balance 
+-- -------+---------+-------------+--------------------+----------------------
+--  Alice |  352.05 | Kitsilano   |   352.049987792969 |               352.05
+--  Bob   |  273.79 | Kitsilano   |   312.919998168945 |               625.84
+--  Wally |  100078 | Point Grey  |     100077.8359375 |               100078
+--  Keith |   99452 | Point Grey  |     99764.91796875 |               199530
+
+# This is still sort of doing the running total stuff, but whatever
+
+
 
 
 # Left off at:
 
-http://www.postgresql.org/docs/9.3/interactive/tutorial-window.html
+http://www.postgresql.org/docs/9.3/interactive/tutorial-inheritance.html
 
 [start]

@@ -99,18 +99,19 @@ for l in links:
 
 # For example. If you run
 
-# c = db.execute("select * from links")
+c = db.execute("select * from links")
 
 # c will be a "cursor" to the results of that query.
+# 	Literally a sqlite3.Cursor object, NOT raw data
 # You can use the fetchmany() function on the cursor to convert that cursor into a list of results.
 # These results won't be Links; they'll be tuples, but they can be passed to the Link contructor to turn them into link objects
 
 # For example, to print all the votes for all of the links, do this:
 
-# cursor = db.execute("SELECT * FROM links")
-# for link_tuple in cursor:
-#     link = Link(*link_tuple)
-#     print link.votes
+cursor = db.execute("SELECT * FROM links")
+for link_tuple in cursor:
+  link = Link(*link_tuple)
+  print link.votes
 
 # This will simply print out all the votes
 
@@ -150,14 +151,18 @@ def query():
 	output = [t[0] for t in c]
 	# this is a list comprehension:
 	# It says "for tuple in cursor, make a list out of the first element in tuple (which is the id), and store that in output
+	# Equivalent to:
+	# output = []
+	# for t in c:
+	# 	output.append(t[0])
 	return output
 
 print query()
 
 
 # QUIZ - implement the function link_by_id() that takes a link's ID and returns the link itself
-# DON'T use SQL, just use the lins list
-def OLDlink_by_id(link_id):
+# DON'T use SQL, just use the links list
+def link_by_id(link_id):
 	for link in links:
 		if link.id == link_id:
 			return link
