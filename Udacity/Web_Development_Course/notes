@@ -1456,6 +1456,17 @@ app = webapp2.WSGIApplication([('/', MainHandler)],
 #####################################
 # Problem Set 3 - Building a Basic Blog
 #####################################
+- Front page that lists entries (can list all, or 10 most recent)
+- Form to submit new entries
+	- must check for errors, to make sure both fields (title and content) are there
+- If successful, should re-direct to a permalink page for a specific entry
+- Example:
+udacity-cs253.appspot.com/blog
+# dispalys the content
+udacity-cs253.appspot.com/blog/newpost
+# for a form to enter new posts, with error handling
+
+- Then submit blog url to udacity site
 
 
 
