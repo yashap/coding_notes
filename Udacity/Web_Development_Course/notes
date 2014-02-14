@@ -22,8 +22,9 @@ Again, to see it deployed, go to:
 http://hello-udacity-yasha.appspot.com/
 
 To backup my app, something like:
-cp app.yaml main.py index.yaml past_versions/1_ascii_chan/
-cp -r templates/ past_versions/1_ascii_chan/templates/
+cp app.yaml main.py index.yaml past_versions/2_PS3_blog/
+cp -r templates/ past_versions/2_PS3_blog/templates/
+cp -r static/ past_versions/2_PS3_blog/static/
 
 #####################################
 # Lesson 1: How the Web Works
@@ -1450,8 +1451,6 @@ app = webapp2.WSGIApplication([('/', MainHandler)],
 	- like <div>, but contains pre-formatted text
 	- basically, preserves whitespace, newlines, etc.
 
-# Left off at start of 4th last video in lesson 3 ('Creating Entities Continued')
-
 
 #####################################
 # Problem Set 3 - Building a Basic Blog
@@ -1470,4 +1469,4 @@ udacity-cs253.appspot.com/blog/newpost
 
 
 
-# Left off at Lesson 3 - Form Handling
+# Left off at Part 2 of office hours for HW 3 (MySQL vs. PostgreSQL)
