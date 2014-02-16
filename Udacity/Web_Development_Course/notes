@@ -1788,5 +1788,147 @@ class BlogHandler(Handler):
 		else:
 			self.write("You've been %s times!" % visits)
 
+- Hashing
+	- What is a hash?
+		H(x) -> y
+	- A hash takes in x (data) of any size
+	- A hash outputs a value y, which is a fixed length string
+		- generally 32-256 bits
+	- It should be super hard to generate a specific y
+	- Likewise, it should be super hard to find x from a given y
+	- You shouldn't be able to modify x without significantly modifying y
+		- changing 1 bit in x should make y completely different
+			- very little corellation between x and y
 
-# Left off at Lesson 4 > Hashing (~40% through)
+- Hash algorithms
+	- don't write your own!
+		- at least for security purposes
+	- Some popular algorthms:
+		- crc32
+			- used for checksums
+			- very fast
+			- a simple way to check that you've got the whole file
+				- send the file and the hash, then make sure that the file hashes to the hash
+			- not for security
+			- definitely possible for two values to hash to the same value
+				- easy to have these "collisions"
+		- md5
+			- pretty fast
+			- used to be thought to be pretty secure
+				- BUT it's been broken repeatedly over the last few years
+				- it's also now easy to find collisions
+					- given a y, it's easy to find a different x that hashes to it
+		- sha1
+			- not quite as fast
+			- pretty secure, just now starting to get broken
+			- just starting to find collisions
+		- sha256
+			- slower
+			- quite secure right now
+
+- We'll be using sha256
+
+- Playing around with python in the terminal
+python
+import hashlib
+x = hashlib.md5("foo!")
+x
+x.hexdigest()
+# gives us the string that "foo!" hashes to
+# for foo! it's:
+# 35af8b7a9490467f75f19c1e5459f7e7
+# for foO! it's:
+# 4a037b06903e4b4c6605785aebbe709a
+# Totally different!
+
+- for sha256, exactly the same, but just replace md5 with sha256
+
+- Hashing cookies:
+	- We want to prevent people from "cheating"
+		- i.e. modifying their own cookies, sending us back fake data
+	- Instead of just saying:
+Set-Cookie: visits=5,[hash of 5]
+	- now the user can't fake it without knowing what hash we used!
+	- then when we get a value from the browser, like:
+	5,absdfsghdfh3984237423894
+	- we can hash 5, and make sure it's the same as the hash!
+		- if it doesn't, we know the cookie is invalid and we can throw it out
+
+- Implement a function make_secure_val(s)
+
+import hashlib
+
+def hash_str(s):
+	return hashlib.md5(s).hexdigest()
+
+def make_secure_val(s):
+	return "%s,%s" % (s, hash_str(s))
+
+- Now make a function to check if this is correct!
+	- it should return the value if it's correct, else return None
+
+def check_secure_val(h):
+	val = h.split(',')[0]
+	if h == make_secure_val(val):
+		return val
+
+- Now let's use these functions in our program!
+
+# Handler for the page displaying posts
+class BlogHandler(Handler):
+	def get(self):
+		# self.render_blog()
+		self.response.headers['Content-Type'] = 'text/plain'
+		visits = 0
+		visits_cookie_str = self.request.cookies.get('visits')
+		if visits_cookie_str:
+			cookie_val = check_secure_val(visits_cookie_str)
+			if cookie_val:
+				visits = int(cookie_val)
+
+		visits += 1
+
+		new_cookie_val = make_secure_val(str(visits))
+
+		self.response.headers.add_header('Set-Cookie', 'visits=%s' % new_cookie_val)
+
+		if visits > 25:
+			self.write("You are the best ever!")
+		else:
+			self.write("You've been %s times!" % visits)
+
+- So now the user can only "fake" their visits if they know what hash we're using!
+
+- But what if they know what hash we're using?
+	- We need an extra secret!
+		- instead of just:
+		H(1) = [HASH]
+		- we can:
+		H(SECRET+1) = [HASH]
+		- Now if they don't know our secret, it's going to be super hard for them to break our hash!
+
+- Another note:
+	- so far we've been using the Python library:
+		hashlib
+	- but even better is:
+		HMAC
+			- which stands for "Hash-based Message Authentication Code"
+			- it's a special algorithm for adding these keys/secrets into hashes easily
+	- We use it something like this:
+		hmac(secret, key, hash_function)
+
+- Using hmac in console:
+python
+hmac.new("secret", "udacity").hexdigest()
+
+- To make our old code switch to hmac
+import hmac
+SECRET = 'imsosecret'
+def hash_str(s):
+	return hmac.new(SECRET, s).hexdigest()
+
+
+
+
+
+# Left off at Lesson 4 > Incorporating Hmac (~70% through)
