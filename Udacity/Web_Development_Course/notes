@@ -1468,5 +1468,325 @@ udacity-cs253.appspot.com/blog/newpost
 - Then submit blog url to udacity site
 
 
+#####################################
+# Problem Set 3 - Office Hours
+#####################################
+- MySQL vs. Postgres
+	- Very similar, use whatever you like
+- Why NoSQL?
+	- Don't have to think everything through in advance
+		- Don't have to pre-define all columns
+		- Very hard to make changes to SQL dbs when you have a tonne of users (adding new columns, indexes, new data types)
+		- No schema needed in NoSQL - no formal description of columns and data types
+	- BUT a lot of these schema-less dbs are just not very good at the moment
+		- limited stability, documentation lacking
+	- For now, probably easier to just stick with MySQL/Postgres
+- Why does Facebook use NoSQL?
+	- FB uses a lot of MySQL actually!
+	- FB used to use Cassandra, but I don't think they do anymore
+- You can actually sort of do schema-less behavious in Postgres!
+	- Just store one column as a big wad of JSON
+- Why should we avoid joins?
+	- They don't scale very well
+		- Very difficult to handle accross multiple machines
+	- Better to structure your data so everything is independent
+		- Think of your dbs as large key-value stores
+	- This DOES mean storing redundant data!
+		- Storing things in multiple places
+		- For example, on reddit they store a users karma on a link they submit, so they don't have to look it up
+		- This means a bit more overhead, BUT easier scaling
+	- For Hipmunk they do joins
+		- only ~300K hotels, not that large
+	- For reddit they don't
+		- joining tables with billions of rows each = bad idea!
 
-# Left off at Part 2 of office hours for HW 3 (MySQL vs. PostgreSQL)
+
+- Fancy Python syntax:
+
+# What does this mean?
+def foo(*a):
+# "take all of the un-named arguments, and store them in a tuple"
+# Don't have to pre-define the number of args!
+
+def foo(*a):
+	return a
+
+foo()							# returns ()
+foo(1, 2, 3)			# returns (1, 2, 3)
+
+def foo(*a):
+	return a[0]
+
+foo(1, 2, 3)			# returns 1
+
+
+# What about this?
+def render(self, template, *a, **kw):
+	t = jinja_env.get_template(template)
+	return t.render(*a, **kw)
+# the *a is for un-named arguments, i.e. 1
+# 	Will be represented as a tuple IN THE FUNCTION DEFINITION
+# the **kw is for named arguments, i.e. x = 1
+# 	Will be represented as a dictionary IN THE FUNCTION DEFINITION
+# BUT IN THE FUNCTION CALL, these tuples/dicts will be boken apart into function parameters!
+# Not that *a and *kw don't have to be used, but it's a convention
+# 	Sometimes also *args and **kwargs
+# See here for more:
+http://stackoverflow.com/questions/287085/what-do-args-and-kwargs-mean
+
+
+- Web frameworks:
+	- What do they do?
+		- The piece of your program that:
+			- speaks HTTP
+			- parses URLs into paths/queries
+			- passes things to handler functions
+		- Something like django also does sessions, user handling, form control, etc.
+			- can be good or bad
+		- Ruby on Rails is very popular for Ruby
+			- similar to django in that it does a lot for you
+		- Google App Engine's is a bit more simplistic
+	- Explain .yaml files
+		- They're config files used in app engine
+		- Says what libraries to load, what files to load first, etc.
+
+
+- Project management
+	- How to keep your code manageable?
+		- Good to have one directory with all templates
+		- Another dir with static files (CSS, JS, etc.)
+	- In terms of Python files:
+		- Good to have one main file that's the control
+			- URL mapping, and the classes that the URLs map to
+		- All of the database stuff in separate files
+			- i.e. the classes that create dbs
+		- Also good to have utilities files
+			- For generating random strings, hash values, etc.
+	- Generally good to pull things apart into lots of small, clean files
+		- In this class, though, we've been jamming a lot into one file
+		- Easier for a small project, bad for a big one
+
+
+#####################################
+# Lesson 4: User Accounts and Security
+#####################################
+- Gonna learn about:
+	- cookies
+	- hashing paswords, storing them securely
+
+- Cookies
+	- small file/piece of data stored in the browser for a website
+	- takes this sort of form:
+		name = value
+		i.e. user.id = 12345
+	- used a lot to store temporary info:
+		- i.e. whether or not you're logged into a website
+	- How they work:
+		- browser makes request to website
+		- server sends stuff back, including cookie
+		- every time you visit website in the future, you send cookie data back to the server
+	- Generally you can store:
+		- ~20 cookies/site
+		- cookies < 4kb (should be way smaller)
+		- should generally not be multi-line
+	- Cookies can only be stored for one domain
+		- i.e. udacity.com can only store udacity.com cookies
+		- this is really important, don't want other sites fucking around with your cookies, as they could then login as you on a different site!
+			- all of this is enforced on the browser side
+	- For SMALL pieces of TEMPORARY data, cookies can be a better place to store things than in a db
+	- Good uses:
+		- sotring login info
+		- storing small amounts of temporary data to avoid hitting db
+		- tracking you for ads
+	- Bad uses:
+		- storing user preference info
+			- why bad?  Because it's temporary!  You want this data to survive!
+
+- Cookie Headers
+	- HTTP response (from server to user)
+		- Cookies are sent in HTTP headers
+		- The server's HTTP response will look something like this:
+			Set-Cookie: user_id=12345
+		- name is generally short, value can be up to 4kb
+		- You can also set multiple cookies like this:
+			Set-Cookie: user_id=12345
+			Set-Cookie: last_seen=Dec 25 2011
+	- HTTP request (from user to server)
+		- Again in the header:
+			Cookie: user_id=12345; last_seen=Dec 25 2011
+		- Note how the browser puts everything into one line, separated by semi-colons
+			- Thus generally easiest to avoid semi-colons in your cookies
+
+- Let's use telnet again to check out cookies!
+telnet www.google.ca 80
+GET / HTTP/1.0
+Host: www.google.ca
+# hit return twice
+
+- Get a massive response like this:
+HTTP/1.0 200 OK
+Date: Sat, 15 Feb 2014 23:56:09 GMT
+Expires: -1
+Cache-Control: private, max-age=0
+Content-Type: text/html; charset=ISO-8859-1
+Set-Cookie: PREF=ID=e2b0eee34fe24b49:FF=0:TM=1392508569:LM=1392508569:S=tO0H8uQB6MBqalKP; expires=Mon, 15-Feb-2016 23:56:09 GMT; path=/; domain=.google.ca
+Set-Cookie: NID=67=gNsrj73VPiAvUdMsZoewx15k2vVacHPLB1DlufhOrIWO3QuVGiwxc2vdo_bx-tzv2QMY31RJ05MSAp1A-O3CrSBZRG8mBswjwazVjeoddtc-EAIvfPmUFg2_VDDicmgM; expires=Sun, 17-Aug-2014 23:56:09 GMT; path=/; domain=.google.ca; HttpOnly
+P3P: CP="This is not a P3P policy! See http://www.google.com/support/accounts/bin/answer.py?hl=en&answer=151657 for more info."
+Server: gws
+X-XSS-Protection: 1; mode=block
+X-Frame-Options: SAMEORIGIN
+Alternate-Protocol: 80:quic
+
+<!doctype html><html itemscope="" itemtype="http://schema.org/WebPage"><head><meta itemprop="image" content="/images/google_favicon_128.png"><title>Google</title><script>(function(){
+window.google={kEI:"m
+etc.
+
+- We can see the cookies in there!  Let's take a deeper look at the first one:
+Set-Cookie: PREF=ID=e2b0eee34fe24b49:FF=0:TM=1392508569:LM=1392508569:S=tO0H8uQB6MBqalKP; expires=Mon, 15-Feb-2016 23:56:09 GMT; path=/; domain=.google.ca
+- One interesting thing, Google is storing multiple pieces of data in one cookie
+	- name: PREF
+	- value: ID=e2b0eee34fe24b49:FF=0:TM=1392508569:LM=1392508569:S=tO0H8uQB6MBqalKP
+- Then after the ;, we have some parameters:
+expires=Mon, 15-Feb-2016 23:56:09 GMT; path=/; domain=.google.ca
+- So we see when it expires, and that it's relevant only to .google.ca/
+
+- Let's look at the other cookie
+Set-Cookie: NID=67=gNsrj73VPiAvUdMsZoewx15k2vVacHPLB1DlufhOrIWO3QuVGiwxc2vdo_bx-tzv2QMY31RJ05MSAp1A-O3CrSBZRG8mBswjwazVjeoddtc-EAIvfPmUFg2_VDDicmgM; expires=Sun, 17-Aug-2014 23:56:09 GMT; path=/; domain=.google.ca; HttpOnly
+- name: NID
+- value: 67=gNsrj73VPiAvUdMsZoewx15k2vVacHPLB1DlufhOrIWO3QuVGiwxc2vdo_bx-tzv2QMY31RJ05MSAp1A-O3CrSBZRG8mBswjwazVjeoddtc-EAIvfPmUFg2_VDDicmgM
+- parameters:
+expires=Sun, 17-Aug-2014 23:56:09 GMT
+path=/
+domain=.google.ca
+HttpOnly
+- The last bit means this cookie is relevant only to HTTP
+
+- Another way to get just the headers:
+curl -I www.google.ca
+
+- Easier than telnet :)
+
+- One last way to inspect cookies
+	- Go into incognito mode so you don't have any existing cookies
+	- go into dev tools
+		- CMD-OPT-i
+	- click network
+	- now get surfing!
+		- go to google.ca
+		- now you can see all the requests!
+			- click on one to see it
+			- you can see both the response and request headers!
+		- if you didn't have a cookie to start with, you will if you visit the same site again!
+
+- Cookie parameters
+	- e.g.:
+Set-Cookie: name=steve; domain=www.reddit.com; path=/
+- Note that path means "path starts with"
+	- so this could apply to www.reddit.com/whatever
+- This cookie will be sent to any domain ENDING in www.reddit.com.  Examples:
+	www.reddit.com
+	foo.www.reddit.com
+- Won't be sent to:
+	reddit.com
+	foo.reddit.com
+- You need at least two periods:
+	- So you must at least set:
+		.reddit.com
+
+- Setting cookies:
+	- When you send a cookie from:
+		www.reddit.com
+	- The default domain is:
+		www.reddit.com
+	- And you can only set to this domain or higher, e.g.:
+		www.reddit.com
+		.reddit.com
+	- But not something like:
+		foo.reddit.com
+
+- Receiving cookies:
+	- Which domains would receive the cookie set like this?
+		Set-Cookie: user=123; Domain=ide.udacity.com
+	- Would receive it:
+		- ide.udacity.com
+		- other.ide.udacity.com
+		*** so the domain and sub-domains can receive it
+	- Wouldn't receive it:
+		- udacity.com
+		- other.udacity.com
+
+- Setting cookies (2):
+	- Which domains could set this cookie?
+		Set-Cookie: user=123; Domain=ide.udacity.com
+	- Can set it:
+		- ide.udacity.com
+		- other.ide.udacity.com
+		*** so the domain and sub-domains can set it
+	- Can't set it:
+		- udacity.com
+		- other.udacity.com
+
+- Browser settings:
+	- We can do things like:
+		- accept all cookies
+		- accept cookies for the current session only
+		- block all cookies
+		- block 3rd party cookies
+			- i.e. if I'm on reddit, ALLOW reddit cookies, but BLOCK google cookies!
+	- For yourself, often good to block 3rd party cookies
+
+- Ad Networks:
+	- How they work:
+		- Your browser makes a request to a website
+		- The server responds to the HTML
+		- IN THE RESPONSE IS A 1px IMAGE!
+			- This image makes a request to a different server, i.e. google.com
+			- google.com responds with the image itself, and with a cookie!
+		- Worth noting that this will be a google.com cookie
+			- udacity can't set it, but google can!
+			- this is a 3rd party cookie
+	- This could be used for Google analytics, but also for ad network tracking!
+		- now Google knows that you've been to reddit.com
+		- say you now visit pets.com
+			- pets.com returns HTML and a tracking pixel
+		- now Google knows you've been to both reddit.com and pets.com
+		- So now they can deliver ads that are more relevant to you
+
+- Cookie expiration
+	- If you just set a cookie like this:
+		Set-Cookie: user=123
+	- It's a "session cookie"
+		- Will expire when the browser is closed
+	- If you want it to persist:
+		Set-Cookie: user=123; Expires=Tue, 1 Jan 2025 00:00:0 GMT
+	- So when you see those logins with "remember me" check-boxes
+		- If you check it, you get an expires parameter
+		- Else it's a session cookie, gets deleted when you close your browser
+
+- Using cookies with app engine!
+*** See app engine code
+
+- We can set and play with cookies like this:
+
+class BlogHandler(Handler):
+	def get(self):
+		# app engine automatically parses cookies, and throws them into a dictionary-like object, "cookies"
+		# we can call the dict-version of get on it:
+		visits = self.request.cookies.get('visits', 0)
+		# get's the value of 'visits' if it's there, else 0
+		# So if I've never if I've never been here before, this starts at 0
+		# Now increment:
+		if visits.isdigit():
+			visits = int(visits) + 1
+		else:
+			visits = 0
+		# Now set this in the cookie:
+		self.response.headers.add_header('Set-Cookie', 'visits=%s' % str(visits))
+		# Now use it
+		if visits > 25:
+			self.write("You are the best ever!")
+		else:
+			self.write("You've been %s times!" % visits)
+
+
+# Left off at Lesson 4 > Hashing (~40% through)
