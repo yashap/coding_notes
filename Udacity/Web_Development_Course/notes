@@ -2068,6 +2068,7 @@ print valid_pw('bobby', 'joe', h)
 			- Check that Password and Verify Password match ()
 				- if not, throw an error by Verify password stating "Your passwords didn't match."
 				- *** SEE UNIT 2 FOR HOW TO CHECK ***
+			- If the user already exists, throw an error saying that the user exists
 	2) If they enter valid data, then:
 		- cookie the user:
 			should be something like:
