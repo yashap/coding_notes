@@ -1927,8 +1927,169 @@ SECRET = 'imsosecret'
 def hash_str(s):
 	return hmac.new(SECRET, s).hexdigest()
 
+- So to recap:
+	- visits = 1
+		- very insecure
+	- visits = 1|md5(1)
+		- almost as insecure
+	- visits = 1|HMAC(secret,1)
+		- very secure
+
+- This kind of cookie protection is excellent to valid important cookie data like user ids
+	- don't want to let people appear to be logged in to someone else's account!
+
+- password hashing
+	- imagine we have a table "user" with 2 fields:
+		- name
+		- password
+	- we would then be checking passwords something like this:
+
+def valid_user(name, pwd):
+	user = get_user(name)
+	if user and user.password == pw:
+		return user
+
+- but what if our db gets compromised!
+	- we should instead be storing HASHED passwords!
+		- so the table fields become:
+			- name
+			- password_hash
+	- then checking them will look more like:
+
+def valid_user(name, pwd):
+	user = get_user(name)
+	if user and user.password_hash == H(pw):
+		return user
+
+
+- RAINBOW TABLES
+	- basically a dictionary of what all sorts of passwords hash to
+	- how to account for these?
+		- we salt the passwords!
+			- very similar to 
+			- then we simply store:
+				- h, salt
+				- where h = H(pw + salt)
+				- so even though the salt is right there, it makes it way harder to reverse engineer
+
+- Quiz:
+	- implement a function make_salt() that returns a string of 5 random letter
+
+import random
+import string
+
+def make_salt():
+	return ''.join(random.choice(string.ascii_letters) for x in range(5))
+
+print(make_salt())
+
+- implement the function make_pw_hash(name, pw) that returns a hashed password of the format: 
+	- HASH(name + pw + salt),salt
+	- use sha256
+
+import hashlib
+
+def make_pw_hash(name, pw):
+	salt = make_salt()
+	h = hashlib.sha256(name + pw + salt).hexdigest()
+	return "%s,%s" % (h, salt)
+
+print(make_pw_hash("bob","324dfgdg"))
+
+
+
+- Ok, now we need to check if a password is valid!
+# Implement the function valid_pw() that returns True if a user's password 
+# matches its hash. You will need to modify make_pw_hash.
+
+#h = make_pw_hash('spez', 'hunter2')
+#print valid_pw('spez', 'hunter2', h)
+
+import random
+import string
+import hashlib
+
+def make_salt():
+	return ''.join(random.choice(string.letters) for x in xrange(5))
+
+def make_pw_hash(name, pw, salt = None):
+	if not salt:
+		salt = make_salt()
+	h = hashlib.sha256(name + pw + salt).hexdigest()
+	return '%s,%s' % (h, salt)
+
+def valid_pw(name, pw, h):
+	salt = h.split(',')[1]
+	return make_pw_hash(name, pw, salt) == h
+
+# Testing it
+h = make_pw_hash('bobby', 'joe')
+print h
+# h is what we'd store in the db
+print valid_pw('bobby', 'joe', h)
+# we'd pull h from the db to verify
+
+
+- Password hashing:
+	- most hashing functions are designed to be fast
+		- this is a good thing for verifying cookies and whatnot
+		- this is actually BAD for passwords
+			- why?
+			- if someone wants to brute force your passwords, you actually want that hashing function to be pretty slow!
+			- a good hashing function to use is:
+					bcrypt
+			- nice and slow :)
+	- we aren't using bcrypt in this course, because it's not built into Python by default, but it's better for passwords than sha256
+		- there is a Python module for it, though
+	- bcrypt basically takes an extra parameter, "how long do you want it to take"
+		- you can make it stay slow even as computers get slower
+
+
+- HTTPS
+	- With everything we've done so far, the pw would be encrypted on your server
+		- However, it WOULDN'T be encrypted in-transit
+			- vulnerable to man in the middle
+	- for encryption in transit, use HTTPS
+		- HTTPS = HTTP + SSL
+
+
+#####################################
+# Problem Set 4 - User Accounts
+#####################################
+
+- 3 part homework:
+	1) Add registration to the blog (with valid cookie)
+		- add a signup form page --> at domain/signup
+			- Should have 4 fields:
+				- Username
+				- Password
+				- Verify Password
+				- Email (optional)
+			- Check that Password and Verify Password match ()
+				- if not, throw an error by Verify password stating "Your passwords didn't match."
+				- *** SEE UNIT 2 FOR HOW TO CHECK ***
+	2) If they enter valid data, then:
+		- cookie the user:
+			should be something like:
+				userid|hash
+		- note that we're storing the id, not the username
+		- Then, redirect to a welcome page at /welcome
+			- This page should say: "Welcome, %s!" % username
+				- get the username from the cookie
+	3) If someone fucks with the cookie, then the cookie should no longer be valid, and you should be re-directed to the signup page
+
+
+Instructor Notes
+
+In order to be graded correctly for this homework, there are a few things to keep in mind. We'll be grading your web app by POSTing new users to your signup form and checking that we correctly get redirected and a cookie gets set. There are a few main issues you need to keep in mind in order for this to work:
+
+We assume your form to signup new users is at a path of '/signup' from the url you enter. That is, if you enter 'www.myblog.com/blog' in the text field above, then the form is at 'www.myblog.com/blog/signup'. The form method must be POST, not GET. The form input boxes must have the names 'username', 'password', 'verify', and 'email' in order for the grading script to correctly post to them. Don't forget to escape your output!
+Also, the basic methods you'll use to set and get cookies are as follows: In order to get a cookie you receive from the user, you can use 'self.request.cookies.get(name)', where name is the name of the cookie you are looking for. In order to send a cookie to a user, you simply add the header to your response. For example, 'self.response.headers.add_header('Set-Cookie', 'name=value; Path=/')', where name is the name of the cookie, and value is the value you're setting it to. The default Path for a cookie is the current path, which is probably not what you want. The Path parameter should be / as in our example.
+
+If you're interested in the css styling file we use for the example page, the link is:
+http://udacity-cs253.appspot.com/static/main.css
 
 
 
 
-# Left off at Lesson 4 > Incorporating Hmac (~70% through)
+# Left off at Lesson 4 > Hashing Salts (~90% through)
