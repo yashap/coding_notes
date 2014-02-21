@@ -1,0 +1,5 @@
+# Selects all blocks of text that:
+# 	Start with "(member)"
+# 	Have "GNPP" later on the same line
+# 	Have "###########################" somewhere after (same line of diff line)
+\(member\) (.*?)GNPP((?s).*?)###########################
