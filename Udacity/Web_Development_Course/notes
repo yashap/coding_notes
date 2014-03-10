@@ -1,30 +1,16 @@
-Through the GUI, simply click run
-
-Or, through terminal
-
-cd to the app
-dev_appserver.py .
-
-. is for current directory, or you can type the directory
-
-Then visit at localhost:8080
-
-And to deploy online:
-
-appcfg.py update .
-
-User: ypodeswa@gmail.com
-Paswword: my Google pass (see LP, it's not a common one)
-
-Or just use deploy in the GUI
-
-Again, to see it deployed, go to:
-http://hello-udacity-yasha.appspot.com/
-
-To backup my app, something like:
-cp app.yaml main.py index.yaml past_versions/2_PS3_blog/
-cp -r templates/ past_versions/2_PS3_blog/templates/
-cp -r static/ past_versions/2_PS3_blog/static/
+Terminal commands:
+	Local
+		dev_appserver.py .
+		open http://localhost:8080
+	Deploy
+		appcfg.py update .
+			User: ypodeswa@gmail.com
+			Paswword: my Google pass (see LP, it's not a common one)
+		open http://hello-udacity-yasha.appspot.com
+	Backup
+		cp app.yaml main.py index.yaml past_versions/2_PS3_blog/
+		cp -r templates/ past_versions/2_PS3_blog/templates/
+		cp -r static/ past_versions/2_PS3_blog/static/
 
 #####################################
 # Lesson 1: How the Web Works
@@ -2057,7 +2043,10 @@ print valid_pw('bobby', 'joe', h)
 # Problem Set 4 - User Accounts
 #####################################
 
-- 3 part homework:
+#################
+Part 1:
+#################
+
 	1) Add registration to the blog (with valid cookie)
 		- add a signup form page --> at domain/signup
 			- Should have 4 fields:
@@ -2091,6 +2080,24 @@ If you're interested in the css styling file we use for the example page, the li
 http://udacity-cs253.appspot.com/static/main.css
 
 
+#################
+Part 2:
+#################
+
+Implement login
+	Login page should be at /login
+	It should have a header login, two fields (Username and Password), and a submit button
+	If you type in a valid username and password, it sets the cookie (same cookie as signing up), and redirects you to the welcome page
+	Any invalid login (wrong password OR a username that doesn't exist), you get an "Invlaid login" error
+
+
+#################
+Part 3:
+#################
+
+Implement logout
+	Logout page should be at /logout
+	It doesn't even need its own actual page, it should just clear your cookie (set it to nothing), then re-direct you to the signup page
 
 
 # Left off at Lesson 4 > Hashing Salts (~90% through)
