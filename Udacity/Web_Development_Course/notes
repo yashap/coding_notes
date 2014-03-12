@@ -2100,4 +2100,52 @@ Implement logout
 	It doesn't even need its own actual page, it should just clear your cookie (set it to nothing), then re-direct you to the signup page
 
 
-# Left off at Lesson 4 > Hashing Salts (~90% through)
+#####################################
+# Lesson 5: APIs
+#####################################
+
+APIs
+	Basically, design your site to send note only HTML (good for humans), but also JSON or XML (good for computers)
+In this lesson, we'll add a feature to ASCII chan so that we can see where users are submitting data from
+
+So far, we've been looking at users making requests to servers, and getting responses
+	Now we'll look at the same idea, but servers making HTTP requests to other servers
+
+Case study: Hipmunk
+	1) User does flight search
+		HTTP request from user to server
+	2) Himunk server makes a bunch of HTTP requests to airlines, etc.
+		HTTP request from server to server
+	3) These other servers send their data back
+	4) Hipmunk servers manipulate this data, form a response that they send back to the user
+
+Big question - how do we make our server speak to other servers, with no browser involved?
+	In Python, the urllib2 library is a good way to go
+		See play2.py for examples
+
+XML
+	A regular way to express data between computers
+	Looks a lot like HTML, example would be:
+
+<?xml version="1.0" encoding="utf-8">
+<results>
+	<itinerary>
+		<leg>
+			<origin>CUS</origin>
+			<dest>WAS</dest>
+		</leg>
+	</itinerary>
+</results>
+
+	XML has no void tags, like <br>, all tags MUST close!
+		Through things like <br/> will work
+	There's also a doctype xhtml, with the same rules
+		Basically lets you send xml to a browser, and have it render like html
+		Will actually render faster, since the browser has to do less complex parsing
+	Both HTML and XML descend from SGML
+
+Parsing XML:
+	See play2.py for an example of simple XML parsing in Python
+
+
+# Left off at Lesson 5 > Rss (~30% through)
