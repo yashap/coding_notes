@@ -2147,5 +2147,97 @@ XML
 Parsing XML:
 	See play2.py for an example of simple XML parsing in Python
 
+RSS
+	RSS standas for RDF Site Summary
+		RDF = Resource Description Framework
+			An XML format for describing pretty much anything
+	RSS also stands for "Really Simple Syndication"
+		It's really just a list of content in XML
+	i.e. if you have a blog with regular content, you could have an RSS reader to read it easily
+	It's basically web pages written in XML instead of HTML, so that they can be easily parsed by computers
 
-# Left off at Lesson 5 > Rss (~30% through)
+JSON
+	JavaScript Object Notation
+		JSON is actually valid JS code
+	Basically just nested dictionaries/lists
+		Dictionary keys must be strings?
+	Anything that can be expressed in XML can be expressed in JSON
+		But it's a little less verbose than XML
+	Other than lists/dicts, you can have:
+		int
+		string
+		boolean
+		float
+		null ---> i.e. []
+	Also note that JSON must use double quotes to enclose strings, single quotes aren't allowed
+	See play2.py for more
+
+To see reddit's front page in JSON
+	http://www.reddit.com/.json
+	For a quiz related to it, see play2.py
+
+A lot of websites have this feature, where you can get the data not just as HTML, but also as JSON and/or XML
+	Twitter example:
+		search.twitter.com/search.json?q=udacity
+	Actually, that was the old version of the API, but the idea is good
+
+JSON escaping
+	This is valid JSON:
+		{"story": "once upon a time"}
+	This isn't:
+		{"story": "once upon a" time"}
+	We'd need to escape the '"'
+	Backslashes are the key, but...
+		{"story": "once upon a\" time"}
+	That's not going to work with:
+		json.loads('{"story": "once upon a\" time"}')
+	Because we need to escape for Python AND for the JSON interpreter
+	We actually need two back-slashes
+		json.loads('{"story": "once upon a\\" time"}')
+	Alternately, we can tell Python that this is a raw string - i.e. no escaping
+		Then it will pass the raw string to the JSON interpreter, and the interpreter will pick up the escaping
+	So a better way to write it is:
+		json.loads(r'{"story": "once upon a\" time"}')
+	Note the r at the start
+
+Writing JSON
+	The main time we have to worry about escaping is when WRITING JSON
+	The functions:
+		json.dumps (to a string)
+		json.dump (to a file)
+	Note the json.dumps is only going to work with lists, dicts, ints, strings
+		If we want to use things like date/time, we'll have to convert to string first
+
+How to be a good citizen on the internet
+	1) Use a good user-agent
+		- the header where you say who you are, what your name is, etc.
+	2) Rate-limit yourself
+		- try not to send requests super fast
+		- for example, instead of:
+
+while more:
+	get_more_tweets()
+
+		- we could use:
+
+import time
+while more:
+	get_more_tweets()
+	time.sleep(1)
+
+		- time.sleep(1) will cause our interpreter to pause for one second
+
+Common protocols/formats for communicating accross the internet
+	SOAP (Microsoft)
+		Nasty protocol
+	Protocol buffers (Google)
+		JSON-esque
+	Thrift (Facebook)
+		JSON-esque
+	Plan-text, custom formats
+		Bad idea, why not just use JSON?
+	JSON
+	XML
+
+
+# Left off at Lesson 5 > Ascii Chan 2 (~75% through)
