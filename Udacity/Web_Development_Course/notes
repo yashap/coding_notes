@@ -2240,4 +2240,17 @@ Common protocols/formats for communicating accross the internet
 	XML
 
 
-# Left off at Lesson 5 > Ascii Chan 2 (~75% through)
+############
+# Adding a feature to ASCII chan
+############
+
+- On the newpost page, draw a map showing where the most recent submissions come from
+	- need a service that will convert IPs into locations
+		- we'll use hostip.info
+		- they've also got an API, where sending an IP here:
+			api.jostip.info/ip=XXX_IPHERE_XXX
+		- that will return XML with data on where the IP is
+- then we'll be using Google Maps, specifically their static maps API, to draw a map of the posts
+	- gives you a link that generates a static image of a map with markers
+
+# Left off at Lesson 5 > Debugging (~80% through)
