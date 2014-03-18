@@ -226,6 +226,7 @@ jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir),
 	autoescape = True)
 
 IP_URL = "http://api.hostip.info/?ip="
+
 def get_coords(ip):
 	url = IP_URL + ip
 	content = None
@@ -239,7 +240,16 @@ def get_coords(ip):
 		coords = x.getElementsByTagName("gml:coordinates")
 		if coords and coords[0].childNodes[0].nodeValue:
 			lon, lat = coords[0].childNodes[0].nodeValue.split(",")
-			return lat, lon
+			return db.GeoPt(lat, lon)
+
+from collections import namedtuple
+# make a basic Point class
+Point = namedtuple('Point', ["lat", "lon"])
+points = [Point(1,2), Point(3,4), Point(5,6)]
+GMAPS_URL = "http://maps.googleapis.com/maps/api/staticmap?size=380x263&sensor=false&"
+def gmaps_img(points):
+	markers = "&".join("markers=%s,%s" % (p.lat, p.long) for p in points)
+	return GMAPS_URL + markers
 
 class Handler(webapp2.RequestHandler):
 	def write(self, *a, **kw):
@@ -256,11 +266,34 @@ class Art(db.Model):
 	title = db.StringProperty(required = True)
 	art = db.TextProperty(required = True)
 	created = db.DateTimeProperty(auto_now_add = True)
+	coords = db.GeoPtProperty()
 
 class MainPage(Handler):
 	def render_front(self, title="", art="", error=""):
 		arts = db.GqlQuery("SELECT * FROM Art ORDER BY created DESC")
-		self.render("front.html", title=title, art=art, error=error, arts=arts)
+		# note that at this point arts is a cursor - if we use it twice, it will be two different queries
+		# Better to save it as a list if we're going to use it more than once
+		arts = list(arts)
+
+		# find which arts have coords
+		points = []
+		for a in arts:
+			if arts.coords:
+				points.append(a.coords)
+				# so if an arts has coords, add the coords to the list points
+
+		# if we have any coords, make an image URL
+		img_url = None
+		if points:
+			img_url = gmaps_img(points)
+
+		# pass everything, including the img url, to our template
+		self.render("front.html", title=title, art=art, error=error, arts=arts, img_url=img_url)
+
+		# then in the template we can use this kind of code:
+		# {% if img_url %}
+		# 	<img class="map" src="{{img_url}}">
+		# {% endif %}
 
 	def get(self):
 		self.render_front()
@@ -271,8 +304,9 @@ class MainPage(Handler):
 
 		if title and art:
 			a = Art(title = title, art = art)
-			# lookup user's coordinates from the IP
-			# if they have coords, at them to the Art
+			coords = get_coords(self.request.remote_addr)
+			if coords:
+				a.coords = coords
 
 			a.put()
 

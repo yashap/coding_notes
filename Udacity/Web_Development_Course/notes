@@ -2250,7 +2250,68 @@ Common protocols/formats for communicating accross the internet
 		- they've also got an API, where sending an IP here:
 			api.jostip.info/ip=XXX_IPHERE_XXX
 		- that will return XML with data on where the IP is
+
 - then we'll be using Google Maps, specifically their static maps API, to draw a map of the posts
 	- gives you a link that generates a static image of a map with markers
 
-# Left off at Lesson 5 > Debugging (~80% through)
+- debugging notes:
+	- find some way to print the coords that you're pulling
+		- also make sure it's not localhost (127.0.0.1), as that won't have a location associated with it
+
+- Here's the static map example from Google's API:
+
+http://maps.googleapis.com/maps/api/staticmap?center=Brooklyn+Bridge,New+York,NY&zoom=13&size=600x300&maptype=roadmap
+&markers=color:blue%7Clabel:S%7C40.702147,-74.015794&markers=color:green%7Clabel:G%7C40.711614,-74.012318
+&markers=color:red%7Clabel:C%7C40.718217,-73.998284&sensor=false
+
+- Which is really:
+
+http://maps.googleapis.com/maps/api/staticmap
+	?center=Brooklyn+Bridge,New+York,NY
+	&zoom=13
+	&size=600x300
+	&maptype=roadmap
+	&markers=color:blue%7Clabel:S%7C40.702147,-74015794
+	&markers=color:green%7Clabel:G%7C40.711614,-74.012318
+	&markers=color:red%7Clabel:C%7C40.718217,-73.998284
+	&sensor=false
+
+- All that is required is:
+http://maps.googleapis.com/maps/api/staticmap
+	&size=600x300
+	&sensor=false
+
+- The sensor bit is to find out where the user is, if you're on a phone or something like that, that already knows
+	- we won't use it
+- The markers are the spots on the map to mark!
+	- the colors and labels aren't even required
+
+
+#####################################
+# Problem Set 5 - JSON
+#####################################
+
+- Make you blog output JSON, when the URL ends with .json
+	- i.e. blah.com/blog.json
+- the JSON should be a list of dictionaries
+- alternately, visiting a permalink should also work
+	- for example, visiting blah.com/blog/234535353456.json
+	- this should return just a dictionary:
+		{
+			"content": "What a great blog",
+			"created": "Thu Apr 12 03:04:21 2014",
+			"last_modified": "Thu Apr 12 03:04:21 2014",
+			"subject": "Hello World"
+		}
+	- note that dates aren't in the JSON library, will have to encode ourselves
+		- look into strftime()
+- Another note, while debugging the site with Chrome dev tools, make shure to check out the "network" tab
+	- when we go to a .json page, make sure that in the response header we see:
+		Content-Type: application/json; charset=UTF-8
+	- this is a header we'll have to set
+
+
+#####################################
+# Lesson 6:
+#####################################
+
