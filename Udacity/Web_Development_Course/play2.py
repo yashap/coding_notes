@@ -242,6 +242,8 @@ def get_coords(ip):
 			lon, lat = coords[0].childNodes[0].nodeValue.split(",")
 			return db.GeoPt(lat, lon)
 
+print get_coords("24.85.250.221")
+
 from collections import namedtuple
 # make a basic Point class
 Point = namedtuple('Point', ["lat", "lon"])
