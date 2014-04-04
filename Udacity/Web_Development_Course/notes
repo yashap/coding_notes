@@ -2310,8 +2310,271 @@ http://maps.googleapis.com/maps/api/staticmap
 		Content-Type: application/json; charset=UTF-8
 	- this is a header we'll have to set
 
+#####################################
+# Office Hours 5
+#####################################
+
+- Debugging:
+	- At the top:
+	import logging
+
+	- In development/stagin mode, at the top you put:
+	DEBUG=True
+
+	- In production:
+	DEBUG=False
+
+	- The throughout the code you can use:
+	logging.debug("string")
+
+	- Which will print the string to the console if you're in DEBUG mode
+
+	- If you want to log errors in production logs, use:
+	logging.error()
+
+- Testing:
+	- Really hard to test the behaviour of a web app
+	- One cool thing - run the last ~10,000 production requests in your development/staging environment, see if there are errors!
+
+- Security:
+	- Major vulnerabilities to think about:
+		- xss
+			- cross site scripting
+			- when you accept data from a user, and you display it in the web page without escaping it
+			- for example, say you let a user put their entry into a <textarea>
+			- they code put code in a <script> tag, which could fetch cookies and other such thing
+			- escaping the HTML can fix this, but if you don't want to escape ALL html (i.e. on a blog, where you want them to be able to bold, use links, etc.), then you have to escape just some html
+				- markdown can be a good way to go
+				- let's people use links and images, but not all html
+		- SQL injection
+			- very similar to xss
+			- i.e. say you have this code:
+				"SELECT * FROM Link WHERE id = %s" % _id
+			- but what if they can add arbitrary stuff, like DROP TABLE!
+			- they could really fuck you up
+			- You want to include a wrapper around your SQL:
+				- app engine provides this with the GQL query objects
+			- SQLAlchemy is a really popular Python SQL library
+				- let's you write SQL ina procedural language, which can be nice
+				- has an ORM, which maps Python objects to SQL, BUT THESE SUCK
+					- they can really slow your site down if used improperly
+		- memcache injection
+			- similar to SQL injection, but polutes your memcache
+		- CSRF
+			- forms have an action attribute, which say where you want to submit your form to
+			- let's you submit forms to an arbitrary site
+			- you can get users submit to a different site
+			- the way to prevent this is to include hashes (or some sort of secret) on the page you want to be actually submitting forms, and then only accept post requests that come with that secret
+
+- Relying on parsing/scraping data from sites
+	- For example, Hipmunk relies on the structure of the Amtrak site
+	- What if they change the structure?
+	- Then it breaks, and you must fix it
+		- No great solution, just fix things when they break
+
+- How do you do internationalization/localization?
+	- Not that hard
+	- A good Python package is gettext:
+		- put all your strings in one function, then this function can have the ability to translate stuff
+		- basically, Google for gettext to learn more
+
+- Soap
+	- Soap is awful, never use it if you can avoid it
+	- use XML/JSON whenever you can
+
+- Paths
+	- Ending URLs in "/", how to handle this?
+	- Often best to just match with or without the trailing slash, like this:
+		- "/blog/?"
+
+- Production
+	- How to have a distinction between production and development?
+		- One way:
+			- Have a couple files, for example:
+				production.py
+				devel.py
+			- These will have a bunch of global variables, like secret keys
+			- Have one that's only used in production, and one only in development
+			- When you deploy code, symlink config.py to either production.py or devel.py
+	- Basic idea though is to store global vars in a file you can switch out for production
+
+- Next steps after this class?
+	- Get good at JavaScript and CSS
+
 
 #####################################
-# Lesson 6:
+# Lesson 6: Caching
 #####################################
 
+- When you start operating at a large scale, lots of things can break down
+	- can run out of bandwidth, disk space, processing power, etc.
+
+- Why scale?
+	1) So we can serve more requests concurrently
+		- basically, lots of connections at once
+		- every connection takes memory, CPU, etc.
+	2) So we can store more data
+		- sometimes you have too much data for memory, one marchine, disk space, speed, etc.
+	3) So we're more resilient to failure
+		- i.e. database replication
+		- if one db fails, you don't lose data
+	4) So we can serve more requests faster
+		- similar to serving more requests concurrently, but this will generally require a better machine, caching, etc.
+
+- What do we scale?
+	1) Bandwidth
+		- especially for sites like youtube, justintv
+	2) Computers (memory, CPU)
+		- CPU is very often limiting, if your website does a lot of computation
+		- memory can be an issue if you're storing/caching a lot of data in memory
+	3) Power
+		- more computers = more power
+		- for example, Google needs to think about building data centres near big power sources
+	4) Storage
+		- especially if users are submitting lots of content to you
+		- how do you store it all?
+		- think Facebook with all of their photos
+		- or Google, they more or less store the entire internet accross their machines, so they can search fast!
+
+- Techniques for scaling
+	1) Optimize code
+		- it does mean more developer cost, but often optimizing code is better than adding machines
+		- this really just comes down to programming better, understanding how compilers work, etc.
+	2) Caching complex operations
+	3) Upgrade machines
+		- more memory
+		- more disk space
+		- faster CPU
+			- can be cheaper/easier than optimizing code
+	4) Add more machines
+		- can be tough, but ultimately you'll have to do this eventually
+
+- Caching
+	- storing the RESULT of an operation, so that future requests return faster
+		- don't have to do the computation again
+	- When do we cache?
+		1) When the computation is slow
+		2) When the computation will run multiple times
+		3) When the output is always the same for a particular input
+		4) When your hosting provider charges for db access (i.e. Google App Engine!!!)
+
+- Example:
+	- Say we have this function:
+		db_read()
+	- It's slow, takes 100ms
+		- So if we get a lot of requests, we can only do 10 per second
+	- How would we cache this?
+		- in pseudo-code:
+
+if request in cache:
+	return cache[request]
+else:
+	r = db_read()
+	cache[request] = r
+	return r
+
+	- The cache is a hashtable:
+		- maps keys (requests) to values (result of request)
+	- In the above:
+		- the "if" block is a "cache hit", while the "else" block is a "cache miss"
+	- A lookup from a hashtable is often < 1ms, way better than 100ms!
+
+- So the idea is just to wrap the slow bits of your code in a caching algorithm
+	- Example:
+
+import time
+
+# complex_computation() simulates a slow function. time.sleep(n) causes the
+# program to pause for n seconds. In real life, this might be a call to a
+# database, or a request to another web service.
+def complex_computation(a, b):
+	time.sleep(.5)
+	return a + b
+
+# QUIZ - Improve the cached_computation() function below so that it caches
+# results after computing them for the first time so future calls are faster
+cache = {}
+def cached_computation(a, b):
+	key = (a, b)
+	if key in cache:
+		r = cache[key]
+	else:
+		r = complex_computation(a, b)
+		cache[key] = r
+	return r
+
+# Note that time.time() returns the current time since some epoch, in seconds
+start_time = time.time()
+print cached_computation(5, 3)
+print "the first computation took %f seconds" % (time.time() - start_time)
+# So we compare the time at the start and end of the computation, cool!
+
+start_time2 = time.time()
+print cached_computation(5, 3)
+print "the second computation took %f seconds" % (time.time() - start_time2)
+
+
+- Ok, let's get to a more real-world example, scaling ASCII chan!
+	- When a user makes a request to ASCII chan, we have to:
+		1) Process the request
+			- HTTP, URL, handler
+			- this can take a bit of time, but not a tonne
+		2) Then we query the database
+			- this can take a lot of time
+			- it can also mean we have to pay App Engine
+		3) Collate the results
+			- i.e. getting ready to render the HTML
+		4) Render HTML
+			- this can actually take some time too!
+
+- Querying the database is almost always the slowest step
+	1) First step is to optimize the db itself
+		- make sure you have the proper indexes, make sure your queries are sane/easy, etc.
+		- Google App Engine makes indexes for us
+			- BUT they may not be optimal, in which case we'd have to make one by hand
+	2) You could add more machines
+		- In this case, we don't have control over replication, sharding, etc.
+		- Note that this is VERY complex, it should be your last resort
+	3) Bigger machines
+		- again, not too relevant with app engine, though can be a good option
+	4) Cache the query
+
+- *** BUNCH OF WORK IN ascii_chan BRANCH ***
+
+- Cache stampede:
+	- Think of this situation:
+		- 1 user posts to db, which clears the cache
+		- BUT we then also have a tonne of users access the site
+		- THEY all see an empty cache, so they all think they need to read from the db!
+			- they all run the same query on the db
+	- Cache stampede = multiple cache misses mean to much load (on the db, or on any other slow process)
+	- How to avoid?
+		- DON'T CLEAR THE CACHE!
+		- instead, just overwrite it with new data!
+			- then these users will just get slightly old data, which is generally not a big deal
+
+Caching Techniques:
+- Approach: no caching
+	- DB read/pageview
+	 - every
+	- DB read/submit
+		- none
+- Approach:
+	- DB read/pageview
+	 -
+	- DB read/submit
+		-
+- Approach:
+	- DB read/pageview
+	 -
+	- DB read/submit
+		-
+- Approach:
+	- DB read/pageview
+	 -
+	- DB read/submit
+		-
+
+
+
+# Left off at "Caching Techniques", ~35% through lesson 6
