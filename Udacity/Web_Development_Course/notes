@@ -2554,27 +2554,322 @@ print "the second computation took %f seconds" % (time.time() - start_time2)
 			- then these users will just get slightly old data, which is generally not a big deal
 
 Caching Techniques:
-- Approach: no caching
+
+- NO CACHING
 	- DB read/pageview
 	 - every
 	- DB read/submit
 		- none
-- Approach:
-	- DB read/pageview
-	 -
-	- DB read/submit
-		-
-- Approach:
-	- DB read/pageview
-	 -
-	- DB read/submit
-		-
-- Approach:
-	- DB read/pageview
-	 -
-	- DB read/submit
-		-
+	- Bugs?
+		- none, but slow
 
+- NAIVE CACHING
+	- DB read/pageview
+	 - cache miss
+	- DB read/submit
+		- bugs
+	- Bugs?
+		- Yes, front page becomes stale
+
+- CLEAR CACHE
+	- DB read/pageview
+	 - cache miss
+	- DB read/submit
+		- none
+	- Bugs?
+		- none, but can have cache stampede
+
+- REFRESH CACHE
+	- DB read/pageview
+	 - rarely
+	- DB read/submit
+		- 1
+	- Bugs?
+		- none
+	- KEY POINT:
+		- "Simple" users (not logged in) shouldn't be touching the db
+
+Most aggressive caching method:
+
+- UPDATE CACHE
+	- DB read/pageview
+		- 0
+	- DB read/submit
+		- 0
+	- Bugs?
+		- none
+
+- Cache updating:
+	- Whenever we have a read
+		1) Send the write to the db
+		2) Also send the write TO THE CACHE
+	- The only db read is when you start up the app for the first time, and get that first request!
+		- This is how reddit currently works
+	- The tradeoff:
+		- Complex inserts + speed vs. db reads
+	- THE MORE ACCURATE THE CACHE, THE MORE COMPLEX THE CODE
+
+- App server scaling
+	- Let's think again about what happens during a request:
+		1) Process request
+		2) DB query
+		3) Collate results
+		4) Render HTML
+	- We've improved "2)", but what about the rest?
+		- We can use caching for rendering HTML too
+		- We can also add additional app servers for all of 1, 3 and 4!
+	- Multiple app servers
+		- More machines to handle more requests (all can access same db)
+		- How to implement?
+			- Stick a load balancer between user and app servers
+			- The load balancer is a physical machine, that's optimized for doing one thing: SPREADING REQUESTS ACCROSS MULTIPLE MACHINES
+			- It does nothing but take requests, chose a machine, and pass the connection along
+	- App engine handles the multiple servers for you, but we should still understand how to use
+
+- Load Balancing Algorithms:
+	1) Random
+		- Request comes in, load balancer randomly picks machine
+	2) Round robin
+		- Chose servers in order
+	3) Load based
+		- Know the load on each server, send to the least busy
+
+
+# QUIZ - implement the function get_server, which returns one element from the
+# list SERVERS in a round-robin fashion on each call.
+
+SERVERS = ['SERVER1', 'SERVER2', 'SERVER3', 'SERVER4']
+
+n = -1
+def get_server():
+	global n
+	n += 1
+	return SERVERS[n % len(SERVERS)]
+
+print get_server()
+print get_server()
+print get_server()
+print get_server()
+print get_server()
+print get_server()
+print get_server()
+print get_server()
+
+
+- Why is our dictionary cache problematic with mutiple app servers?
+	1) Multiple app servers = multiple caches, how do we keep them in sync?
+	2) Each app server may have to hit the db to update its cache
+		- can get a situation similar to the cache stampedes we talked about before
+
+- A solution:
+	- A shared cache!
+	- A great piece of technology for this is memcached
+
+- memcached
+	- very fast, in-memory cache
+	- built by Danja to power LiveJournal
+		- A very popular site in the early 2000s
+	- now pretty much everyone uses memcached!
+		- essential piece of software when writing web apps
+	- memcached is a process
+		- often runs on own machine, but could run on an app server
+	- same idea as the caching we talked about before:
+		- app servers check memcached, if it has the value they use it, if not they hit the db
+	- memcached is just a key value store, basically a big hash table
+		- can easily be split accross different machines
+		- this is generally handled by libraries
+
+- memcached works with keys and values, both of which are strings
+	- 3 main operations:
+		set(key, value)
+		get(key) -> value
+		delete(key)
+
+- ALSO, if your process re-starts, you don't have an empty cache
+
+
+# QUIZ implement the basic memcache functions
+
+CACHE = {}
+
+#return True after setting the data
+def set(key, value):
+	CACHE[key] = value
+	return True
+
+#return the value for key
+def get(key):
+	return CACHE.get(key)
+
+#delete key from the cache
+def delete(key):
+	if key in CACHE:
+		del CACHE[key]
+
+#clear the entire cache
+def flush():
+	CACHE.clear()
+
+print set('x', 1)
+print get('x')
+print get('y')
+delete('x')
+print get('x')
+
+
+- More advanced properties of memcached:
+	- Entirely in memory
+		- so it's fast
+		- it's NOT durable, it's not on disk
+		- limited by memory
+	- what if you try to store more data in memcached than there is available memory?
+		- throws away data that is least recently used
+
+- Adding memcache to ascii_chan did some nice things:
+	1) Cache survives restarts of app
+	2) App is now STATELESS
+		- this is the key to scaling
+		- between any two requests, our app stores no state
+		- our app servers are now interchangeable
+			- we can now add or remove app servers, drama free
+			- app servers can be scaled independently of memcached or db
+		- basically, with this setup we can add more app servers, more memcached servers OR more dbs fairly easily
+			- different apps will need more of one of these than another
+
+STATE IS STORED IN COOKIES, DB OR MEMCACHED, BUT NOT THE APPS!
+
+- Advanced cache updates:
+	- Problem: multiple users submit at the same time, overwriting each other
+		- With direct db access, this isn't a problem, dbs make everything happen sequentially
+		- BUT with caching, this CAN be a problem
+			- Say in db we have 1, 2
+			- app server A says "add 3" to the db, then says to the cache "our current state looks like 1, 2, 3"
+			- app server B says "add 4" to the db, so the db, now has 1, 2, 3, 4, BUT if it happened at the same time as app server Bs request, it's now overwriting the cache saying things look like 1, 2, 4!
+		- Basically, on a db we can just say "insert this element", but in a cache we say "the list of elements is this"
+
+- CAS
+	- Stands for check and set
+		gets(key) -> value, unique
+		cas(key, value, unique) -> True
+	- Example:
+		- App 1 and App 2 both call:
+			v, u = mc.gets(k)
+		- So they get a value and it's unique
+		- Then they both want to update
+		- App 1 calls:
+			mc.cas(k, y, u)
+		- This works, and returns True
+			- BUT IT CHANGES THE UNIQUE ASSOCIATED WITH THIS KEY/VALUE PAIR!
+		- App 2 calls:
+			mc.cas(k, y, u)
+		- This doesn't work, it returns False!
+		- Better to implement like this:
+
+v, u = mc.gets(k)
+r = mc.cas(k, y, u)
+while r = False:
+	v, u = mc.gets(k)
+	r = mc.cas(k, y, u)
+
+	- you would do this only when performing some sort of destructive operation, like updating a list
+		- otherwise, overwriting could be fine
+
+- Let's get a little deeper into our fake memcached!
+
+# The code we had before:
+CACHE = {}
+
+#return True after setting the data
+def set(key, value):
+    CACHE[key] = value
+    return True
+
+#return the value for key
+def get(key):
+    return CACHE.get(key)
+
+#delete key from the cache
+def delete(key):
+    if key in CACHE:
+        del CACHE[key]
+
+#clear the entire cache
+def flush():
+    CACHE.clear()
+
+# QUIZ - implement gets() and cas() below
+#return a tuple of (value, h), where h is hash of the value. a simple hash
+#we can use here is hash(repr(val))
+def gets(key):
+    v = CACHE.get(key)
+    if v:
+      return v, hash(repr(v))
+
+# set key = value and return True if cas_unique matches the hash of the value
+# already in the cache. if cas_unique does not match the hash of the value in
+# the cache, don't set anything and return False.
+def cas(key, value, cas_unique):
+    r = gets(key)
+    if r:
+      v, u = r
+      if u == cas_unique:
+        return set(key, value)
+      else:
+        return False
+
+print set('x', 1)
+#>>> True
+#
+print get('x')
+#>>> 1
+#
+print get('y')
+#>>> None
+#
+delete('x')
+print get('x')
+#>>> None
+#
+set('x', 2)
+print gets('x')
+#>>> 2, HASH
+#
+print cas('x', 3, 0)
+#>>> False
+#
+print cas('x', 4, 6400019251)
+#>>> True
+#
+print get('x')
+#>>> 4
+
+
+- Why do we split our services?
+	1) So they can be scaled independently
+	2) To increae fault tolerance
+		- i.e. bad cache shouldn't ruin app server requests
+	3) So two very different processes aren't competing for the same resources
+	4) So they can be updated independently
+		- i.e. you want to switch from Postgres to MySQL?  No reason to take down all of your site to do so!
+
+
+- Pieces of a large website:
+
+1) DNS round robin
+	- What if you have too many requests for one load balancer?
+	- at the DNS level, map your URL to multiple IPs
+		- Each IP is a separate load balancer machine
+2) A cache between a load balancer and your apps
+	- if you know it won't change, cache the entire page (HTML and all), instead of just the results of the query!
+	- popular technology for this:
+		- varnish
+		- squid
+3) Or you can use a CDN
+	- CDN = content delivery network
+	- CDN = 3rd party company that will cache your site all over the internet
+	- they'll intercept your DNS requests from all over the world
+	- they'll check to see if they have the results even before they hit your load balancer!
+		- this pushes the cache further from you and closer to the customer
 
 
 # Left off at "Caching Techniques", ~35% through lesson 6
