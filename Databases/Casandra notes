@@ -2,3 +2,35 @@
 # HootSuite Lunch and Learn - 2014-04-08
 ######################
 
+C* = Cassandra
+
+Data Stacks
+	- the guys presenting
+	- provide platform/support around Cassandra db
+		- C*
+		- Analytics (Hadoop)
+		- Search (Solr)
+		- Interfaces for db (Eclipse, browser interface, etc.)
+		- Support team
+	- Basically, they're like Oracle, but focus on Cassandra
+
+Why C*?
+	- supposedly scales more easily than RDBMS
+	- high uptime
+	- dynamic
+		- good at handling spikes?
+
+Multi-node architecture
+	- data comes in
+	- can distribute writes
+		- can also set replication factors
+			- i.e. every write also means another 0, 1, 2, etc. backup writes
+			- this is for backups, OR push reads to a less busy node
+			- for most applications, RF = 3 is common
+		- so, key value gets hashed, write directed to one node based on hash value, then write also replicated once the node is chosen
+			- key values hashed with murmur3 hasing algo
+	- if you have an RF of 3, that means every node will basically have 3 hashed key ranges it will accept
+		- so the 3 copies of your data will be on 3 different nodes
+		- each node essentially has 3 shrds
+		- there's also no master copy of the data, there's 3 equal copies
+

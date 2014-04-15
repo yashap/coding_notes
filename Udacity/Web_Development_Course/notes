@@ -2879,141 +2879,17 @@ print get('x')
 Step 1:
 	Add caching to blog
 	On the page, display how long ago we ran the query that generated the front page
-		i.e. in the footer, print a string like "Page generated 159 seconds ago"
+		i.e. in the footer, print a string like "Queried 159 seconds ago"
+
+Step 2:
+	Do the same for the permalinks
+	BONUS: make blog link to permalinks
+
+Step 3:
+	Make it so /blog/flush flushes the cache, then redirects to /blog
+		Note that this should flush not just the blog cache, but the permalink cache too
 
 
-
-#!/usr/bin/env python
-
-import os
-import webapp2
-import jinja2
-import urllib2
-import logging
-# import time
-
-from xml.dom import minidom
-
-from google.appengine.ext import db
-from google.appengine.api import memcache
-
-# Template stuff
-###############################
-template_dir = os.path.join(os.path.dirname(__file__), 'templates')
-jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir),
-	autoescape = True)
-
-# Google maps
-###############################
-IP_URL = "http://api.hostip.info/?ip="
-
-def get_coords(ip):
-	url = IP_URL + ip
-	xml = None
-	try:
-		xml = urllib2.urlopen(url).read()
-	except URLError:
-		return None
-
-	if xml:
-		x = minidom.parseString(xml)
-		coords = x.getElementsByTagName("gml:coordinates")
-		if coords and coords[0].childNodes[0].nodeValue:
-			lon, lat = coords[0].childNodes[0].nodeValue.split(",")
-			return db.GeoPt(lat, lon)
-
-GMAPS_URL = "http://maps.googleapis.com/maps/api/staticmap?size=500x500&sensor=false&"
-
-def gmap_img(points):
-	markers = "&".join("markers=%s,%s" % (p.lat, p.lon) for p in points)
-	return GMAPS_URL + markers
-
-# memcache
-###############################
-def top_arts(update = False):
-	key = "top"
-	arts = memcache.get(key)
-	if arts is None or update:
-		logging.error("DB QUERY")
-		arts = db.GqlQuery("SELECT * "
-			"FROM Art "
-			"ORDER BY created DESC "
-			"LIMIT 10")
-		arts = list(arts)
-		memcache.set(key, arts)
-	return arts
-# users who just want the data will have update = False
-# So these users will get arts from CACHE[key] if the key is in CACHE
-# 	A standard page view will never hit the db
-# BUT when users post, they call top_arts(True), so they automatically hit the db after posting
-
-# Entities
-###############################
-class Art(db.Model):
-	title = db.StringProperty(required = True)
-	art = db.TextProperty(required = True)
-	created = db.DateTimeProperty(auto_now_add = True)
-	coords = db.GeoPtProperty()
-
-# Handlers
-###############################
-
-# Generic Handler
-#######
-class Handler(webapp2.RequestHandler):
-	def write(self, *a, **kw):
-		self.response.out.write(*a, **kw)
-
-	def render_str(self, template, **params):
-		t = jinja_env.get_template(template)
-		return t.render(params)
-
-	def render(self, template, **kw):
-		self.write(self.render_str(template, **kw))
-
-# Main page
-#######
-class MainPage(Handler):
-	def render_front(self, title="", art="", error=""):
-		arts = top_arts()
-
-		points = []
-		for a in arts:
-			if a.coords:
-				points.append(a.coords)
-
-		img_url = None
-		if points:
-			img_url = gmap_img(points)
-
-		self.render("front.html", title=title, art=art, error=error, 
-			arts=arts, img_url=img_url)
-
-	def get(self):
-		self.render_front()
-
-	def post(self):
-		title = self.request.get("title")
-		art = self.request.get("art")
-		coords = get_coords(self.request.remote_addr)
-
-		if title and art:
-			a = Art(title = title, art = art)
-			if coords:
-				a.coords = coords
-			a.put()
-			top_arts(True)
-
-			# time.sleep(0.1)
-			# note that the "sleep" bit is just to make
-			# things work in the dev environment
-			self.redirect("/")
-
-		else:
-			error = "we need both a title and some artwork!"
-			self.render_front(title, art, error)
-
-app = webapp2.WSGIApplication([('/', MainPage)],
-	debug=True)
-
-
+#####################################
+# Lesson 7: Scaling Up
+#####################################
