@@ -2893,3 +2893,303 @@ Step 3:
 #####################################
 # Lesson 7: Scaling Up
 #####################################
+
+Code organization
+	There's no correct answer to how to split things up
+	Some good divisions:
+		main.py
+			Starts out as a monolith, broken out over time
+			KEEPS URL MAPPING
+			Imports all the other bits and pieces
+		Handlers
+			Could eventually have separate files for every type of handling
+		DB models
+			ORM - object relational mapping
+				Map your objects into DB data
+				Steve likes to write his own, doesn't like the pre-made solutions
+				Basically abstracts away the SQL?
+				We don't have to do this with app engine, it comes with it's own stuff, but often do with other frameworks
+			Steve often has a separate file for each entity
+				i.e. a file for Post, a file for Art, etc.
+				In these files he'd also put all the password hashing stuff, etc.
+		Utils
+			Just handy things, like make_salt(), make_secure_val(), etc.
+			Also date manipulation, string manipulation, etc.
+			A list of flat functions that have no dependencies on any other part of the project
+				i.e. UTILS SHOULD NOT IMPORT ANYTHING ELSE
+				THEY SHOULD BE COMPLETELY INDEPENDENT
+					You can use utils with handlers, db stuff, etc., but utils shouldn't use handlers, db stuff, etc.
+		Static content
+			CSS, JS, images
+		Templates
+
+Circular imports/inheritance
+	Better not to have this, ideally inheritance should only 
+
+File structure
+	/
+		main.py
+		handlers.py
+		Blog.py
+		Rot13.py
+		/lib
+			/DB
+				models
+			utils.py
+		/templates
+			base.html
+			*** bunch of inheriting templates
+		/static
+
+Hosting
+	Local
+		Run off your own computer
+		BUT not always on or accessible
+			Internet could go down
+		IP may change
+			May have to pay extra for static IP
+	Co-locate
+		Buy space in a datacentre
+		Or even have your own datacentre
+		Pay for rent, power, bandwidth
+		BUT lots of work
+			Administer machine
+			Install software
+			Fix things
+			etc.
+	Managed hosting
+		Old system:
+			Rent configured, installed machines from a data centre
+		New system:
+			Cloud setup
+			Big players:
+				AWS
+				Rackspace
+				Linode
+				etc.
+			Rent machines, often by the hour
+			Don't have to think too much about bandwidth, power, etc.
+			Generally don't install the OS, but do control OS config
+	GAE/Heroku model
+		Don't worry about machines, OS, etc.
+		Basically zero sys-admin
+		BUT difficult customization
+
+Choosing between web frameworks
+	webapp2
+		Handles:
+			HTTP
+			Scheduling (handling multiple requests at once)
+			URL mapping
+			etc.
+		Gives direct access to GET/POST
+		Direct access to the requests (headers, etc.)
+			Can manipulate bits, or the whole header
+	Things that frameworks do that are sort of not that important
+		Sessions
+		Caching
+		Forms
+		DB-ORM
+		*** But what if you need custom behaviour?
+			Steve finds this stuff too high level
+			Easier/better to just do it yourself
+			Not good to be too far away from the request
+			You're not going to know what happen when things break
+	Templates
+		mako, jinja2, etc. are good ones
+		Basically, make sure not to put too much code in templates
+			Really difficult to maintain
+		Stick to using them to generate HTML/CSS, keep the code in the programming language
+
+How Steve works
+	Have your browser, editor and terminal all open
+		The terminal part is key
+		You see all the logs scrolling by, and see all sorts erros that you wouldn't otherwise catch!
+			DB queries should be printed to the log too
+			You want to see what's being cached, where queries are happening, etc.
+			Want to see that there are very few queries running in general
+
+Scaling Reddit
+
+	Started in June 2005
+	Steve was the engineer
+	Alexis was "everything else" (business, design, etc.)
+
+	First version of Reddit was written in Lisp
+		More popular at universities than in the real world
+		Handlers were written in Lisp, and it generated the HTML, CSS, JS, etc.
+			Lisp is very good at generating source code
+		There was no memcache, just an in-memory lookup table
+
+	DB was very simple, just a few tables
+		Links
+			score, title, url
+		Votes
+			link_id, dir
+		Users
+			name, pass
+	No comments at the start
+	Lots of joins at the start
+	Everything was on one machine
+		App and DB same machine
+
+	After hiring Aaron:
+		Re-wrote in Python
+		Split onto 2 machines
+			One for App
+			One for DB
+				Switched to PG
+			Split to two machines was ~4x speed improvement!
+
+	At this point, still lots of downtime
+		Site crashed A LOT
+	At first Steve spent a lot of time simply bringing Reddit back up when it crashed
+		You can automate a lot of this!
+		A good program is "Supervise" -> restarts your app when it crashes
+		Can even have 2 copies of the app running with a load balancer, and Supervise bringing them back up
+			Makes it so you really don't have to worry about downtime
+
+	At this point, very few PG backups
+		Got SUPER LUCKY
+		Machines die, just got really lucky that their PG machine didn't
+
+	DB replication
+		Moved to two DBs
+		Used a tool called "Sloney" to replicate the db
+		Had one app server hitting the two DB machines
+		There was one master, one slave
+			Then ran into replication lag
+			i.e. you'd submit a link, then get re-directed to it, but if you hit the wrong db (where it hadn't been replicated yet), you'd get a 404 error!
+		Also had cache lag
+			Started a 2nd app server
+			Weren't using memcache yet
+			Used a library called Spread to keep their two in-memory caches in-sync
+			Every time one app server updated its cache, spread had to tell all the app servers about it
+
+	COMMENTS
+		First version of comments was just a new table
+			Had link ids, contents, author id, etc.
+		Every time they wanted to add a feature, it was slow
+			Had to worry about db migrations, new indexes, etc.
+			Wanted something more flexible
+		Moved to "thing db"
+
+	Thing DB
+		Designed by Steve
+		Instead of having a Link table, with a bunch of columns
+			i.e. url, title, date, score
+		Have a "thing" table, with the following columns
+			thing_id, score, author, date
+		Links, comments, subreddits are all "things"
+			So you have a thing table, which is essentially references to other tables
+		Then you have separate data tables
+			Has:
+				thing_id, key, value
+		Example: representation of a link
+			It would have an entry in the thing table
+				{
+					link_id: 1,
+					score: 5,
+					author: 25,
+					date: 6/11/05
+				}
+			It would also have a bunch of entries in the data table
+				{
+					link_id: 1,
+					key: url,
+					value: *the url*
+				}
+				{
+					link_id: 1,
+					key: title,
+					value: *the title*
+				}
+		So any property of a thing that isn't common amongst all things is just a new row in a data table!
+			Want to add properties to a table?  Just add more data rows!
+			And in your code you can just do things like "if the thing doesn't have this data entry, just use a default value"
+		In general, this just makes it really easy to add features without planning much in advance
+
+	Adding memcached
+		Should have been using it from the begginging!
+		Got all of the state out of the apps, made it way easier to scale app servers
+		Let them get rid of Spread (with associated cache lag)
+
+	No sharding in Thing DB
+		Should have wrote it in!
+		Now really hard to put sharding in, but would have been pretty easy back then
+
+	Framework
+		Started out using web.py, which Aaron wrote
+			Used handlers, GET/POST, etc.
+			webapp2 took a lot from web.py
+		Reddit now uses a hacked up version of Pylons, which they made similar to web.py
+
+	Pre-computed cache
+		Had a cron job that would compute the "hot" page every minute, then throw it into memcached
+		Started doing A LOT of pre-computing (for different sub-reddits, different users, etc.)
+		Then started having this whole pre-compute system
+			The "absolute truth" dbs replicated to the "pre-compute" dbs
+			App servers load up jobs for the pre-compute dbs
+				i.e. we want all this data
+			The results of these jobs stored in memcached
+			App servers basically only get data from memcached
+		Makes everything really fast
+
+Interview with Neil
+	Neil is responsible for keeping Reddit fast, online and functional
+	When Steve left, the infrastructure looked like this:
+		CDNs
+			Akamai
+			Used for logged out users only
+				They all see the same content
+			Logged in users have custom content, so they can't use CDN
+		Load balancer
+			HA Proxy
+			They now have multiple, then had one
+		App servers
+			There were 20 when Steve left
+			Now 180!
+		They use S3 for static content
+			S3 is simple storage service
+			Destributed file storage thing in the cloud
+			Amazon lets you put objects into the buckets
+			It's literally just a key/value store of the buckets
+			People can ask for files, and get it
+			Use it to store HTML, CSS, JS, etc.
+			FOR STATIC CONTENT, A USER NEVER HITS HAPROXY, APP SERVERS, ETC.
+				So this is just for logged out users
+			For awhile they were using nginx for static content
+				BUT the one nginx server doing all the static content just couldn't handle it when the static content changed
+					i.e. when the static files changed, everyone's cache's became invalid, and everyone needed new static files, which crushed the single nginx machine
+	DBs
+		When Steve left, they had a few dbs
+			One for links/users
+			One for votes
+			One for comments/subreddits
+		Then all of these DBs were replicated
+			Used "Londiste"
+			They still use it
+			Basically, every insert to the main db is replayed to the replicated db
+	memcached
+		Used A LOT
+		Writes went to DB and memcached at the same time
+			Avoid replication lag by just accessing memcached
+		The pre-compute DBs would throw stuff into memcachedb, which is sort of like memcache with a bit of permanent storage
+
+		Big changes since
+			memcachedb eventually hit a scaling wall
+				Just couldn't handle the load
+				They replaced it with Casandra
+					Automatic sharding accross a ring of servers
+					They're using a replication factor of 3
+						Every piece of data written 3 times
+						You aren't slowed down much by one slow node, and if one node goes down, you've got 2 backups
+			zookeeper
+				They're now using zookeeper to handle locking
+				I don't really get this bit
+				It can also push data to App Servers
+					Compared to, say, memcache, which can only serve requests from app servers
+				So if your configuration changes, zookeeper can tell your apps
+
+
+#### Left off a lesson 7: Improving Memcache
