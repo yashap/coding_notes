@@ -3176,20 +3176,164 @@ Interview with Neil
 			Avoid replication lag by just accessing memcached
 		The pre-compute DBs would throw stuff into memcachedb, which is sort of like memcache with a bit of permanent storage
 
-		Big changes since
-			memcachedb eventually hit a scaling wall
-				Just couldn't handle the load
-				They replaced it with Casandra
-					Automatic sharding accross a ring of servers
-					They're using a replication factor of 3
-						Every piece of data written 3 times
-						You aren't slowed down much by one slow node, and if one node goes down, you've got 2 backups
-			zookeeper
-				They're now using zookeeper to handle locking
-				I don't really get this bit
-				It can also push data to App Servers
-					Compared to, say, memcache, which can only serve requests from app servers
-				So if your configuration changes, zookeeper can tell your apps
+	Big changes since Steve left
+		memcachedb eventually hit a scaling wall
+			Just couldn't handle the load
+			They replaced it with Casandra
+				Automatic sharding accross a ring of servers
+				They're using a replication factor of 3
+					Every piece of data written 3 times
+					You aren't slowed down much by one slow node, and if one node goes down, you've got 2 backups
+		zookeeper
+			They're now using zookeeper to handle locking
+			I don't really get this bit
+			It can also push data to App Servers
+				Compared to, say, memcache, which can only serve requests from app servers
+			So if your configuration changes, zookeeper can tell your apps
+		memcache injection
+			memcached client library has the ability to notice that a node has gone down
+			At that point it'll treat the ring as if it has one less node
+
+	mapreduce
+		A programming technique for doing batch across huge amounts of data
+		Two functions:
+			map
+				Given this list of things, apply this function to it
+			reduce
+				Given these two things, apply this function to it and reduce it into one thing
+		Reddit is/will be using Hadoop, with a language called pig
+			Makes it easy to distribute the mappers and reducers across nodes
+			Will be using Amazon's elastic map reduce
+				Hosted Hadoop
+
+	new vs. old content
+		They were handling regularly accessed data just fine
+		But what if someone wants to check out a really old 500 comment thread?
+			That's 500 disk hits!
+		A big issue here is Google
+			They actually had to build a whole separate infrastructure just for Google!
+			It's read-only, and it's how Google indexes them
+			They just have very different behaviour from normal users
+
+	Locking
+		With Cassandra, whenever you vote on a link in a specific subreddit, it has to lock on that whole subreddit
+		Basically, they're trying to get rid of locking as much as possible, in general
+
+Growing Reddit from a social point of view
+	At the beginning, fake content!
+		Steve and Alexis submitted a bunch of fake content, from fake users!
+			They had a system to make this easy
+		This did two things:
+			1) Set the tone
+				They were submitting good, interesting stuff
+			2) Made the site feel alive
+				Want a bumping site!
+		They had to do this for the first few months
+	There were no comments for the first few months
+		This is now one of the most important parts!
+		But they didn't realize that until later
+	There was no categorization
+		i.e. tags, etc.
+		This was good, users could just show up and submit content, it was easy
+	No emails
+		If you want members, and want submissions, why ad barriers?
+	No censorship
+		Unless it was overtly racist, they didn't censor
+		Created a real sense of community
+	Spam/cheating prevention
+		What do spammers want?
+			Very often they want links to their pages, for SEO
+			One thing to fight this, is to just add this by default to all links:
+				<a rel="nofollow" href=...
+			They take this away for popular posts, but the unpopular spam posts contribute nothing to SEO
+		Spam is almost always automated
+			You can notice things
+				A bunch of accounts all using the same password
+				Users submitting content, then commenting on their own content
+				Submitting content way too quickly for a human
+		Don't let a spammer know when they're caught!
+			Make it so that the spammer sees their own stuff, but nobody else does
+
+Next steps
+	Learn front end technologies
+		CSS
+		JavaScript
+			As well as AJAX
+				"Asychronous JavaScript"
+				Making HTTP requests, in the background, to your web server, to update the page dynamically
+					i.e. voting on Reddit, you send the vote to the server, but don't get a new page
+
+Scaling Udacity/app engine
+	Nice things app engine does
+		They provide great infrastructure
+			caching
+			highly replicated datastore
+			force you to address consistency
+				does a name have to be updated everywhere, or can it wait a bit?
+			queueing
+				very powerful/smooth/reliable
+				let's you really focus on tasks
+			logging infrastructure works really well
+		Version handling
+			You can upload a completely different code base, against the same data stores and services
+			Makes A/B testing really easy
+				Test new features only on a small set of users, see if it's successful
+			Also makes it easy to have an admin site
+		Autoscaling
+			Probably the best feature off app enginge
+			Super easy to scale your db, memcache, etc.
+			They can handle traffic spikes without thinking about it
+		It's clear that app engine was designed by people who had gone through the painful process of scaling
+			For example, queueing can get really complex
+				It's just done in a really simple way in app engine
+		Deployment is very easy
+	Downsides of app engine
+		Migrating off app engine is really hard
+		Sometimes there are failures
+			A query that normally works, ocassionally doesn't work
+				Have to do things like "if a query fails, try again up to 3 times before sending an error back to the user"
+		There's a 10 minute limit for tasks running on the back end
+		You can't have C modules
+			Which are popular in Python systems
+		Better SSL certificate support
+			Especially on custom domains
+			But they're fixing this relatively soon?
+		Database limitations
+			All queries have a limit of 1000 records!
+			Backup/restore is very awkward
+				Hard to backup all your data on a nightly basis
+				Also expensive to do it
+			Not a very good data viewer
+				There's a data viewer on the dasboard, but you can't do standard SQL queries
 
 
-#### Left off a lesson 7: Improving Memcache
+#####################################
+# Final exam: Build a Wiki
+#####################################
+
+A Wiki is just a website where any page can be edited
+If you type in a url that doesn't exist:
+		/stuff
+	You should be re-directed to an edit page:
+		/_edit/stuff
+	Where you can edit the HTML
+If you type in a url that does exist, you should be taken to the page, and there should be an edit button
+There should also be user accounts
+	When not logged in you can see pages, but not edit them
+	So still need signup, new user pages
+	Signup should be at:
+		/signup
+
+Our routing should look something like this:
+
+PAGE_RE = r'(/(?:[a-zA-Z0-9_-]+/?)*)'
+app = webapp2.WSGIApplication(
+	[
+		('/signup', Signup),
+		('/login', Login),
+		('/logout', Logout),
+		('/_edit' + PAGE_RE, EditPage),
+		(PAGE_RE, WikiPage)
+	],
+	debug=DEBUG
+)
