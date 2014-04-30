@@ -3630,3 +3630,63 @@ console.log(testTerr.toString());
 // It is now possible to replace some of the methods of the LifeLikeTerrarium object, or add new ones.
 
 // http://eloquentjavascript.net/chapter8.html
+
+
+
+
+
+// #####################################
+// Chapter 10: Regular Expressions
+// #####################################
+
+// Strings get surrounded by quotes, REs get surrounded by /
+// 	So if you want to use a slash in an RE, it must be escaped
+// 	/\//
+
+// The search method of a string searches for a regular expression instead of a string
+console.log("Yo Hello world".search(/l/));
+// 5
+
+// The [] characters also have special meaning
+// 	They mean "any of these characters"
+console.log("wiki-yasha".search(/[xy]/));
+// 5
+
+// In general, most non-alpha-numeric characters have special meaning, so they should all be escaped
+// For example, to find the first * or {
+var asteriskOrBrace = /[\{\*]/;
+// That's just saying { or *, with escaping and whatnot
+var story = "We noticed the *giant sloth*, hanging from a giant branch.";
+show(story.search(asteriskOrBrace));
+// 15
+
+// Some really useful shortcuts
+.	// Any character that's not a newline
+\d	// Any digit
+\D	// Any NON digt
+\w	// Any alphanumeric character, plus underscores
+\W	// Any NON alphanumeric char
+\s	// Any white-space (tab, newline, space)
+\S	// Any NON white-space
+
+var digitSurroundedBySpace = /\s\d\s/;
+// This is "white space" + "digit" + "whitespace
+console.log("1a 2 3d".search(digitSurroundedBySpace));
+// 2
+// So it matches the start of the RE
+
+// When using [], the ^ character means "not"
+// 	So this:
+var notABC = /[^ABC]/;
+// Means any character EXCEPT A, B or C
+console.log("ABCBACCBBADABC".search(notABC));
+// 10
+
+// Ex. 10.1
+// Write a regular expression that matches a date in the format "XX/XX/XXXX", where the Xs are digits. Test it against the string "born 15/11/2003 (mother Spot): White Fang".
+datePattern = /\d\d\/\d\d\/\d\d\d\d/
+// which is just dd/dd/dddd, but it's \d, and I have to escape the / as \/
+console.log("born 15/11/2003 (mother Spot): White Fang".search(datePattern));
+
+// Left off at:
+// Sometimes you need to make sure a pattern starts at the beginning of a string, or ends at its end. For this, the special characters ^ and $ can be used. The first matches the start of the string, the second the end.
